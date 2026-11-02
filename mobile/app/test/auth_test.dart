@@ -76,6 +76,19 @@ void main() {
           contains('donduruldu'));
     });
 
+    test('GoTrue trigger hatası ("Database error saving new user") Türkçe', () {
+      const turkce = 'Yeni kullanıcı kayıt hatası oluştu.';
+      expect(
+          friendlyAuthMessage(
+              const AuthException('Database error saving new user')),
+          turkce);
+      // Mobilde mesaj JSON gövdesiyle gelir (AuthRetryableFetchException).
+      expect(
+          friendlyAuthMessage(const AuthException(
+              '{"code":"unexpected_failure","message":"Database error saving new user"}')),
+          turkce);
+    });
+
     test('bilinmeyen hata null döner (orijinal mesaj gösterilsin)', () {
       expect(friendlyAuthMessage(const AuthException('garip bir şey oldu')),
           isNull);
