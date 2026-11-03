@@ -103,7 +103,6 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
 
   // ── Veri: sözlük + banka (lazy chunk) + sunucu eşitlemesi ────────────────
   useEffect(() => {
-    saveHamleAvi({ opened: true }); // "YENİ" balonu kalkar
     let iptal = false;
     (async () => {
       let loaded;

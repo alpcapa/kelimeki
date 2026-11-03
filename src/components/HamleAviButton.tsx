@@ -5,12 +5,10 @@
 // geniş satırında durur ve "Ya da bir oyun kur" ayırıcısıyla oyun kurma
 // bölümünden ayrılır. Sebep: Zorluk seçicisinin yanında dururken Kolay/Normal/Zor'a bağlıymış
 // gibi okunuyordu (Hamle Avı'nda rakip yok). 2/3+1/3 yan yana düzen denendi ve elendi.
-// 🎯 simgesi kullanıcı onaylı; "YENİ" balonu Hamle Avı bir kez açılınca kalkar
-// (`hamleAviStore.opened`, cihazda).
-import { shouldShowNewBadge } from '../utils/hamleAviStore';
-
+// 🎯 simgesi kullanıcı onaylı. "YENİ" balonu HEP görünür (kullanıcı, 3 Kasım 2026:
+// "Şimdi hep kalsın") — önce bir kez açılınca kalkıyordu, kaldırıldı; ileride süreli/
+// kullanıma bağlı bir kural istenirse karar kaydı product-backlog.md'de.
 export function HamleAviButton({ onOpen }: { onOpen: () => void }) {
-  const yeni = shouldShowNewBadge();
   return (
     <>
       <button
@@ -18,14 +16,12 @@ export function HamleAviButton({ onOpen }: { onOpen: () => void }) {
         data-hamle-avi-buton=""
         className="relative w-full btn-raised-neutral bg-panel text-text border border-border min-h-[56px] rounded-md font-sans font-bold flex items-center justify-between px-4 active:scale-[0.97] transition-transform"
       >
-        {yeni && (
-          <span
-            className="absolute -top-2 -right-1 bg-red text-white text-[9px] px-1.5 py-0.5 rounded-full tracking-[0.5px]"
-            data-hamle-avi-yeni=""
-          >
-            YENİ
-          </span>
-        )}
+        <span
+          className="absolute -top-2 -right-1 bg-red text-white text-[9px] px-1.5 py-0.5 rounded-full tracking-[0.5px]"
+          data-hamle-avi-yeni=""
+        >
+          YENİ
+        </span>
         <span className="flex items-center gap-3">
           <span className="text-xl" aria-hidden>
             🎯
