@@ -235,30 +235,41 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     placeAt(r, c, state.selectedTile);
   };
 
-  const [ghost, setGhost] = useState<{ x: number; y: number; index: number; tile: TileModel } | null>(null);
+  // Sürükleme kaynağı: raftan bir taş YA DA tahtaya bu turda konmuş (taslak) bir taş.
+  // Taslak taş: dokunuş = geri al, boş kareye sürükle = taşı, rafa sürükle = geri al
+  // (kullanıcı isteği 3 Kasım 2026; `App.tsx` `endDrag`in sadeleştirilmiş eşi).
+  type Source =
+    | { kind: 'rack'; index: number; tile: TileModel }
+    | { kind: 'placed'; r: number; c: number; tile: TileModel };
+  const [ghost, setGhost] = useState<{ x: number; y: number; source: Source } | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
-  const dragRef = useRef<{ index: number; tile: TileModel; x: number; y: number; moved: boolean } | null>(null);
+  const dragRef = useRef<{ source: Source; x: number; y: number; moved: boolean } | null>(null);
 
-  const hucreAt = (x: number, y: number): string | null => {
+  const dropAt = (x: number, y: number) => {
     const el = document.elementFromPoint(x, y);
-    return (el?.closest('[data-cell]') as HTMLElement | null)?.getAttribute('data-cell') ?? null;
+    return {
+      cell: (el?.closest('[data-cell]') as HTMLElement | null)?.getAttribute('data-cell') ?? null,
+      onRack: !!el?.closest('[data-rack]'),
+    };
   };
-  const bosHucre = (k: string | null): boolean => {
+  /** Bu kare, bu kaynak için geçerli bir hedef mi? (boş + kaynağın kendi karesi değil) */
+  const hedefUygun = (k: string | null, src: Source): boolean => {
     if (!k) return false;
     const [r, c] = k.split(',').map(Number);
+    if (src.kind === 'placed' && src.r === r && src.c === c) return false;
     return !state.board[r][c] && !state.placed[k];
   };
 
-  const onRackPointerDown = (i: number, e: React.PointerEvent<HTMLDivElement>) => {
+  const beginDrag = (source: Source, e: React.PointerEvent<HTMLDivElement>) => {
     if (!canAct) return;
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
       // yakalama olmadan da çalışır
     }
-    dragRef.current = { index: i, tile: me.rack[i], x: e.clientX, y: e.clientY, moved: false };
+    dragRef.current = { source, x: e.clientX, y: e.clientY, moved: false };
   };
-  const onRackPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  const moveDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = dragRef.current;
     if (!d) return;
     if (!d.moved) {
@@ -266,27 +277,39 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
       d.moved = true;
     }
     const y = liftedPoint(e.clientY);
-    setGhost({ x: e.clientX, y, index: d.index, tile: d.tile });
-    setDragOverKey(hucreAt(e.clientX, y));
+    setGhost({ x: e.clientX, y, source: d.source });
+    setDragOverKey(dropAt(e.clientX, y).cell);
   };
-  const onRackPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = dragRef.current;
     dragRef.current = null;
     setGhost(null);
     setDragOverKey(null);
     if (!d) return;
-    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) < TAP_SLOP_ON_RELEASE) {
-      dispatch({ type: 'SELECT_TILE', index: d.index });
+    const { source } = d;
+    const dist = Math.hypot(e.clientX - d.x, e.clientY - d.y);
+    const target = dropAt(e.clientX, liftedPoint(e.clientY));
+    // Taşıma: konmuş taş hayaletin GÖSTERDİĞİ boş kareye bırakıldıysa (kaldırma payı
+    // yüzünden kısa mesafe 24 px kuralına takılmasın — App.tsx'teki 23 Ekim kuralı).
+    const tasima = source.kind === 'placed' && hedefUygun(target.cell, source);
+    if (!tasima && dist < TAP_SLOP_ON_RELEASE) {
+      // Dokunuş: raf taşı = seç, konmuş taş = geri al.
+      if (source.kind === 'rack') dispatch({ type: 'SELECT_TILE', index: source.index });
+      else dispatch({ type: 'RECALL_CELL', r: source.r, c: source.c });
+      // Ardından gelen compat `click` sökülen/konan karenin üstüne düşüp ikinci bir iş yapmasın.
+      swallowNextClick();
       return;
     }
-    const k = hucreAt(e.clientX, liftedPoint(e.clientY));
-    if (!bosHucre(k)) return;
-    const [r, c] = k!.split(',').map(Number);
-    placeAt(r, c, d.index);
-    // Jestin ardından gelen compat `click` yeni konan taşı geri alırdı.
     swallowNextClick();
+    if (target.cell && hedefUygun(target.cell, source)) {
+      const [r, c] = target.cell.split(',').map(Number);
+      if (source.kind === 'rack') placeAt(r, c, source.index);
+      else dispatch({ type: 'MOVE_PLACED_TILE', from: { r: source.r, c: source.c }, to: { r, c } });
+    } else if (target.onRack && source.kind === 'placed') {
+      dispatch({ type: 'RECALL_CELL', r: source.r, c: source.c });
+    }
   };
-  const onRackPointerCancel = () => {
+  const cancelDrag = () => {
     dragRef.current = null;
     setGhost(null);
     setDragOverKey(null);
@@ -404,7 +427,15 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
             hideFooter
             tileLifted={ghost !== null}
             dragOverKey={dragOverKey}
-            dragOverValid={ghost ? bosHucre(dragOverKey) : false}
+            dragOverValid={ghost ? hedefUygun(dragOverKey, ghost.source) : false}
+            dragHiddenKey={ghost && ghost.source.kind === 'placed' ? key(ghost.source.r, ghost.source.c) : null}
+            onTilePointerDown={(r, c, e) => {
+              const tile = state.placed[key(r, c)];
+              if (tile) beginDrag({ kind: 'placed', r, c, tile }, e);
+            }}
+            onTilePointerMove={moveDrag}
+            onTilePointerUp={endDrag}
+            onTilePointerCancel={cancelDrag}
           />
         </div>
 
@@ -428,11 +459,11 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
                 title={playerName}
                 color={color}
                 draggable={canAct}
-                dragHiddenIndex={ghost?.index ?? null}
-                onTilePointerDown={onRackPointerDown}
-                onTilePointerMove={onRackPointerMove}
-                onTilePointerUp={onRackPointerUp}
-                onTilePointerCancel={onRackPointerCancel}
+                dragHiddenIndex={ghost && ghost.source.kind === 'rack' ? ghost.source.index : null}
+                onTilePointerDown={(i, e) => beginDrag({ kind: 'rack', index: i, tile: me.rack[i] }, e)}
+                onTilePointerMove={moveDrag}
+                onTilePointerUp={endDrag}
+                onTilePointerCancel={cancelDrag}
               />
             </div>
             <button
@@ -443,12 +474,37 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
               {!wordsReady ? 'Yükleniyor…' : 'Oyna'}
             </button>
           </div>
+          {/* Raf altı düğmeler: oyun ekranındaki beş düğmenin HEPSİ durur, yalnızca bu
+              modda anlamlı olanlar aktif (kullanıcı, 3 Kasım 2026). Pas/Değiştir/Torba
+              pasif (tek hamlelik bulmaca; torba yok); Geri Al + Karıştır aktif. */}
+          <div className="flex gap-1.5" data-hamle-avi-butonlar="">
+            {[
+              { label: 'Pas Geç', on: false, act: () => {} },
+              { label: 'Değiştir', on: false, act: () => {} },
+              { label: 'Karıştır', on: canAct, act: () => dispatch({ type: 'SHUFFLE_RACK' }) },
+              {
+                label: 'Geri Al',
+                on: canAct && Object.keys(state.placed).length > 0,
+                act: () => dispatch({ type: 'RECALL_ALL' }),
+              },
+              { label: 'Torba', on: false, act: () => {} },
+            ].map((b) => (
+              <button
+                key={b.label}
+                disabled={!b.on}
+                onClick={b.act}
+                className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              >
+                {b.label}
+              </button>
+            ))}
+          </div>
         </div>
       </main>
 
       {ghost && (
         <div className="pointer-events-none fixed z-[300]" style={{ left: ghost.x, top: ghost.y, ...GHOST_TILE_STYLE }}>
-          <Tile tile={ghost.tile} variant="rack" />
+          <Tile tile={ghost.source.tile} variant="rack" />
         </div>
       )}
 
