@@ -468,7 +468,8 @@ notu). Daha eskisi burada görünmez.
 - **Golden çakışması (kod değil, veri):** #886'nın `reducer_ai2_kolay.json`u eski sözlükle üretilmişti, #903 `words_tr.txt`yi değiştirdi (63.971 kelime) → YZ farklı hamle buldu. #903'ten SONRA #886'da `npm run generate-golden-vectors` koşuldu, yalnızca bu dosya değişti, Dart core 6897/6897.
 - **Parça numarası çakışması:** üç dal ayrı ayrı "Parça 248" almıştı → tarih sırasıyla 248 (gölge, 20 Eki) · 249 (uçak modu profil, 23 Eki, değişmedi) · **250** (taş taşıma, 23 Eki) · **251** (522, 28 Eki); ROADMAP + `telemetry.md` atıfları düzeltildi.
 - **`play-ai-turn` yeniden YÜKLENMEDİ (bilinçli):** canlı v10 ile repo karşılaştırıldı (`get_edge_function`), tek davranış farkı `AI_LEVEL_TOP_N.kolay`/`AI_LEVEL_SEARCH.kolay`; fonksiyon seviye parametresi almıyor (Canlı oyun seviyesiz → hep Normal), yani fark canlıda ölü kod. Yükleme yalnızca 56 KB'ı MCP'ye elle aktararak mümkün (CLI yok) ve yazım hatası riski getirisinden büyük. Bir sonraki davranış değiştiren `_game/` değişikliğinde birlikte gider.
-- **Sırada:** bu PR'ın `main` derlemesi (TestFlight build numarası buraya), Android `.apk` cihaz turu, Perşembe iki mağazaya gönderim.
+- **Kesim derlemesi ✅ koşu #982** (`46b7570`, 2 Kas 13:09 UTC): TestFlight'a yükleme ✅ · `.aab` + `.apk` `mobile-latest`te · build/versionCode **982**. Ara koşular (#972-#980) birbirini iptal etti (beklenen).
+- **Sırada:** TestFlight turu → ASC `+ Version` 1.1.5 + build 982 → Play'e `.aab` 982. Gönderim günü kullanıcı kararı (takvim Perşembe diyor; 1.1.4'te tur kesim günü yapılmıştı).
 
 ## 1.1.4 — HAZIRLIK (15 Ekim 2026; kesim 19 Ekim)
 
