@@ -12,7 +12,7 @@
 // Sürükleme jesti `TutorialGame`'inkinin sadeleştirilmiş eşi (taslak taş geri
 // sürükleme, ıskalama kurtarma, zoom YOK; seçim + dokunma + sürükle var).
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { PLAYER_COLORS } from '../game/constants';
+import { PLAYER_COLORS, SIZE } from '../game/constants';
 import { gameReducer, isFirstMove } from '../game/gameReducer';
 import type { GameState, Tile as TileModel } from '../game/types';
 import { getFormedWords, key } from '../utils/board';
@@ -42,6 +42,9 @@ import { loadHamleAvi, mergeWithServer, saveHamleAvi } from '../utils/hamleAviSt
 import { fetchHamleAvi, reportHamleAvi } from '../lib/hamleAviApi';
 import { findBestNetMove, type BestMove } from '../utils/hamleAviSolve';
 import { useModalA11y } from '../hooks/useModalA11y';
+import { useBoardZoom } from '../hooks/useBoardZoom';
+import { nearbyDraftCell } from '../utils/draftRescue';
+import { setActivelyPlaying } from '../lib/pwa';
 import { UserMenu } from './UserMenu';
 import { Board } from './Board';
 import { LogoMark } from './LogoMark';
@@ -153,6 +156,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     const st = positionToState(pos, playerName);
     initialRef.current = st;
     solutionRef.current = null;
+    boardZoom.reset();
     dispatch({ type: 'RESUME_SAVED', state: st });
     setNote(null);
     setRemaining(HAMLE_AVI_SECONDS * 1000);
@@ -234,14 +238,44 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     dispatch({ type: 'PLACE_TILE', r, c, rackIndex });
   };
 
-  const handleCellClick = (r: number, c: number) => {
+  const handleCellClick = (r: number, c: number, e: React.MouseEvent) => {
     if (!canAct) return;
-    if (state.placed[key(r, c)]) {
-      dispatch({ type: 'RECALL_CELL', r, c });
+    // Çift dokunuşla zoom: dokunuşun kendi işinden ÖNCE sorulur (App.tsx handleCellClick ile aynı sıra).
+    if (!state.board[r][c]) {
+      if (boardZoom.registerCellTap(e.clientX, e.clientY)) return;
+      if (!state.placed[key(r, c)]) boardZoom.registerPairable(e.clientX, e.clientY);
+    } else {
+      boardZoom.markUnpairable();
+    }
+    const hasDraft = Object.keys(state.placed).length > 0;
+    // Iskalama kurtarma (`utils/draftRescue.ts`, App.tsx ile aynı kural): hücre ~24 px ve parmağın
+    // merkezi nişanın altına düşer → taslak taşı geri almaya çalışan komşu hücreye isabet eder.
+    // Oynanmış taşa isabet: taslak varken alan komşudaki taslak taşa devredilir. Boş hücreye
+    // isabet: YALNIZCA hiçbir raf taşı seçili değilken (yoksa dizerken yan hücreye koymak zorlaşır).
+    const rescue = () => {
+      const target = nearbyDraftCell(
+        SIZE,
+        r,
+        c,
+        (rr, cc) => !!state.placed[key(rr, cc)],
+        { x: e.clientX, y: e.clientY },
+        (rr, cc) => document.querySelector(`[data-cell="${rr},${cc}"]`)?.getBoundingClientRect() ?? null,
+      );
+      if (target) tapDraft(target[0], target[1]);
+      return !!target;
+    };
+    if (state.board[r][c]) {
+      if (hasDraft) rescue();
       return;
     }
-    if (state.board[r][c]) return;
-    if (state.selectedTile === null) return;
+    if (state.placed[key(r, c)]) {
+      tapDraft(r, c);
+      return;
+    }
+    if (state.selectedTile === null) {
+      if (hasDraft) rescue();
+      return;
+    }
     placeAt(r, c, state.selectedTile);
   };
 
@@ -254,6 +288,24 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   const [ghost, setGhost] = useState<{ x: number; y: number; source: Source } | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const dragRef = useRef<{ source: Source; x: number; y: number; moved: boolean } | null>(null);
+  // Tahta yakınlaştırması (çift dokunuş) — oyun ekranlarıyla AYNI hook (kullanıcı: "her yerde aynı
+  // deneyim"). Sürükleme sürerken pan hiç başlamaz.
+  const boardZoom = useBoardZoom(() => dragRef.current !== null);
+
+  // Servis çalışanı güncellemesi bir bulmaca sürerken sayfayı yeniden YÜKLEMESİN (App.tsx oyun için
+  // aynısını yapıyor; App'in kendi effect'i burada çalışmaz çünkü yerel oyun state'i 'setup'ta).
+  useEffect(() => {
+    setActivelyPlaying(phase === 'play');
+    return () => setActivelyPlaying(false);
+  }, [phase]);
+
+  /** Tahtaya bu turda konmuş (taslak) taşa dokunma: joker → harf penceresi, değilse geri al. */
+  const tapDraft = (r: number, c: number) => {
+    const tile = state.placed[key(r, c)];
+    if (!tile) return;
+    if (tile.wild) setPendingWild({ r, c, rackIndex: -1, editing: true });
+    else dispatch({ type: 'RECALL_CELL', r, c });
+  };
 
   const dropAt = (x: number, y: number) => {
     const el = document.elementFromPoint(x, y);
@@ -306,17 +358,20 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     // bir üst kareye kayıyordu (kullanıcı bildirdi, 3 Kasım 2026).
     const tasima = d.moved && source.kind === 'placed' && hedefUygun(target.cell, source);
     if (!tasima && dist < TAP_SLOP_ON_RELEASE) {
-      // Dokunuş: raf taşı = seç, konmuş taş = geri al.
-      if (source.kind === 'rack') dispatch({ type: 'SELECT_TILE', index: source.index });
-      else if (source.tile.wild) {
-        // Konmuş joker: oyun ekranındaki gibi harf değiştirme penceresi (içinde "Geri Al" var).
-        setPendingWild({ r: source.r, c: source.c, rackIndex: -1, editing: true });
-      } else dispatch({ type: 'RECALL_CELL', r: source.r, c: source.c });
+      // Dokunuş: raf taşı = seç, konmuş taş = geri al (joker → harf penceresi).
+      if (source.kind === 'rack') {
+        boardZoom.markUnpairable(); // raf dokunuşu tahta çifti oluşturamaz
+        dispatch({ type: 'SELECT_TILE', index: source.index });
+      } else {
+        // Çiftin İKİNCİSİYSE geri alma yutulur ve zoom değişir (App.tsx `dokunusOlarakIsle`).
+        if (!boardZoom.registerCellTap(e.clientX, e.clientY)) tapDraft(source.r, source.c);
+      }
       // Ardından gelen compat `click` sökülen/konan karenin üstüne düşüp ikinci bir iş yapmasın.
       swallowNextClick();
       return;
     }
     swallowNextClick();
+    boardZoom.markUnpairable(); // sürükleme sonrası dokunuş zoom çifti oluşturmasın
     if (target.cell && hedefUygun(target.cell, source)) {
       const [r, c] = target.cell.split(',').map(Number);
       if (source.kind === 'rack') placeAt(r, c, source.index);
@@ -523,7 +578,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
         <div className="relative w-full flex flex-col items-center">
           <Board
             state={state}
-            onCellClick={(r, c) => handleCellClick(r, c)}
+            onCellClick={(r, c, e) => handleCellClick(r, c, e)}
             moveStatus={moveStatus}
             onOpenHistory={() => {}}
             hideFooter
@@ -538,6 +593,12 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
             onTilePointerMove={moveDrag}
             onTilePointerUp={endDrag}
             onTilePointerCancel={cancelDrag}
+            zoom={boardZoom.zoom}
+            viewportRef={boardZoom.viewportRef}
+            onBoardPointerDown={boardZoom.onPointerDown}
+            onBoardPointerMove={boardZoom.onPointerMove}
+            onBoardPointerUp={boardZoom.onPointerUp}
+            onBoardPointerCancel={boardZoom.onPointerCancel}
           />
         </div>
 
