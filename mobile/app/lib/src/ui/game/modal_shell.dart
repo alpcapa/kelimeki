@@ -78,7 +78,17 @@ class KModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ⚠ Klavye AÇIKKEN pencere ÜSTE yaslanır (3 Kasım 2026, kullanıcı iPad'de
+    // bildirdi: *"giriş ekranında bilgileri girerken modal aşağı yukarı
+    // titreme yapıyor"*). `Dialog` klavye yüksekliğini (`viewInsets`) alt
+    // dolgu olarak alıp pencereyi KALAN alanın ortasına koyar; iPad'e takılı
+    // klavyede alttaki kısayol/öneri şeridi yazarken boy değiştirdikçe
+    // `viewInsets.bottom` oynuyor ve ortalanmış pencere her tuşta yarı
+    // farkı kadar kayıyordu. Üste yaslı pencere alt kenardaki değişimden
+    // etkilenmez. Klavye kapalıyken davranış AYNEN (ortada; web `items-center`).
+    final klavyeAcik = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Dialog(
+      alignment: klavyeAcik ? Alignment.topCenter : null,
       backgroundColor: _panel,
       insetPadding: const EdgeInsets.all(16), // web p-4
       shape: RoundedRectangleBorder(
