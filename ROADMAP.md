@@ -285,7 +285,7 @@ adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
 değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
 derleme sha'sını `main`'in başıyla karşılaştır.
 
-**Yayındaki paket:** Play 1.1.5 (982) = commit `46b7570` (Play 3 Kas 13:36 TSİ; iOS 1.1.5 Waiting for Review, 3 Kas 13:02). Doğrulama:
+**Yayındaki paket:** Play 1.1.5 (982) = commit `46b7570` (Play 3 Kas 13:36 TSİ; iOS 1.1.5 YAYINDA: Ready for Distribution 3 Kas 23:55 ASC). Doğrulama:
 `git log --oneline 46b7570..origin/main -- mobile/app mobile/kelimeki_core`
 (önceki: 1.1.4 (933) = `bf550a3`, Play 23 Eki, App Store 24 Eki)
 (24 Ekim'de BOŞ — 1.1.5 treninin işleri (#884 #886 #889) taslak PR'da, `main`'de değil).
