@@ -285,8 +285,9 @@ adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
 değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
 derleme sha'sını `main`'in başıyla karşılaştır.
 
-**Yayındaki paket:** 1.1.4 (933) = commit `bf550a3` (iki mağaza: Play 23 Eki 23:42 TSİ, App Store 24 Eki 08:03 TSİ). Doğrulama:
-`git log --oneline bf550a3..origin/main -- mobile/app mobile/kelimeki_core`
+**Yayındaki paket:** Play 1.1.5 (982) = commit `46b7570` (Play 3 Kas 13:36 TSİ; iOS 1.1.5 Waiting for Review, 3 Kas 13:02). Doğrulama:
+`git log --oneline 46b7570..origin/main -- mobile/app mobile/kelimeki_core`
+(önceki: 1.1.4 (933) = `bf550a3`, Play 23 Eki, App Store 24 Eki)
 (24 Ekim'de BOŞ — 1.1.5 treninin işleri (#884 #886 #889) taslak PR'da, `main`'de değil).
 
 **1.1.5'e binecek (28 Ekim, taslak PR #898, kesim 2 Kasım):** `AuthRetryableFetchException(522)` artık sessizce yeniden deneniyor — durum kodu `statusCode` alanından da okunuyor (Parça 251; 25-27 Eki'de 8 kayıt, sunucuda iz yok). Cihaz kontrolü gerekmez; `client_errors`ta `online_games_repo.load` 522 satırlarının azalması izlenir.
