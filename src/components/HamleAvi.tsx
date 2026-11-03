@@ -548,7 +548,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden" data-hamle-avi="">
       {/* Üst şerit: solda Seri/Rekor, ortada büyük geri sayım, sağda avatar. */}
-      <div className="w-full max-w-[680px] px-3 pt-1 grid grid-cols-[1fr_auto_1fr] items-center">
+      <div className="w-full max-w-[680px] px-3 pt-1 pb-1.5 grid grid-cols-[1fr_auto_1fr] items-center">
         {/* Logo oyun ekranındaki gibi çıkış düğmesi (GameHeader ile aynı boy/davranış). */}
         <button
           onClick={handleExit}
