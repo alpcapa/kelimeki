@@ -376,12 +376,12 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden" data-hamle-avi="">
       {/* Üst şerit: solda Seri/Rekor, ortada büyük geri sayım, sağda avatar. */}
-      <div className="w-full max-w-[680px] px-3 pt-2 grid grid-cols-[1fr_auto_1fr] items-center">
+      <div className="w-full max-w-[680px] px-3 pt-1 grid grid-cols-[1fr_auto_1fr] items-center">
         {/* Logo oyun ekranındaki gibi çıkış düğmesi (GameHeader ile aynı boy/davranış). */}
         <button
           onClick={handleExit}
           aria-label="Hamle Avı'ndan çık"
-          className="justify-self-start flex items-center leading-none active:opacity-70 transition-opacity min-h-[44px]"
+          className="justify-self-start flex items-center leading-none active:opacity-70 transition-opacity min-h-[36px] tap-expand"
         >
           <LogoMark height="clamp(28px, calc(-5.33px + 8.89vw), 36px)" />
         </button>
@@ -393,7 +393,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
         </div>
       </div>
       <div className="w-full max-w-[680px] px-3">
-        <div className="bg-panel border border-border rounded-md flex items-center justify-between px-3 py-2">
+        <div className="bg-panel border border-border rounded-md flex items-center justify-between px-3 py-1">
           <div className="flex flex-col items-start" data-hamle-avi-seri="">
             <span className="text-[10px] text-muted uppercase font-mono">Seri</span>
             <span className="font-mono font-bold text-xl leading-none">{streak.streak}</span>
@@ -404,7 +404,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
             <span
               data-hamle-avi-sure=""
               className={`block font-mono font-bold leading-none ${warn && phase === 'play' ? 'text-red' : 'text-text'}`}
-              style={{ fontSize: 38 }}
+              style={{ fontSize: 34 }}
               aria-live="off"
             >
               {fmt(remaining)}
@@ -413,14 +413,14 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
           <button
             onClick={handleExit}
             data-hamle-avi-cik=""
-            className="btn-raised-neutral bg-void border border-border text-text rounded-md px-3 min-h-[44px] font-mono text-[11px] font-bold tracking-[1.5px] active:scale-[0.97] transition-transform"
+            className="btn-raised-neutral bg-void border border-border text-text rounded-md px-3 min-h-[40px] font-mono text-[11px] font-bold tracking-[1.5px] active:scale-[0.97] transition-transform"
           >
             ÇIK ✕
           </button>
         </div>
       </div>
 
-      <main className="w-full flex flex-col items-center mt-2">
+      <main className="w-full flex flex-col items-center mt-1">
         <div className="relative w-full flex flex-col items-center">
           <Board
             state={state}
