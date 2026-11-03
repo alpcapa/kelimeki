@@ -397,12 +397,9 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
             : { type: 'PLACE_TILE', r: p.r, c: p.c, rackIndex: idx },
         );
       }
-      // Tahtadaki "+N" etiketi HAM puanı gösterir; vergi varsa net puan ondan düşük (anahtar net).
-      const vergi = sol.move.score !== sol.net;
-      setNote({
-        text: `Doğru hamle: ${sol.move.word} — ${sol.net} puan${vergi ? ` (vergi dahil, ham ${sol.move.score})` : ''}`,
-        type: 'ok',
-      });
+      // Tahtadaki "+N" etiketi HAM puanı gösterir; mesaj NET (vergi dahil) toplamı yazar —
+      // anahtar net puandır (kullanıcı, 3 Kasım 2026: "vergi dahil toplam N puan").
+      setNote({ text: `Doğru hamle: ${sol.move.word} — vergi dahil toplam ${sol.net} puan`, type: 'ok' });
     }
     setPhase('review');
   };
@@ -471,12 +468,12 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: color.base, display: 'inline-block' }} />
               {state.current === 0 ? 'MAVİ' : 'KIRMIZI'}
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               {phase === 'review' && (
                 <button
                   onClick={() => loadNext(true)}
                   data-hamle-avi-sonraki=""
-                  className="btn-raised btn-raised-orange bg-orange text-white rounded-md px-3 min-h-[28px] tap-expand font-mono text-[11px] font-bold tracking-[1.5px] active:scale-[0.97] transition-transform"
+                  className="btn-raised btn-raised-orange bg-orange text-white rounded-md px-2 min-h-[28px] tap-expand font-mono text-[10px] font-bold tracking-[0.5px] active:scale-[0.97] transition-transform"
                 >
                   SONRAKİ
                 </button>
@@ -484,7 +481,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
               <button
                 onClick={handleExit}
                 data-hamle-avi-cik=""
-                className="btn-raised-neutral bg-void border border-border text-text rounded-md px-3 min-h-[28px] tap-expand font-mono text-[11px] font-bold tracking-[1.5px] active:scale-[0.97] transition-transform"
+                className="btn-raised-neutral bg-void border border-border text-text rounded-md px-2 min-h-[28px] tap-expand font-mono text-[10px] font-bold tracking-[0.5px] active:scale-[0.97] transition-transform"
               >
                 ÇIK ✕
               </button>
@@ -701,8 +698,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
                 <p className="text-[26px] leading-[30px] font-bold text-text font-sans m-0">Üzgünüz, bulamadınız</p>
                 <p className="text-sm text-text font-sans m-0">
                   En yüksek hamle puanı <strong className="text-red">{pos?.k}</strong> idi
-                  {pos ? <> (<strong>{pos.w}</strong>)</> : null}. Serin sıfırlandı; rekorun {streak.best}. Kapat'a basınca
-                  doğru hamleyi tahtada görürsün.
+                  {pos ? <> (<strong>{pos.w}</strong>)</> : null}. Serin sıfırlandı; rekorun {streak.best}.
                 </p>
               </>
             )}
