@@ -901,7 +901,7 @@ export function Setup({
               >
                 Yeni Oyun
               </button>
-              <HamleAviButton variant="compact" onOpen={onOpenHamleAvi} />
+              <HamleAviButton onOpen={onOpenHamleAvi} />
             </div>
             <div className="flex gap-2">
               {[
@@ -992,8 +992,6 @@ export function Setup({
           </>
         ) : (
           <>
-            {/* Misafirde "Yeni Oyun" düğmesi yok (form doğrudan açık) → Hamle Avı tam genişlikte. */}
-            {!user && <HamleAviButton variant="wide" onOpen={onOpenHamleAvi} />}
             <div className="flex flex-col gap-2">
               <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
                 Oyuncu sayısı
@@ -1080,7 +1078,7 @@ export function Setup({
                 <button
                   onClick={handleStart}
                   disabled={!wordsReady || accountPending}
-                  className="flex-1 btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+                  className={`${creatingLocal ? "flex-1" : "flex-[2_1_0%]"} btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed`}
                 >
                   {/* accountPending iken de "Hazırlanıyor…" gösterilir — girişli
                     kullanıcı için profil gelmeden basılırsa oyuncu adı kısa
@@ -1090,6 +1088,10 @@ export function Setup({
                     ? "Oyunu Başlat"
                     : "Hazırlanıyor…"}
                 </button>
+                {/* Misafir formunda "Oyunu Başlat" 2/3 + "Hamle Avı" 1/3 (3 Kasım 2026,
+                    kullanıcı: misafirde "Yeni Oyun" düğmesi yoktu, Hamle Avı tek başına
+                    tam genişlikte duruyordu). Girişlide bu yer "Vazgeç"in. */}
+                {!creatingLocal && <HamleAviButton onOpen={onOpenHamleAvi} />}
                 {/* Yalnızca girişli kullanıcı için (creatingLocal) — LiveGameCreateForm'un
                   "Vazgeç" butonuyla BİREBİR AYNI, Devam Eden Oyunlar listesine
                   dönmeyi sağlar. Misafirde bu form zaten tek/koşulsuz gösterilen

@@ -1,24 +1,21 @@
 // Kelimeki — Setup'taki "Hamle Avı" girişi (3 Kasım 2026, ROADMAP #48).
-// 🎯 simgesi kullanıcı onaylı (görsel tur, 3 Kas); "YENİ" balonu Hamle Avı bir kez
+// Girişlide "Yeni Oyun"un, misafirde "Oyunu Başlat"ın yanında 1/3. 🎯 simgesi kullanıcı onaylı (görsel tur, 3 Kas); "YENİ" balonu Hamle Avı bir kez
 // açılınca kalkar (`hamleAviStore.opened`, cihazda).
 import { shouldShowNewBadge } from '../utils/hamleAviStore';
 
 interface HamleAviButtonProps {
   onOpen: () => void;
-  /** 'compact': "Yeni Oyun"un yanında 1/3 · 'wide': tek başına tam genişlik (misafir formu). */
-  variant: 'compact' | 'wide';
 }
 
-export function HamleAviButton({ onOpen, variant }: HamleAviButtonProps) {
+export function HamleAviButton({ onOpen }: HamleAviButtonProps) {
   const yeni = shouldShowNewBadge();
-  const compact = variant === 'compact';
   return (
     <button
       onClick={onOpen}
       data-hamle-avi-buton=""
       className={[
         'relative btn-raised-neutral bg-panel text-text border border-border min-h-[52px] rounded-md font-sans font-bold uppercase tracking-[0.5px] active:scale-[0.97] transition-transform',
-        compact ? 'flex flex-col items-center justify-center leading-tight flex-[1_1_0%]' : 'w-full flex items-center justify-center gap-2 text-sm',
+        'flex flex-col items-center justify-center leading-tight flex-[1_1_0%]',
       ].join(' ')}
     >
       {yeni && (
@@ -29,10 +26,10 @@ export function HamleAviButton({ onOpen, variant }: HamleAviButtonProps) {
           YENİ
         </span>
       )}
-      <span className={compact ? 'text-[15px]' : 'text-base'} aria-hidden>
+      <span className="text-[15px]" aria-hidden>
         🎯
       </span>
-      <span className={compact ? 'text-[10px]' : ''}>Hamle Avı</span>
+      <span className="text-[10px]">Hamle Avı</span>
     </button>
   );
 }
