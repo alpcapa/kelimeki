@@ -1755,7 +1755,7 @@ Kayıt: `docs/decisions/live-game.md` → "Sahte 'Sıra sende değil.'" ve
 
 Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağısı elle:
 
-- [ ] Setup → Yapay Zeka: girişli kullanıcıda "Yeni Oyun" (2/3) + "Hamle Avı" (1/3, 🎯, "YENİ" balonu); misafirde "Oyunu Başlat" (2/3) + "Hamle Avı" (1/3).
+- [ ] Setup (her görünümde: misafir formu, girişli liste, misafirin devam eden oyunu, Arkadaşınla sekmesi): en üstte geniş "Hamle Avı" satırı (🎯, "3 dk · en iyi hamleyi bul", "YENİ" balonu) + "Ya da bir oyun kur" ayırıcısı; Zorluk seçicisinin yanında DEĞİL.
 - [ ] Hamle Avı'na bir kez girip çıkınca "YENİ" balonu kalkar (cihazda).
 - [ ] İlk giriş: pozisyon tahtanın ÜSTÜNDE tanıtım balonu, süre 3:00'da DURUR; "Başla" ile sayım başlar. "Bir daha gösterme" işaretliyse sonraki girişte balon çıkmaz.
 - [ ] Doğru (en yüksek net puanlı) hamle → "Tebrikler", Seri +1; daha düşük geçerli hamle → "N puan aldın — daha iyisi var", pozisyon sıfırlanır, süre SÜRER.

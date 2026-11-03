@@ -802,6 +802,9 @@ export function Setup({
           )}
         </div>
 
+        {/* Hamle Avı HER görünümde en üstte (kullanıcı, 3 Kasım 2026) — bkz. HamleAviButton. */}
+        <HamleAviButton onOpen={onOpenHamleAvi} />
+
         <div className="flex flex-col gap-2">
           <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
             Kime karşı
@@ -892,17 +895,9 @@ export function Setup({
                 yapışıyor — kullanıcı ekran görüntüsüyle bildirdi). Düğme
                 akışta, listenin ÜSTÜNDE; Arkadaşınla tarafıyla aynı
                 (`actionButton.ts`). */}
-            {/* 3 Kasım 2026 (ROADMAP #48, kullanıcı): "Yeni Oyun" 2/3 + "Hamle Avı" 1/3.
-                `PRIMARY_ACTION_BTN` w-full içerir → flex içinde `w-auto` ile ezilir. */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCreatingLocal(true)}
-                className={`${PRIMARY_ACTION_BTN} !w-auto flex-[2_1_0%]`}
-              >
-                Yeni Oyun
-              </button>
-              <HamleAviButton onOpen={onOpenHamleAvi} />
-            </div>
+            <button onClick={() => setCreatingLocal(true)} className={PRIMARY_ACTION_BTN}>
+              Yeni Oyun Başlat
+            </button>
             <div className="flex gap-2">
               {[
                 {
@@ -1078,7 +1073,7 @@ export function Setup({
                 <button
                   onClick={handleStart}
                   disabled={!wordsReady || accountPending}
-                  className={`${creatingLocal ? "flex-1" : "flex-[2_1_0%]"} btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed`}
+                  className={`flex-1 btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed`}
                 >
                   {/* accountPending iken de "Hazırlanıyor…" gösterilir — girişli
                     kullanıcı için profil gelmeden basılırsa oyuncu adı kısa
@@ -1088,10 +1083,6 @@ export function Setup({
                     ? "Oyunu Başlat"
                     : "Hazırlanıyor…"}
                 </button>
-                {/* Misafir formunda "Oyunu Başlat" 2/3 + "Hamle Avı" 1/3 (3 Kasım 2026,
-                    kullanıcı: misafirde "Yeni Oyun" düğmesi yoktu, Hamle Avı tek başına
-                    tam genişlikte duruyordu). Girişlide bu yer "Vazgeç"in. */}
-                {!creatingLocal && <HamleAviButton onOpen={onOpenHamleAvi} />}
                 {/* Yalnızca girişli kullanıcı için (creatingLocal) — LiveGameCreateForm'un
                   "Vazgeç" butonuyla BİREBİR AYNI, Devam Eden Oyunlar listesine
                   dönmeyi sağlar. Misafirde bu form zaten tek/koşulsuz gösterilen
