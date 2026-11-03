@@ -43,6 +43,8 @@ import { RankSeal } from './RankSeal';
 import { useRankScores } from '../hooks/useRankScores';
 import { usePlayerDirectory } from '../hooks/usePlayerDirectory';
 import { ScrollArea } from './ScrollArea';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { OFFLINE_NO_CONNECTION } from '../utils/offlineNotice';
 
 /** Bir arkadaşı `PlayerScoreCard` açabilecek şekle çevirir — henüz canlı oyun
  * olmadığından arkadaş eklemenin somut faydası şu an bu: kişinin skor
@@ -205,6 +207,8 @@ export function Pill({
 
 export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalProps) {
   const [friends, setFriends] = useState<FriendRow[] | null>(null);
+  // Çevrimdışıyken liste boş döner — "arkadaşın yok" yalan olurdu (3 Kasım 2026).
+  const online = useOnlineStatus();
   const [requests, setRequests] = useState<IncomingFriendRequest[] | null>(null);
   const [sent, setSent] = useState<OutgoingFriendRequest[]>([]);
   const [query, setQuery] = useState('');
@@ -573,6 +577,10 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
             )
           ) : friends === null ? (
             <LoadingNote py="py-4" />
+          ) : friends.length === 0 && !online ? (
+            <p className="text-sm text-muted leading-relaxed py-4 text-center" style={{ margin: 0 }}>
+              {OFFLINE_NO_CONNECTION}
+            </p>
           ) : friends.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-4 text-center">
               <p className="text-lg font-bold text-text" style={{ margin: 0 }}>

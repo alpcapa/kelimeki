@@ -920,6 +920,10 @@ Gerek de yok: `fetchMyGames` modal açılınca / sekme değişince koşuyor.
       sonra Skor Kartı → "Tüm Oyunları Gör": **"Oyun geçmişi yüklenemedi.
       Bağlantını kontrol edip tekrar dene."** çıkmalı — "Bu kategoride henüz
       kayıtlı oyun yok." DEĞİL.
+- [ ] **Skor Kartı / Arkadaşlar / Canlı davet (3 Kasım 2026).** Çevrimdışı
+      Skor Kartı istatistikleri ve Arkadaşlar listesi **"İnternet bağlantısı
+      yok"** demeli ("kaydın yok" / "arkadaşın yok" DEĞİL); Canlı oyun
+      formunda davet → "…yapay zeka ile çevrimdışı da oynayabilirsin."
 - [ ] **Favoriler sekmesi de aynı.** Aynı çevrimdışı durumda "Favoriler"e
       geç: orada da "yüklenemedi" çıkmalı ("Henüz favori işaretlediğin bir
       oyun yok." DEĞİL — o ayrı bir kod yolu, `list_liked_games` RPC'si).

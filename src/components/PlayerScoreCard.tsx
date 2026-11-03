@@ -38,6 +38,8 @@ import type {
 } from '../lib/database.types';
 import { type TabKey, SCORE_TABS, ScoreTabsBar, ScoreStatsSection } from './ScoreStatsSection';
 import { formatAgeGender, shortDisplayName } from '../utils/profileFields';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { OFFLINE_NO_CONNECTION } from '../utils/offlineNotice';
 
 /** Bir skor kartı çizmek için gereken asgari oyuncu kimliği. */
 export interface PlayerSummary {
@@ -251,6 +253,7 @@ function HeadToHeadBarView({
 
 export function PlayerScoreCard({ member, onClose, isAdminView }: PlayerScoreCardProps) {
   const { user, profile } = useAuth();
+  const online = useOnlineStatus(); // bkz. ScoreCard: çevrimdışı ≠ "kaydı yok"
   const [statsByTab, setStatsByTab] = useState<
     Record<TabKey, PlayerStats | null | undefined>
   >({ all: undefined, 2: undefined, 4: undefined });
@@ -461,7 +464,9 @@ export function PlayerScoreCard({ member, onClose, isAdminView }: PlayerScoreCar
       <ScoreStatsSection
         stats={stats}
         emptyText={
-          tab === 'all'
+          !online
+            ? OFFLINE_NO_CONNECTION
+            : tab === 'all'
             ? 'Bu oyuncunun hiç oyun kaydı yok.'
             : `Bu oyuncunun ${tab} kişilik oyun kaydı yok.`
         }

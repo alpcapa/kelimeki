@@ -53,6 +53,8 @@ import {
   toggleFriendSeat,
   usesRandomSeat,
 } from '../utils/randomGames';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { OFFLINE_AI_SUGGESTION, OFFLINE_NO_CONNECTION, isNetworkError } from '../utils/offlineNotice';
 
 interface LiveGameCreateFormProps {
   onCancel: () => void;
@@ -94,6 +96,8 @@ export function LiveGameCreateForm({
   initialRandom,
 }: LiveGameCreateFormProps) {
   const { user, profile } = useAuth();
+  // Çevrimdışıyken: arkadaş listesi boş döner ve davet genel hatayla düşerdi (3 Kasım 2026).
+  const online = useOnlineStatus();
   const [playerCount, setPlayerCount] = useState<2 | 4>(initialPlayerCount ?? 2);
   const [friends, setFriends] = useState<FriendRow[] | null>(null);
   const [selected, setSelected] = useState<string[]>(
@@ -254,7 +258,9 @@ export function LiveGameCreateForm({
       setSentTo({ names, withAi: withAiLastSlot });
     } catch (err) {
       setError(
-        friendlyErrorMessage(err, { surface: 'canli-davet', fallback: 'Davet gönderilemedi.' }),
+        isNetworkError(err) || !online
+          ? OFFLINE_AI_SUGGESTION
+          : friendlyErrorMessage(err, { surface: 'canli-davet', fallback: 'Davet gönderilemedi.' }),
       );
     } finally {
       setBusy(false);
@@ -594,7 +600,9 @@ export function LiveGameCreateForm({
           <div className="flex flex-col gap-1.5">
             {randomRow}
             <div className="flex flex-col items-center gap-2.5 py-4">
-            <p className="text-muted text-xs font-mono text-center">Henüz hiç arkadaşın yok.</p>
+            <p className="text-muted text-xs font-mono text-center">
+              {online ? 'Henüz hiç arkadaşın yok.' : OFFLINE_NO_CONNECTION}
+            </p>
             <button
               type="button"
               onClick={() => void invite.share()}
