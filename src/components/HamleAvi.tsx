@@ -539,8 +539,19 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     phase === 'missed' ? showSolution : handleExit,
   );
 
-  const mesaj = note?.text ?? (phase === 'play' ? state.message : '');
-  const mesajTipi = note?.type ?? (phase === 'play' ? state.messageType : '');
+  // Canlı mesaj `App.tsx` `liveMessage` ile AYNI kural: taslak GEÇERSİZSE nedeni (kırmızı), GEÇERLİYSE
+  // "Oyna tuşuyla kelimeyi onayla." (yeşil). Reducer'ın PLACE_TILE mesajı ("…onayla") geçerliliğe bakmaz —
+  // yalnızca onu göstermek, geçersiz bir kelimede yanıltıyordu (kullanıcı bildirdi, 3 Kasım 2026).
+  const liveMessage =
+    moveStatus && !moveStatus.valid && moveStatus.reason
+      ? moveStatus.reason
+      : moveStatus?.valid
+        ? 'Oyna tuşuyla kelimeyi onayla.'
+        : state.message;
+  const liveMessageType: 'ok' | 'err' | 'warn' | '' =
+    moveStatus && !moveStatus.valid && moveStatus.reason ? 'err' : moveStatus?.valid ? 'ok' : state.messageType;
+  const mesaj = note?.text ?? (phase === 'play' ? liveMessage : '');
+  const mesajTipi = note?.type ?? (phase === 'play' ? liveMessageType : '');
   const warn = remaining <= HAMLE_AVI_WARN_SECONDS * 1000;
   const color = PLAYER_COLORS[me?.colorIndex ?? 0];
   const pos = posRef.current;
