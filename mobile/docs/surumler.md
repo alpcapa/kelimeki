@@ -481,7 +481,7 @@ notu). Daha eskisi burada görünmez.
 • Uygulamaya dönünce ekranda koyu gölge kalmıyor.
 • Bağlantı kopmalarında sessiz yeniden deneme.
 ```
-- **🍎 iOS GÖNDERİLDİ — 3 Kas 2026 13:02 (ASC saati):** `iOS App 1.1.5 (982)` → **Waiting for Review**, Submission ID `78fb4b95-914d-4991-97dd-a5e2b146ad16` (ASC ekran görüntüsünden OKUNDU). 🤖 **Play GÖNDERİLDİ — 3 Kas 2026 ~13:09:** Production · `1.1.5 (982)` · Start full rollout · Managed publishing KAPALI (onaylanınca kendiliğinden yayına girer) · Console: *Changes in review — Running quick checks, up to 14 minutes remaining* (ekran görüntüsünden OKUNDU).
+- **🍎 iOS GÖNDERİLDİ — 3 Kas 2026 13:02 (ASC saati):** `iOS App 1.1.5 (982)` → **Waiting for Review**, Submission ID `78fb4b95-914d-4991-97dd-a5e2b146ad16` (ASC ekran görüntüsünden OKUNDU). 🤖 **Play GÖNDERİLDİ — 3 Kas 2026 ~13:09:** Production · `1.1.5 (982)` · Start full rollout · Managed publishing KAPALI (onaylanınca kendiliğinden yayına girer) · Console: *Changes in review — Running quick checks, up to 14 minutes remaining* (ekran görüntüsünden OKUNDU). → **Submission ID 25 · In review** (13:23 ekran görüntüsü; *Changes submitted Nov 03, 2026, 1:09 PM*).
 - **Sırada:** TestFlight turu → ASC `+ Version` 1.1.5 + build 982 → Play'e `.aab` 982. Gönderim günü kullanıcı kararı (takvim Perşembe diyor; 1.1.4'te tur kesim günü yapılmıştı).
 
 ## 1.1.4 — HAZIRLIK (15 Ekim 2026; kesim 19 Ekim)
