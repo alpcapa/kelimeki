@@ -1467,7 +1467,6 @@ export default function App() {
     return (
       <HamleAvi
         playerName={tutorialReplayName || 'Sen'}
-        avatarUrl={profile?.avatar_url}
         userId={user?.id ?? null}
         onExit={() => setHamleAviOpen(false)}
       />

@@ -41,7 +41,7 @@ import {
 import { loadHamleAvi, mergeWithServer, saveHamleAvi } from '../utils/hamleAviStore';
 import { fetchHamleAvi, reportHamleAvi } from '../lib/hamleAviApi';
 import { useModalA11y } from '../hooks/useModalA11y';
-import { Avatar } from './Avatar';
+import { UserMenu } from './UserMenu';
 import { Board } from './Board';
 import { LogoMark } from './LogoMark';
 import { Modal } from './Modal';
@@ -67,7 +67,6 @@ type Phase = 'loading' | 'intro' | 'play' | 'found' | 'missed' | 'exhausted';
 
 interface HamleAviProps {
   playerName: string;
-  avatarUrl?: string | null;
   /** Girişli kullanıcı kimliği — verilmezse (misafir) yalnızca cihaz deposu. */
   userId?: string | null;
   onExit: () => void;
@@ -78,7 +77,7 @@ const fmt = (ms: number) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
 
-export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProps) {
+export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   const [state, dispatch] = useReducer(gameReducer, undefined, () =>
     positionToState(EMPTY_POSITION, playerName),
   );
@@ -362,12 +361,10 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
         </button>
         {/* Etiket ortada (kullanıcı, 3 Kasım 2026: logoya yapışmasın). */}
         <span className="font-mono text-[10px] tracking-[1.5px] text-muted text-center">🎯 HAMLE AVI</span>
-        <button
-          onClick={handleExit}
-          className="justify-self-end font-mono text-[10px] tracking-[1.5px] text-accent min-h-[44px] px-1 active:opacity-70 transition-opacity"
-        >
-          ÇIK ✕
-        </button>
+        {/* Avatar/hesap menüsü oyun başlığındaki yerinde (GameHeader ile aynı bileşen). */}
+        <div className="justify-self-end">
+          <UserMenu />
+        </div>
       </div>
       <div className="w-full max-w-[680px] px-3">
         <div className="bg-panel border border-border rounded-md flex items-center justify-between px-3 py-2">
@@ -387,10 +384,13 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
               {fmt(remaining)}
             </span>
           </div>
-          <div className="flex flex-col items-end">
-            <Avatar url={avatarUrl} name={playerName} size={40} />
-            <span className="text-[10px] text-muted mt-1 max-w-[80px] truncate">{playerName}</span>
-          </div>
+          <button
+            onClick={handleExit}
+            data-hamle-avi-cik=""
+            className="btn-raised-neutral bg-void border border-border text-text rounded-md px-3 min-h-[44px] font-mono text-[11px] font-bold tracking-[1.5px] active:scale-[0.97] transition-transform"
+          >
+            ÇIK ✕
+          </button>
         </div>
       </div>
 
