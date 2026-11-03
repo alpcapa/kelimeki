@@ -351,19 +351,20 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden" data-hamle-avi="">
       {/* Üst şerit: solda Seri/Rekor, ortada büyük geri sayım, sağda avatar. */}
-      <div className="w-full max-w-[680px] px-3 pt-2 flex items-center justify-between">
+      <div className="w-full max-w-[680px] px-3 pt-2 grid grid-cols-[1fr_auto_1fr] items-center">
         {/* Logo oyun ekranındaki gibi çıkış düğmesi (GameHeader ile aynı boy/davranış). */}
         <button
           onClick={handleExit}
           aria-label="Hamle Avı'ndan çık"
-          className="shrink-0 flex items-center gap-2 leading-none active:opacity-70 transition-opacity min-h-[44px]"
+          className="justify-self-start flex items-center leading-none active:opacity-70 transition-opacity min-h-[44px]"
         >
           <LogoMark height="clamp(28px, calc(-5.33px + 8.89vw), 36px)" />
-          <span className="font-mono text-[10px] tracking-[1.5px] text-muted">🎯 HAMLE AVI</span>
         </button>
+        {/* Etiket ortada (kullanıcı, 3 Kasım 2026: logoya yapışmasın). */}
+        <span className="font-mono text-[10px] tracking-[1.5px] text-muted text-center">🎯 HAMLE AVI</span>
         <button
           onClick={handleExit}
-          className="font-mono text-[10px] tracking-[1.5px] text-accent min-h-[44px] px-1 active:opacity-70 transition-opacity"
+          className="justify-self-end font-mono text-[10px] tracking-[1.5px] text-accent min-h-[44px] px-1 active:opacity-70 transition-opacity"
         >
           ÇIK ✕
         </button>
