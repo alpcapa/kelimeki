@@ -43,6 +43,7 @@ import { fetchHamleAvi, reportHamleAvi } from '../lib/hamleAviApi';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { Avatar } from './Avatar';
 import { Board } from './Board';
+import { LogoMark } from './LogoMark';
 import { Modal } from './Modal';
 import { Rack } from './Rack';
 import { Tile } from './Tile';
@@ -50,6 +51,7 @@ import { WildcardModal } from './WildcardModal';
 
 /** Tanıtım penceresindeki açıklamalar (ilk versiyonla aynı, süre 3 dk). */
 export const HAMLE_AVI_INTRO_POINTS = [
+  'Bölge vergisi puana dahildir.',
   'Bulursan sıradakine geç, istediğin kadar devam et.',
   'k-lig puanını etkilemez.',
 ];
@@ -350,7 +352,15 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
     <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden" data-hamle-avi="">
       {/* Üst şerit: solda Seri/Rekor, ortada büyük geri sayım, sağda avatar. */}
       <div className="w-full max-w-[680px] px-3 pt-2 flex items-center justify-between">
-        <span className="font-mono text-[10px] tracking-[1.5px] text-muted">🎯 HAMLE AVI</span>
+        {/* Logo oyun ekranındaki gibi çıkış düğmesi (GameHeader ile aynı boy/davranış). */}
+        <button
+          onClick={handleExit}
+          aria-label="Hamle Avı'ndan çık"
+          className="shrink-0 flex items-center gap-2 leading-none active:opacity-70 transition-opacity min-h-[44px]"
+        >
+          <LogoMark height="clamp(28px, calc(-5.33px + 8.89vw), 36px)" />
+          <span className="font-mono text-[10px] tracking-[1.5px] text-muted">🎯 HAMLE AVI</span>
+        </button>
         <button
           onClick={handleExit}
           className="font-mono text-[10px] tracking-[1.5px] text-accent min-h-[44px] px-1 active:opacity-70 transition-opacity"
