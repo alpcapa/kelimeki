@@ -589,7 +589,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
             Punto ekrana göre ölçeklenir: 320 px'te 15 px logoya YAPIŞIYORDU (ölçüldü), 12 px'te 12 px boşluk kalır. */}
         <span
           className="font-mono font-bold tracking-[1px] text-text text-center whitespace-nowrap leading-none"
-          style={{ fontSize: 'clamp(12px, calc(10vw - 20px), 15px)' }}
+          style={{ fontSize: 'clamp(11px, calc(10vw - 21px), 13px)' }}
         >
           🎯 HAMLE AVI
         </span>
