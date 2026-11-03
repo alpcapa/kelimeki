@@ -30,6 +30,7 @@ import 'leaderboard_modal.dart';
 import 'score_stats_section.dart';
 import '../tap_target.dart';
 import '../tokens.dart';
+import '../../util/offline_notice.dart' show kOfflineNoConnection;
 
 const _text = kText;
 const _muted = kMuted;
@@ -474,9 +475,11 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
           ScoreStatsSection(
             stats: _statsByTab[_tab],
             loaded: _loaded.contains(_tab),
-            emptyText: _tab == StatsTab.all
-                ? 'Bu oyuncunun henüz oyun kaydı yok.'
-                : 'Bu oyuncunun ${_tab.playerCount} kişilik oyun kaydı yok.',
+            emptyText: !widget.stats.online
+                ? kOfflineNoConnection
+                : _tab == StatsTab.all
+                    ? 'Bu oyuncunun henüz oyun kaydı yok.'
+                    : 'Bu oyuncunun ${_tab.playerCount} kişilik oyun kaydı yok.',
           ),
           if (widget.games != null) ...[
             const SizedBox(height: 8),

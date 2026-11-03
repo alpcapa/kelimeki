@@ -297,6 +297,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **Sıradaki treni bekleyen (23 Ekim 2026):** son taslak taş geri alınınca bayat "Oyna tuşuyla kelimeyi onayla." mesajı silinsin (kullanıcı ekran görüntüsüyle bildirdi) — `kelimeki_core` `RecallCellAction` + web `RECALL_CELL` ikizi + `reducer_human2.json` golden'ı. **Taslak PR #889, 2 Kasım 1.1.5 trenine biner** (kullanıcı kararı 23 Ekim: 1.1.4 gönderimi bitmeden `main`'e mobil merge YOK).
 
+**9 Kasım treni (3 Kasım 2026):** çevrimdışıyken Skor Kartı / Arkadaşlar / Canlı davet "kaydın yok · arkadaşın yok · Bir sorun oluştu" yerine "İnternet bağlantısı yok" diyor (1.1.5 TestFlight turu madde 5; Parça 254). Taslak PR; web yarısı ayrıca yayında.
+
 **Aynı tren (23 Ekim 2026):** konmuş taşı bir üst hücreye taşımak taşı rafa döndürüyordu (kullanıcı bildirdi) — web + port, hayalet ne gösteriyorsa o olsun (Parça 250). Taslak PR.
 
 **Aynı tren (23 Ekim 2026):** uçak modunda avatar 45 sn "…" / Başlat 45 sn "HAZIRLANIYOR…" — profil çekimi çevrimdışıyken ağa gitmesin + 8 sn zaman aşımı (Parça 249). Taslak PR #889'da.

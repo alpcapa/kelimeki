@@ -18,6 +18,7 @@ import 'leaderboard_modal.dart';
 import 'score_stats_section.dart';
 import '../tap_target.dart';
 import '../tokens.dart';
+import '../../util/offline_notice.dart' show kOfflineNoConnection;
 
 const _muted = kMuted;
 const _text = kText;
@@ -207,9 +208,13 @@ class _ScoreCardModalState extends State<ScoreCardModal> {
           ScoreStatsSection(
             stats: _statsByTab[_tab],
             loaded: _loaded.contains(_tab),
-            emptyText: _tab == StatsTab.all
-                ? 'Henüz hiç oyun kaydın yok.'
-                : 'Henüz ${_tab.playerCount} kişilik oyun kaydın yok.',
+            // Çevrimdışıyken okuma `null` döner — "oyun kaydın yok" YALAN
+            // olurdu (3 Kasım 2026, uçak modu). Bkz. `StatsRepo.online`.
+            emptyText: !widget.stats.online
+                ? kOfflineNoConnection
+                : _tab == StatsTab.all
+                    ? 'Henüz hiç oyun kaydın yok.'
+                    : 'Henüz ${_tab.playerCount} kişilik oyun kaydın yok.',
           ),
           if (widget.games != null && auth.user != null) ...[
             const SizedBox(height: 8),

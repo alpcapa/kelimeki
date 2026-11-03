@@ -24,6 +24,8 @@ import 'support/fake_games_gateway.dart';
 import 'support/game_rows.dart';
 import 'support/test_fonts.dart';
 import 'support/test_view.dart';
+import 'package:kelimeki/src/util/offline_notice.dart'
+    show kOfflineNoConnection;
 
 class FakeStatsGateway implements StatsGateway {
   @override
@@ -442,6 +444,22 @@ void main() {
     expect(find.text('Henüz hiç oyun kaydın yok.'), findsOneWidget);
     expect(find.text('(0 puan)'), findsNWidgets(3));
     expect(find.text('—'), findsOneWidget); // En Uzun Kelime
+  });
+
+  // 3 Kasım 2026 (uçak modunda bildirildi): okuma ağda düşünce skor kartı
+  // "Henüz hiç oyun kaydın yok." diyordu — yalan. Çevrimdışıyken metin
+  // "İnternet bağlantısı yok"; çevrimiçi ve satır yoksa eski metin (yukarı).
+  testWidgets('Skor Kartı: ÇEVRİMDIŞIYKEN "kaydın yok" değil "internet yok"',
+      (tester) async {
+    await pumpModal(
+      tester,
+      ScoreCardModal(
+        auth: AuthService.fake(user: fakeUser(), profile: ironman),
+        stats: StatsRepo(_ThrowingGateway())..isOnline = () => false,
+      ),
+    );
+    expect(find.text(kOfflineNoConnection), findsOneWidget);
+    expect(find.text('Henüz hiç oyun kaydın yok.'), findsNothing);
   });
 
   // 1 Ekim 2026, 1.1.2 cihaz turu: başlık "SIRAOYUNCU" diye bitişik

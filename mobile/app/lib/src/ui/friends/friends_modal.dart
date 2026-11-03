@@ -61,6 +61,7 @@ import 'blocked_users_sheet.dart';
 import 'friend_moderation_sheet.dart';
 import 'k_pill.dart';
 import 'player_directory.dart';
+import '../../util/offline_notice.dart' show kOfflineNoConnection;
 
 const Color _text = kText;
 const Color _muted = kMuted;
@@ -159,6 +160,10 @@ class FriendsModal extends StatefulWidget {
 
 class _FriendsModalState extends State<FriendsModal> {
   List<FriendRow>? _friends;
+
+  /// Liste OKUNAMADI ve cihaz çevrimdışı → "arkadaşın yok" yerine
+  /// "internet yok" (3 Kasım 2026, uçak modunda bildirildi).
+  bool _friendsOffline = false;
   List<IncomingFriendRequest>? _requests;
   List<OutgoingFriendRequest> _sent = const [];
   final _query = TextEditingController();
@@ -239,6 +244,7 @@ class _FriendsModalState extends State<FriendsModal> {
     widget.friends.friends().then((f) {
       if (!mounted) return;
       setState(() {
+        _friendsOffline = f == null && !widget.friends.online;
         if (f != null) {
           _friends = f;
         } else {
@@ -607,6 +613,16 @@ class _FriendsModalState extends State<FriendsModal> {
     }
     final friends = _friends;
     if (friends == null) return [const KLoadingNote(vertical: 16)];
+    if (friends.isEmpty && _friendsOffline) {
+      return [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Text(kOfflineNoConnection,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, height: 1.6, color: _muted)),
+        ),
+      ];
+    }
     if (friends.isEmpty) {
       return [
         const Padding(
