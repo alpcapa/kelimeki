@@ -395,7 +395,11 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
         </div>
       </div>
       <div className="w-full max-w-[680px] px-3">
-        <div className="bg-panel border border-border rounded-md flex items-center justify-between px-3 py-1">
+        <div
+          className="bg-panel border border-border rounded-md flex items-center justify-between px-3 py-1"
+          // Kartın solunda oyuncu renginde çizgi (kullanıcı, 3 Kasım 2026).
+          style={{ borderLeft: `5px solid ${color.base}` }}
+        >
           <div className="flex flex-col items-start" data-hamle-avi-seri="">
             <span className="text-[10px] text-muted uppercase font-mono">Seri</span>
             <span className="font-mono font-bold text-xl leading-none">{streak.streak}</span>
@@ -412,13 +416,25 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
               {fmt(remaining)}
             </span>
           </div>
-          <button
-            onClick={handleExit}
-            data-hamle-avi-cik=""
-            className="btn-raised-neutral bg-void border border-border text-text rounded-md px-3 min-h-[40px] font-mono text-[11px] font-bold tracking-[1.5px] active:scale-[0.97] transition-transform"
-          >
-            ÇIK ✕
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            {/* Oyuncunun rengi baştan belli olsun: bankada oyuncu bazen sol-üst (camgöbeği = "Mavi"),
+                bazen sağ-alt (kırmızı = "Pembe") köşede (kullanıcı, 3 Kasım 2026). */}
+            <span
+              data-hamle-avi-renk=""
+              className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono flex items-center gap-1.5 whitespace-nowrap"
+              style={{ background: color.tint, color: color.text }}
+            >
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: color.base, display: 'inline-block' }} />
+              SEN · {state.current === 0 ? 'MAVİ' : 'PEMBE'}
+            </span>
+            <button
+              onClick={handleExit}
+              data-hamle-avi-cik=""
+              className="btn-raised-neutral bg-void border border-border text-text rounded-md px-3 min-h-[28px] tap-expand font-mono text-[11px] font-bold tracking-[1.5px] active:scale-[0.97] transition-transform"
+            >
+              ÇIK ✕
+            </button>
+          </div>
         </div>
       </div>
 
@@ -461,9 +477,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
                 tiles={me?.rack ?? []}
                 selectedTile={state.selectedTile}
                 onSelect={() => {}}
-                // Oyuncunun rengi baştan belli olsun (kullanıcı, 3 Kasım 2026): bankada oyuncu bazen
-                // sol-üst (camgöbeği="Mavi"), bazen sağ-alt (kırmızı="Pembe") köşede.
-                title={`Sen - ${state.current === 0 ? 'Mavi' : 'Pembe'}`}
+                title={playerName}
                 color={color}
                 draggable={canAct}
                 dragHiddenIndex={ghost && ghost.source.kind === 'rack' ? ghost.source.index : null}
