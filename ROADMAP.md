@@ -285,6 +285,8 @@ adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
 değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
 derleme sha'sını `main`'in başıyla karşılaştır.
 
+**1.1.6'ya binen (3 Kas 2026) — gizlilik metni ikizi (Hamle Avı):** `ui/auth/legal_modals.dart` + `test/legal_text_test.dart` — web `LegalContent.tsx` ile aynı üç değişiklik (§2 rekor maddesi, §5 silme listesi, §6 "dokuz durum" + (9) anonim sonuç ölçümü; tarih 3 Kasım). Parça 252. **Web PR #923 ile BİRLİKTE merge edilir (taslak değil — parite testi web'i kilitliyor); merge `mobile-build.yml`'i tetikler → `mobile-latest` ezilir + TestFlight'a yeni build.** Portta Hamle Avı'nın KENDİSİ yok.
+
 **Yayındaki paket:** Play 1.1.5 (982) = commit `46b7570` (Play 3 Kas 13:36 TSİ; iOS 1.1.5 Waiting for Review, 3 Kas 13:02). Doğrulama:
 `git log --oneline 46b7570..origin/main -- mobile/app mobile/kelimeki_core`
 (önceki: 1.1.4 (933) = `bf550a3`, Play 23 Eki, App Store 24 Eki)

@@ -908,3 +908,15 @@ Uygulama 20/10, Instagram 9/3, Direkt 7/5 — birebir).
 - [ ] **Kanıt.** Süzgece takılmış bir mesajın olduğu oyun bittikten sonra
       Şikayetler → "Sohbeti Görüntüle": o mesaj `[süzgeç]` önekiyle ve
       ORİJİNAL metniyle görünmeli (katılımcıların arşivinde maskeli).
+
+## 9.17. Admin — "Hamle Avı" kartı (3 Kasım 2026, ROADMAP #48)
+
+Ayrıntı: `docs/decisions/admin-panel.md` → "Hamle Avı kartı".
+
+- [ ] **Kart Büyüme → Kullanıcı'da, "Tanıtım Turu"nun altında; başlıkta "web" etiketi ve "?" ipucu var.**
+- [ ] **Kutular dolu:** Oynayan kişi (altında üye · misafir), Toplam oyun, Kişi başı oyun, Bulma oranı (altında bulundu · süre bitti · çıktı), Ort. bulma süresi, Ort. seri (altında en yüksek seri), Rekorlu üye, Üye başına görülen. Veri yoksa "—".
+- [ ] **Preview/yerel denemeler SAYILMAZ:** preview adresinde birkaç bulmaca oyna → kutular DEĞİŞMEZ; kelimeki.com'da oyna → değişir (yalnızca bu).
+- [ ] **Olaylar:** bir bulmaca bul → "bulundu" +1; süre bitir → "süre bitti" +1; bulmaca sürerken ÇIK → "çıktı" +1; süre bitip review'dan ÇIK ikinci olay DOĞURMAZ.
+- [ ] **Günlük liste:** son 14 gün, gün başına oyun · kişi çubuğu.
+- [ ] **Misafir ve üye ayrı sayılıyor** (üye bir cihazdan girişliyken oynayınca "üye" sayısı artar; hesap kimliği tabloda YOK).
+

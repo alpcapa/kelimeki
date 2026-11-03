@@ -1764,5 +1764,6 @@ Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağ�
 - [ ] Deneme kelimesi GEÇERSİZSE mesaj şeridi nedeni yazar (kırmızı; ör. "Kelime mevcut harflere bağlanmalı."), GEÇERLİYSE "Oyna tuşuyla kelimeyi onayla." (yeşil).
 - [ ] Üye: rekor ve görülenler başka cihazda da gelir (`hamle_avi_stats`); çevrimdışı oynayıp bağlanınca eşitlenir; aynı bulmaca ikinci kez ÇIKMAZ.
 - [ ] Tahtadaki oynanmış kelimeye dokununca anlam penceresi açılır; oyun sırasında taslak taş varken AÇILMAZ. Süre bitip "Kapat"tan sonra doğru hamlenin kelimesine (ve eski kelimelere) dokununca anlam açılır, modal kendiliğinden kapanmaz.
+- [ ] Ölçüm: her bulmaca için TEK anonim olay (bulundu/süre bitti/çıktı) `hamle_avi_events`e düşer (yalnızca kelimeki.com'da `source='prod'`); admin kartı için bkz. `docs/testing-admin.md` §9.17.
 - [ ] Uçak modu: banka bir kez indiyse oynanır; ilk açılışta çevrimdışıysa "Bulmacalar yüklenemedi" mesajı çıkar (banka parçasının SW önbelleğine girdiği ayrıca doğrulanmalı).
 

@@ -39,7 +39,7 @@ import {
   type StreakState,
 } from '../utils/hamleAvi';
 import { loadHamleAvi, mergeWithServer, saveHamleAvi } from '../utils/hamleAviStore';
-import { fetchHamleAvi, reportHamleAvi } from '../lib/hamleAviApi';
+import { fetchHamleAvi, logHamleAviEvent, reportHamleAvi } from '../lib/hamleAviApi';
 import { fetchMeaning } from '../lib/api';
 import type { WordMeaning } from '../lib/database.types';
 import { MeaningModal } from './MeaningModal';
@@ -109,10 +109,14 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   const posRef = useRef<HamleAviPosition | null>(null);
   const initialRef = useRef<GameState | null>(null);
   const solutionRef = useRef<BestMove | null>(null);
+  // Ölçüm: her bulmaca için TEK sonuç olayı (bulundu/süre bitti/çıktı). Bkz. `logHamleAviEvent`.
+  const loggedRef = useRef<Set<number>>(new Set());
+  const remainingRef = useRef(HAMLE_AVI_SECONDS * 1000);
   const reviewTapRef = useRef<{ r: number; c: number; x: number; y: number } | null>(null);
   const seenRef = useRef<Set<number>>(new Set(loadHamleAvi().seen));
   const streakRef = useRef(streak);
   streakRef.current = streak;
+  remainingRef.current = remaining;
   const endsAt = useRef(0);
   // Oyuncu = pozisyonun sahibi, `state.current` DEĞİL: doğru hamle `PLAY` ile oynanınca reducer sırayı
   // rakibe geçirir; `state.current`e bakmak "Tebrikler" penceresinin arkasında rafı rakibin dolgu
@@ -202,9 +206,19 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running]);
 
+  /** Bu bulmacanın sonucunu BİR KEZ ölç (aynı bulmaca için tekrar çağrılırsa yok sayılır). */
+  const logResult = useCallback((result: 'found' | 'missed' | 'left') => {
+    const id = posRef.current?.id;
+    if (id === undefined || loggedRef.current.has(id)) return;
+    loggedRef.current.add(id);
+    const elapsed = result === 'missed' ? HAMLE_AVI_SECONDS : HAMLE_AVI_SECONDS - remainingRef.current / 1000;
+    void logHamleAviEvent(id, result, elapsed, streakRef.current.streak);
+  }, []);
+
   /** Bulmaca sonucu: seri/rekor güncellenir, cihaza yazılır, hesapsa sunucuya gider. */
   const finish = useCallback(
     (found: boolean, net: number) => {
+      logResult(found ? 'found' : 'missed'); // seri GÜNCELLENMEDEN önce: `streak_before`
       const next = found ? onFound(streakRef.current) : onMissed(streakRef.current);
       // Süre dolarken açık kalan joker penceresi sonuç penceresinin ALTINDA kalıp, "Kapat"tan sonra
       // kilitli tahtaya taş koyabilirdi.
@@ -222,7 +236,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
       const local = saveHamleAvi({ best: Math.max(loadHamleAvi().best, next.best) });
       if (userId) void reportHamleAvi(local.best, local.seen);
     },
-    [userId],
+    [userId, logResult],
   );
 
   // ── Hamle sonucu: `PLAY` başarılı olduysa tur sayacı değişir ──────────────
@@ -499,10 +513,12 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
       setLeaveOpen(true);
       return;
     }
+    if (phase === 'play') logResult('left'); // bulmaca sürerken çıkıldı
     onExit();
   };
   const confirmLeave = () => {
     // Çıkış seriyi sıfırlar; rekor zaten cihazda/sunucuda.
+    if (phase === 'play') logResult('left');
     setStreak(onMissed(streak));
     onExit();
   };

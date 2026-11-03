@@ -110,12 +110,18 @@ void main() {
       'Dilediğiniz kişiyi sessize alabilir ya da şikayet edebilirsiniz',
       // Gizlilik: anonim kod SEKİZ durumda gider (18 Ekim 2026, ROADMAP #47 —
       // web oturum kaydı `web_sessions.anon_id`). Sayı ve (8) cümlesi iki
-      // tarafta da bulunmalı; yedi → sekiz tek tarafta kalırsa metin yalan olur.
-      'Bu kod sekiz durumda sunucuya iletilir',
+      // tarafta da bulunmalı; yedi → sekiz → dokuz tek tarafta kalırsa metin yalan olur.
+      'Bu kod dokuz durumda sunucuya iletilir',
       '(8) Siteyi (web) girişsiz (misafir) ziyaret ederken',
+      // Hamle Avı (3 Kasım 2026, ROADMAP #48): §2 rekor maddesi + §6 (9) anonim sonuç ölçümü.
+      'Hamle Avı bulmacalarında ulaştığınız en yüksek seri (rekor) ve daha önce '
+          'karşınıza çıkan bulmacaların numaraları',
+      "(9) Hamle Avı'nda bir bulmacayı sonuçlandırdığınızda",
+      'kaç kişinin oynadığını ve bulma oranını kişileri tanımadan sayabiliyoruz',
+      'Hamle Avı rekorunuz ve görülen bulmaca listeniz',
       'reklamdan gelenlerin kaçının mağazaya gittiğini kişileri tanımadan '
           'sayabiliyoruz',
-      'Bu sekiz kaydın hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA '
+      'Bu dokuz kaydın hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA '
           'YER ALMAZ',
       // Gizlilik §2 etiket maddesi (#46-1, 13 Ekim 2026)
       'Android\'de bu etiket, siteden Google Play\'e geçtiğinizde Play\'in '

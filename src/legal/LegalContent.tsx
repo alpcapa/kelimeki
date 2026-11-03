@@ -235,7 +235,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             veya pazarlama amaçlı herhangi bir çerez ya da izleme teknolojisi kullanılmamaktadır.
             Kaç benzersiz ziyaretçimiz olduğunu, hangi cihaz/işletim sistemlerinden geldiğimizi
             ve kaç kişinin oyuna başladığını anlayabilmek için cihazınızda rastgele, kimliğinizle
-            hiçbir şekilde ilişkilendirilmeyen anonim bir kod üretilir. Bu kod sekiz durumda
+            hiçbir şekilde ilişkilendirilmeyen anonim bir kod üretilir. Bu kod dokuz durumda
             sunucuya iletilir: (1) HER ziyarette — oturum açık olsun olmasın — işletim sistemi
             tipiyle (iOS/Android/masaüstü) ve, tarayıcınızdan elde edilebiliyorsa, işletim
             sistemi sürümü/cihaz modeliyle birlikte (bu ikisi bazı tarayıcı ve cihazlarda hiç
@@ -269,7 +269,12 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             bağlantısına dokunup dokunmadığınız, oturumun süresi ve varsa kaynak etiketi anonim
             kodla birlikte kaydedilir; böylece ziyaretçilerin hangi noktada ayrıldığını ve
             reklamdan gelenlerin kaçının mağazaya gittiğini kişileri tanımadan sayabiliyoruz.
-            Bu sekiz kaydın
+            (9) Hamle Avı'nda bir bulmacayı sonuçlandırdığınızda (buldunuz, süre bitti ya da
+            çıktınız): bulmaca numarası, sonuç, geçen süre, o ana kadarki seri, girişli olup
+            olmadığınız ve platform bilgisi anonim kodla birlikte kaydedilir; böylece kaç kişinin
+            oynadığını ve bulma oranını kişileri tanımadan sayabiliyoruz. Bu kayda hesap kimliğiniz
+            YAZILMAZ.
+            Bu dokuz kaydın
             hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA YER ALMAZ: girişli
             olsanız bile bu veriler hiçbir üçüncü tarafla paylaşılmaz ve hesabınızla asla
             eşleştirilmez. Yazı tipleri de dahil tüm statik

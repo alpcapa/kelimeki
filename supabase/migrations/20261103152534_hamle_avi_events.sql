@@ -39,10 +39,8 @@ create index if not exists hamle_avi_events_created_at_idx on public.hamle_avi_e
 alter table public.hamle_avi_events enable row level security;
 
 -- Yazma iki istemci rolüne açık (misafir de girişli de oynar); OKUMA hiçbirine açık değil.
-drop policy if exists hamle_avi_events_insert_anon on public.hamle_avi_events;
 create policy hamle_avi_events_insert_anon on public.hamle_avi_events
   for insert to anon with check (true);
-drop policy if exists hamle_avi_events_insert_authenticated on public.hamle_avi_events;
 create policy hamle_avi_events_insert_authenticated on public.hamle_avi_events
   for insert to authenticated with check (true);
 
@@ -55,9 +53,7 @@ grant select, insert, update, delete on public.hamle_avi_events to service_role;
 -- Kişi sayıları BENZERSİZ CİHAZ (anon_id) sayar, null anon_id (depolama kapalı) adette
 -- sayılır benzersizde sayılmaz. `members_*` ise `hamle_avi_stats`tan (hesaba bağlı rekor
 -- tablosu) gelir — onlar zaman penceresinden bağımsız, tüm zamanlar.
-drop function if exists public.admin_hamle_avi_stats (integer, text);
-
-create function public.admin_hamle_avi_stats (p_days integer default 30, p_source text default 'prod')
+create or replace function public.admin_hamle_avi_stats (p_days integer default 30, p_source text default 'prod')
   returns jsonb
   language plpgsql
   stable
