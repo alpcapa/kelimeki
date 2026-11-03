@@ -1751,3 +1751,16 @@ ama **gerçek ağ koşulunu** (yanıtı kaybolan istek) kanıtlayamaz.
 Kayıt: `docs/decisions/live-game.md` → "Sahte 'Sıra sende değil.'" ve
 "Sonsuz 'Yükleniyor…'".
 
+## 9. Hamle Avı (3 Kasım 2026, ROADMAP #48 — web yarısı)
+
+Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağısı elle:
+
+- [ ] Setup → Yapay Zeka: girişli kullanıcıda "Yeni Oyun" (2/3) + "Hamle Avı" (1/3, 🎯, "YENİ" balonu); misafirde formun üstünde tam genişlik düğme.
+- [ ] Hamle Avı'na bir kez girip çıkınca "YENİ" balonu kalkar (cihazda).
+- [ ] İlk giriş: pozisyon tahtanın ÜSTÜNDE tanıtım balonu, süre 3:00'da DURUR; "Başla" ile sayım başlar. "Bir daha gösterme" işaretliyse sonraki girişte balon çıkmaz.
+- [ ] Doğru (en yüksek net puanlı) hamle → "Tebrikler", Seri +1; daha düşük geçerli hamle → "N puan aldın — daha iyisi var", pozisyon sıfırlanır, süre SÜRER.
+- [ ] Süre bitince "Üzgünüz — en yüksek hamle puanı X (kelime) idi", seri 0, rekor korunur. Son 30 sn geri sayım kırmızı.
+- [ ] Seri > 0 iken ÇIK → "Serin sıfırlanır" uyarısı.
+- [ ] Üye: rekor ve görülenler başka cihazda da gelir (`hamle_avi_stats`); çevrimdışı oynayıp bağlanınca eşitlenir; aynı bulmaca ikinci kez ÇIKMAZ.
+- [ ] Uçak modu: banka bir kez indiyse oynanır; ilk açılışta çevrimdışıysa mesaj verilir (henüz yapılmadı — bkz. ROADMAP #48).
+

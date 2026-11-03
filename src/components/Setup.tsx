@@ -1,4 +1,5 @@
 // Kelimeki — oyun kurulum ekranı: oyuncu sayısı (2/4) seçimi
+import { HamleAviButton } from "./HamleAviButton";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GUEST_PLAYER_NAME } from "../game/constants";
 import type { PlayerSetup } from "../game/gameReducer";
@@ -258,6 +259,8 @@ interface SetupProps {
   // görülmediyse gösterilsin mi — App.tsx bunu oyun ekranı render'ında kullanır.
   /** `aiLevel`: formdaki ZORLUK seçimi (ROADMAP #23 Faz 3) — 4 kişilikte üç YZ'ye birden. */
   onStart: (players: PlayerSetup[], showTutorial: boolean, aiLevel: AiLevel) => void;
+  /** "Hamle Avı" (ROADMAP #48) — App kendi ekranını açar; kurulum/oyun state'ine dokunmaz. */
+  onOpenHamleAvi: () => void;
   // "Oyun Tipi" seçimi (Yapay Zeka ile / Arkadaşınla) — App.tsx'te tutulur,
   // çünkü Canlı oyun tamamen ayrı bir veri kaynağından (Supabase) besleniyor;
   // Setup burada yalnızca seçiciyi gösterip görünümü değiştirir.
@@ -304,6 +307,7 @@ export function Setup({
   cloudSaves,
   onResumeCloudSave,
   onReplayTutorial,
+  onOpenHamleAvi,
 }: SetupProps) {
   const { user, profile, profileLoading } = useAuth();
   // (27 Eylül 2026: 1. koltuğun rütbe mührü koltuk listesiyle birlikte
@@ -888,9 +892,17 @@ export function Setup({
                 yapışıyor — kullanıcı ekran görüntüsüyle bildirdi). Düğme
                 akışta, listenin ÜSTÜNDE; Arkadaşınla tarafıyla aynı
                 (`actionButton.ts`). */}
-            <button onClick={() => setCreatingLocal(true)} className={PRIMARY_ACTION_BTN}>
-              Yeni Oyun Başlat
-            </button>
+            {/* 3 Kasım 2026 (ROADMAP #48, kullanıcı): "Yeni Oyun" 2/3 + "Hamle Avı" 1/3.
+                `PRIMARY_ACTION_BTN` w-full içerir → flex içinde `w-auto` ile ezilir. */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCreatingLocal(true)}
+                className={`${PRIMARY_ACTION_BTN} !w-auto flex-[2_1_0%]`}
+              >
+                Yeni Oyun
+              </button>
+              <HamleAviButton variant="compact" onOpen={onOpenHamleAvi} />
+            </div>
             <div className="flex gap-2">
               {[
                 {
@@ -980,6 +992,8 @@ export function Setup({
           </>
         ) : (
           <>
+            {/* Misafirde "Yeni Oyun" düğmesi yok (form doğrudan açık) → Hamle Avı tam genişlikte. */}
+            {!user && <HamleAviButton variant="wide" onOpen={onOpenHamleAvi} />}
             <div className="flex flex-col gap-2">
               <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
                 Oyuncu sayısı
