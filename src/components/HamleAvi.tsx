@@ -90,7 +90,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   const [lastNet, setLastNet] = useState(0);
   const [note, setNote] = useState<{ text: string; type: 'ok' | 'err' | 'warn' | '' } | null>(null);
   const [loadError, setLoadError] = useState(false);
-  const [pendingWild, setPendingWild] = useState<{ r: number; c: number; rackIndex: number } | null>(null);
+  const [pendingWild, setPendingWild] = useState<{ r: number; c: number; rackIndex: number; editing?: boolean } | null>(null);
 
   const bankRef = useRef<HamleAviPosition[] | null>(null);
   const posRef = useRef<HamleAviPosition | null>(null);
@@ -295,7 +295,10 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     if (!tasima && dist < TAP_SLOP_ON_RELEASE) {
       // Dokunuş: raf taşı = seç, konmuş taş = geri al.
       if (source.kind === 'rack') dispatch({ type: 'SELECT_TILE', index: source.index });
-      else dispatch({ type: 'RECALL_CELL', r: source.r, c: source.c });
+      else if (source.tile.wild) {
+        // Konmuş joker: oyun ekranındaki gibi harf değiştirme penceresi (içinde "Geri Al" var).
+        setPendingWild({ r: source.r, c: source.c, rackIndex: -1, editing: true });
+      } else dispatch({ type: 'RECALL_CELL', r: source.r, c: source.c });
       // Ardından gelen compat `click` sökülen/konan karenin üstüne düşüp ikinci bir iş yapmasın.
       swallowNextClick();
       return;
@@ -547,11 +550,24 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
 
       {pendingWild && (
         <WildcardModal
+          title={pendingWild.editing ? 'Jokeri Hangi Harfe Çevir?' : undefined}
           onSelect={(letter) => {
-            dispatch({ type: 'PLACE_TILE', r: pendingWild.r, c: pendingWild.c, rackIndex: pendingWild.rackIndex, wildLetter: letter });
+            if (pendingWild.editing) {
+              dispatch({ type: 'SET_WILD_LETTER', r: pendingWild.r, c: pendingWild.c, wildLetter: letter });
+            } else {
+              dispatch({ type: 'PLACE_TILE', r: pendingWild.r, c: pendingWild.c, rackIndex: pendingWild.rackIndex, wildLetter: letter });
+            }
             setPendingWild(null);
           }}
           onClose={() => setPendingWild(null)}
+          onRecall={
+            pendingWild.editing
+              ? () => {
+                  dispatch({ type: 'RECALL_CELL', r: pendingWild.r, c: pendingWild.c });
+                  setPendingWild(null);
+                }
+              : undefined
+          }
         />
       )}
 
