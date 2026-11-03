@@ -808,6 +808,13 @@ Bu bölüm portun en kritik sözleşmesi: **aynı `local_game_saves` tablosu**.
 
 ## 5. Oyun geçmişi
 
+- [ ] **Çevrimdışı boş durumlar (3 Kasım 2026, Parça 254).** Uçak modunda
+      Skor Kartı → istatistik alanı **"İnternet bağlantısı yok"** demeli
+      ("Henüz hiç oyun kaydın yok." DEĞİL); Arkadaşlar → aynı metin
+      ("Henüz arkadaşın yok" DEĞİL); Canlı oyun aç → arkadaş yok metni
+      aynı, davet gönderilirse "…yapay zeka ile çevrimdışı da
+      oynayabilirsin." ("Bir sorun oluştu" DEĞİL). Bağlantı dönünce
+      modalı yeniden aç → gerçek veriler.
 - [ ] **Liste.** Skor Kartı → "Tüm Oyunları Gör". Kartlarda tarih,
       Canlı/Yapay Zeka rozeti, sıralama, Puan ve **k-lig** sütunları.
       Kaydırınca sayfa sayfa yüklenmeli.

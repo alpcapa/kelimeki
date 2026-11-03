@@ -25,6 +25,18 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 254 — Çevrimdışıyken boş durumlar yalan söylüyordu: "oyun kaydın yok", "arkadaşın yok", "Bir sorun oluştu" (3 Kasım 2026, 1.1.5 TestFlight turu madde 5)
+
+Kullanıcı uçak modunda: Skor Kartı sıfırlar + *"Henüz hiç oyun kaydın yok."*, Arkadaşlar *"Henüz arkadaşın yok"*, Canlı davet *"Bir sorun oluştu"*. Üçü de okumanın `null`/boş dönmesini "veri yok" diye okuyordu.
+
+- `StatsRepo` + `FriendsRepo`: `bool Function()? isOnline` ALANI (kurucu parametresi DEĞİL — #913 `StatsRepo` kurucusuna dokunuyor, çakışmasın) + `online` getter'ı; `bootstrap.dart` `onlineStatus.online`'a bağlıyor. Testlerde verilmezse `true`.
+- Skor kartları (`score_card_modal` · `player_score_card_modal`): çevrimdışıyken `emptyText` = `kOfflineNoConnection`.
+- `friends_modal`: liste `null` döndü VE çevrimdışı → `kOfflineNoConnection` (boş liste + çevrimiçi → eski metin).
+- `live_game_create_form`: aynı bayrak arkadaş yok metnine; gönderim `catch`i ağ hatası ya da çevrimdışıysa `kOfflineAiSuggestion`.
+- Web ikizi (`ScoreCard` · `PlayerScoreCard` · `FriendsModal` · `LiveGameCreateForm`, `useOnlineStatus`) ayrı PR'da hemen yayına girdi.
+- ⚠ `dart format` dosyanın TAMAMINA koşulunca `tap_target_test`in 200 karakterlik pencere taraması düştü — yalnızca değişen satırlar elle biçimlendirildi.
+- Testler: `score_card_test` + `friends_test`e çevrimdışı senaryoları.
+
 ## Parça 251 — `AuthRetryableFetchException(522)` yeniden denenmiyordu: durum kodu `statusCode`'da (28 Ekim 2026, günlük hata özeti)
 
 Günlük özet (*"5 kayıt · 3 cihaz"*): `online_games_repo.load` → `AuthRetryableFetchException(message: error code: 522, statusCode: 522)` ve `stats_repo.my_rank` → `PostgrestException(code: 522)`; 25-27 Eki'de toplam 8 kayıt, aynı pencerede Supabase `edge_logs`'ta 5xx YOK (istek Cloudflare'de kopuyor). **Bulgu, istenenden farklı çıktı:** `522`/`524` zaten `isTransientServerError` kümesindeydi (web `GECICI_DURUM_KODLARI` ↔ `_geciciDurumKodlari`) — yani `PostgrestException(code: 522)` zaten tekrarlanıyordu. Kaçan şey auth istisnası: durumu `code`'da DEĞİL `statusCode`'da taşıyor, `_durumKodu` yalnızca `code`'a bakıyordu → liste yeniden denenmeden telemetriye düşüyordu. **Düzeltme:** `_durumKodlari` her iki alanı da okur (`util/offline_notice.dart`). Kapsam BİLEREK dar: küme değişmedi (500/429 dışarıda), auth'un kendi reddi (401) tekrarlanmaz — ikisi de testli (`live_games_test.dart`; düzeltme geri alınınca yeni test DÜŞÜYOR). **Web ikizi YOK:** web'in liste yolu PostgREST'ten geçiyor (`code` zaten okunuyor); `supabase-js` auth hatası bu yolda liste çağrısını düşürmüyor. `stats_repo.my_rank` bu parçada DEĞİŞMEDİ (tekrar denemesi yok, tek seferlik okuma; tekrar ederse ayrı karar). Doğrulama sınırı: cihazda 522 üretilemez; yalnız birim testi + `client_errors`ta bu satırın azalması izlenir (`mobile/docs/testing-olcum.md`).

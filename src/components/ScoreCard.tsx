@@ -13,6 +13,8 @@ import type { PlayerStats, MyLeaderboardRank } from '../lib/database.types';
 import { calculateAge, formatAgeGender } from '../utils/profileFields';
 import { useAuth } from '../hooks/useAuth';
 import { type TabKey, SCORE_TABS, ScoreTabsBar, ScoreStatsSection } from './ScoreStatsSection';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { OFFLINE_NO_CONNECTION } from '../utils/offlineNotice';
 
 interface ScoreCardProps {
   onClose: () => void;
@@ -20,6 +22,9 @@ interface ScoreCardProps {
 
 export function ScoreCard({ onClose }: ScoreCardProps) {
   const { user, profile } = useAuth();
+  // Çevrimdışıyken okuma `null` döner — "oyun kaydın yok" yalan olurdu
+  // (3 Kasım 2026, uygulamada uçak modunda bildirildi; port ikizi aynı PR'da değil, 9 Kasım treni).
+  const online = useOnlineStatus();
   const [statsByTab, setStatsByTab] = useState<
     Record<TabKey, PlayerStats | null | undefined>
   >({ all: undefined, 2: undefined, 4: undefined });
@@ -121,7 +126,13 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
 
       <ScoreStatsSection
         stats={stats}
-        emptyText={tab === 'all' ? 'Henüz hiç oyun kaydın yok.' : `Henüz ${tab} kişilik oyun kaydın yok.`}
+        emptyText={
+          !online
+            ? OFFLINE_NO_CONNECTION
+            : tab === 'all'
+              ? 'Henüz hiç oyun kaydın yok.'
+              : `Henüz ${tab} kişilik oyun kaydın yok.`
+        }
       />
 
       {/* 3 Eylül 2026 (kullanıcı isteği: "Hepsinde Tüm oyunlar olsun / Ve
