@@ -160,6 +160,10 @@ flutter:
     # kopyanın tazeliğini 5 MB okumadan doğrular (bkz. meaning_store.dart).
     - assets/dictionary/meanings.db
     - assets/dictionary/meanings.db.sha256
+    # Hamle Avı bulmaca bankası — web `src/data/hamleAviBank.json`un BİREBİR
+    # kopyası (`hamle_avi_parity_test` bayt eşitliğini kilitler); yenilenince:
+    # cp src/data/hamleAviBank.json mobile/app/assets/hamle_avi/bank.json
+    - assets/hamle_avi/bank.json
   # Web ile aynı üç aile (tailwind fontFamily): sans=Space Grotesk,
   # mono=Space Mono, tile=Nunito. Google Fonts'tan statik TTF'ler.
   fonts:

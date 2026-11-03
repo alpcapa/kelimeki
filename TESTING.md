@@ -1753,6 +1753,8 @@ Kayıt: `docs/decisions/live-game.md` → "Sahte 'Sıra sende değil.'" ve
 
 ## 9. Hamle Avı (3 Kasım 2026, ROADMAP #48 — web yarısı)
 
+> Mobil port ikizi (Parça 252) cihaz kontrolleri: `mobile/TESTING.md` §35.
+
 Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağısı elle:
 
 - [ ] Setup (her görünümde: misafir formu, girişli liste, misafirin devam eden oyunu, Arkadaşınla sekmesi): en üstte geniş "Hamle Avı" satırı (🎯, "3 dk · en iyi hamleyi bul", "YENİ" balonu) + "Ya da bir oyun kur" ayırıcısı; Zorluk seçicisinin yanında DEĞİL.
