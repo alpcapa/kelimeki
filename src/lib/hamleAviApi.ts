@@ -8,14 +8,17 @@ import { getOrCreateAnonId } from '../utils/visitTracking';
 
 /**
  * Hamle Avı'nın SUNUCUYA veri gönderen tüm yolları (hesapta rekor/görülenler senkronu + anonim sonuç
- * ölçümü) bu bayrakla AÇILIR. **KAPALI (3 Kasım 2026, kullanıcı kararı):** Gizlilik metni (§2 rekor
- * maddesi, §5 silme listesi, §6 "dokuz durum" (9)) web yayınında GÜNCELLENMİYOR — web+port ikizi mobil
- * PR'ıyla birlikte yayınlanacak (parite testi `legal_text_test.dart` ikisini birbirine bağlıyor). Metin
- * yayınlanmadan sunucuya yeni veri gönderilmez; rekor/görülenler yalnızca CİHAZDA tutulur.
- * Metin yayınlanınca bu bayrak `true` yapılır — sunucu tarafı (tablolar, RPC'ler, admin kartı) CANLIDA
- * ve hazır bekliyor. Taslak metin: docs/decisions/product-backlog.md → "Gizlilik metni TASLAĞI".
+ * ölçümü) bu bayrakla açılır.
+ *
+ * **AÇIK (3 Kasım 2026, kullanıcı kararı):** web yayınıyla birlikte, ama Gizlilik Politikası bu veriyi
+ * HENÜZ anlatmıyor. BİLİNÇLİ GEÇİCİ İSTİSNA: metin (§2 rekor maddesi, §5 silme listesi, §6 "dokuz durum"
+ * (9) + tarih) web+port İKİZİ olarak **1.1.6 ile birlikte** yayınlanacak (~1 hafta); iOS 1.1.5 In Review
+ * olduğundan mobil dosyaya dokunan bir merge şimdi istenmiyor. Kullanıcı riski bilerek kabul etti
+ * (anonim sonuç olayı hesap kimliği taşımıyor; hesaba bağlı olan yalnızca rekor sayısı + görülen bulmaca
+ * numaraları). ⚠ 1.1.6 kayarsa bu istisna UZAMAZ — metin web'de tek başına yayınlanır ya da bayrak kapanır.
+ * Takip: docs/decisions/product-backlog.md → "KARAR (3 Kas 2026) — gizlilik gecikmeli".
  */
-export const HAMLE_AVI_SERVER_ENABLED = false;
+export const HAMLE_AVI_SERVER_ENABLED = true;
 
 export interface HamleAviServer {
   best: number;
