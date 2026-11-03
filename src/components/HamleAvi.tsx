@@ -291,7 +291,10 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     const target = dropAt(e.clientX, liftedPoint(e.clientY));
     // Taşıma: konmuş taş hayaletin GÖSTERDİĞİ boş kareye bırakıldıysa (kaldırma payı
     // yüzünden kısa mesafe 24 px kuralına takılmasın — App.tsx'teki 23 Ekim kuralı).
-    const tasima = source.kind === 'placed' && hedefUygun(target.cell, source);
+    // ⚠ `d.moved` ŞART: hiç kıpırdamayan bir dokunuşta bırakma noktası yine `DRAG_LIFT`
+    // kadar YUKARI hesaplanır ve üstteki kare boşsa dokunuş "taşıma" sanılıp taş
+    // bir üst kareye kayıyordu (kullanıcı bildirdi, 3 Kasım 2026).
+    const tasima = d.moved && source.kind === 'placed' && hedefUygun(target.cell, source);
     if (!tasima && dist < TAP_SLOP_ON_RELEASE) {
       // Dokunuş: raf taşı = seç, konmuş taş = geri al.
       if (source.kind === 'rack') dispatch({ type: 'SELECT_TILE', index: source.index });
