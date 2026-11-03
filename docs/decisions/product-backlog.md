@@ -495,7 +495,7 @@ aboneliği maliyeti), katılımcıların görünürlük rızası (Koşullar/Gizl
 arkadaş olmayanlara sohbet görünmez.
 
 
-## "En iyi hamleyi bul" bulmaca modu = HAMLE AVI (ROADMAP #48) — PARKTA (30 Ekim 2026)
+## "En iyi hamleyi bul" bulmaca modu = HAMLE AVI (ROADMAP #48) — YAZILIYOR (3 Kasım 2026; 30 Ekim'de parkta)
 
 **Durum: PARKTA, kod yok** (kullanıcı: *"Takım ligi gibi backlog'da yazalım. Zamanı gelince yapacağız."*). Aşağıdaki karar ve ölçümler hazır; başlarken yeniden analiz gerekmez. Başlangıç sırası: pozisyon üretici + banka → oyun ekranı (`TutorialGame` kalıbı) → Tebrikler/Üzgünüz pencereleri → tanıtım modalı → port ikizi (ayrı PR, tren).
 
@@ -554,3 +554,13 @@ aksi hâlde süre bitince "Üzgünüz". Eşit net puanlı tüm hamleler doğru s
 (çözücü ≤8 harf) de doğru. Süre bir SABİT olmalı (başlangıç 5 dk, saha denemesinde 3 dk'ya inebilir).
 Etki: ölçümdeki "1.→2. açıklık" artık adalet ölçüsü değil zorluk ölçüsü; asıl kalite filtresi "en iyi
 seviyeye ulaşan hamle sayısı" ve cevabın tanınır bir kelime olması.
+
+**UYGULAMA KARARLARI (3 Kasım 2026, kullanıcı — "başla"):**
+- **Giriş:** Setup → Yapay Zeka sekmesi, "Yeni Oyun" (2/3) yanında "Hamle Avı" (1/3, 🎯 + "YENİ" balonu; oyuncu bir kez açınca balon kalkar, cihazda tutulur).
+- **Süre 3 dk** (sabit `HAMLE_AVI_SECONDS`), geri sayım üstteki puan satırında büyük (son 30 sn kırmızı); sağda avatar, solda **Seri**, rekor da satırda.
+- **Tanıtım:** pozisyon kurulu tahtanın ÜSTÜNDE balon; süre balon açıkken DURUR, "Başla" ile sayım başlar. "Bir daha gösterme" işaretliyse balon çıkmaz. Metin: ilk versiyonun açıklamaları (vergi dahil, istediğin kadar devam, k-lig'e karışmaz).
+- **Seri/rekor:** bulununca +1; bulunamazsa ya da çıkış/vazgeçmede 0 (çıkışta "Seri N sıfırlanır" UYARISI). Seri her girişte 0'dan başlar, kalıcı olan yalnızca REKOR. Hesapta `hamle_avi_stats` (RPC `hamle_avi_get`/`hamle_avi_report`, `greatest()` ile birleşir, üst sınır 5000), misafirde localStorage; üye olunca büyüğü alınır. Hile sınırı: rakam istemciden gelir — k-lig/ödül/liderlik'e karışmadığı için kabul; liderlik istenirse bulmaca sunucuda doğrulanmalı.
+- **Tekrar yok:** "görülenler" (bulmaca `id`leri) cihazda + hesapta; bulmaca ekrana geldiği an görülmüş sayılır. Banka bitince "Hepsini çözdün" mesajı.
+- **Çevrimdışı:** banka lazy chunk (web, SW önbelleği) / asset (mobil); rekor önce cihaza yazılır, bağlanınca RPC (birleşim idempotent).
+- **Doğru/yanlış:** net puan >= anahtar (`isCorrect`); çözücü ≤8 harf, oyuncu daha iyisini bulabilir. Banka filtresi: en iyi kelime ≥3 harf + sözlükte anlamı var, anahtar ≥10, 1.→2. açıklık ≥2, tam raf, reducer doğrulamalı.
+- **Tuzak (üretimde yakalandı):** `positionToState`te rakibin rafı/torba BOŞ bırakılırsa bingo'lu bir hamle oyunu bitirir ve `endGame` raf düşümü net puanı bozar → dolgu raf + 20 taşlık dolgu torba. `verify-hamle-avi` bankadan örnekleri motorla YENİDEN çözer (banka bayatlığı kapısı).
