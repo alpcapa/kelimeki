@@ -88,6 +88,7 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
   const [dontShow, setDontShow] = useState(false);
   const [lastNet, setLastNet] = useState(0);
   const [note, setNote] = useState<{ text: string; type: 'ok' | 'err' | 'warn' | '' } | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [pendingWild, setPendingWild] = useState<{ r: number; c: number; rackIndex: number } | null>(null);
 
   const bankRef = useRef<HamleAviPosition[] | null>(null);
@@ -104,12 +105,20 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
     saveHamleAvi({ opened: true }); // "YENİ" balonu kalkar
     let iptal = false;
     (async () => {
-      const [, bankMod, server] = await Promise.all([
+      let loaded;
+      try {
+        loaded = await Promise.all([
         isWordSetReady() ? Promise.resolve() : preloadWordSet().catch(() => undefined),
         import('../data/hamleAviBank.json'),
         userId ? Promise.race([fetchHamleAvi(), new Promise<null>((r) => setTimeout(() => r(null), 2500))]) : null,
-      ]);
+        ]);
+      } catch {
+        // Banka parçası indirilemedi (ilk açılışta çevrimdışı). Bir kez inmişse SW önbelleğinden gelir.
+        if (!iptal) setLoadError(true);
+        return;
+      }
       if (iptal) return;
+      const [, bankMod, server] = loaded;
       bankRef.current = (bankMod.default ?? bankMod) as unknown as HamleAviPosition[];
       const merged = server ? mergeWithServer(server) : loadHamleAvi();
       seenRef.current = new Set(merged.seen);
@@ -422,7 +431,11 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
             data-mesaj=""
             className={`text-[11px] font-mono font-bold text-center min-h-[30px] py-0.5 flex items-center justify-center ${MESSAGE_COLORS[mesajTipi]}`}
           >
-            {phase === 'loading' ? 'Bulmaca hazırlanıyor…' : mesaj}
+            {phase === 'loading'
+              ? loadError
+                ? 'Bulmacalar yüklenemedi — bağlantını kontrol edip tekrar dene.'
+                : 'Bulmaca hazırlanıyor…'
+              : mesaj}
           </div>
           <div className="flex gap-1.5 items-stretch">
             <div className="flex-1 min-w-0">

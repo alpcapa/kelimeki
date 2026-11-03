@@ -1762,5 +1762,5 @@ Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağ�
 - [ ] Süre bitince "Üzgünüz — en yüksek hamle puanı X (kelime) idi", seri 0, rekor korunur. Son 30 sn geri sayım kırmızı.
 - [ ] Seri > 0 iken ÇIK → "Serin sıfırlanır" uyarısı.
 - [ ] Üye: rekor ve görülenler başka cihazda da gelir (`hamle_avi_stats`); çevrimdışı oynayıp bağlanınca eşitlenir; aynı bulmaca ikinci kez ÇIKMAZ.
-- [ ] Uçak modu: banka bir kez indiyse oynanır; ilk açılışta çevrimdışıysa mesaj verilir (henüz yapılmadı — bkz. ROADMAP #48).
+- [ ] Uçak modu: banka bir kez indiyse oynanır; ilk açılışta çevrimdışıysa "Bulmacalar yüklenemedi" mesajı çıkar (banka parçasının SW önbelleğine girdiği ayrıca doğrulanmalı).
 
