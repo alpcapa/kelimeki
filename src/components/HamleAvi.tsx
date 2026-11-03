@@ -585,7 +585,14 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
           <LogoMark height="clamp(28px, calc(-5.33px + 8.89vw), 36px)" />
         </button>
         {/* Etiket ortada (kullanıcı, 3 Kasım 2026: logoya yapışmasın). */}
-        <span className="font-mono text-[10px] tracking-[1.5px] text-muted text-center">🎯 HAMLE AVI</span>
+        {/* Başlık büyük + kalın (kullanıcı, 3 Kasım 2026); header yüksekliği DEĞİŞMEZ (logo satırı belirliyor).
+            Punto ekrana göre ölçeklenir: 320 px'te 15 px logoya YAPIŞIYORDU (ölçüldü), 12 px'te 12 px boşluk kalır. */}
+        <span
+          className="font-mono font-bold tracking-[1px] text-text text-center whitespace-nowrap leading-none"
+          style={{ fontSize: 'clamp(12px, calc(10vw - 20px), 15px)' }}
+        >
+          🎯 HAMLE AVI
+        </span>
         {/* Avatar/hesap menüsü oyun başlığındaki yerinde (GameHeader ile aynı bileşen). */}
         <div className="justify-self-end">
           <UserMenu />
