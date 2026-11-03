@@ -331,6 +331,35 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     setDragOverKey(null);
   };
 
+  // Bir taş sürüklenirken dokunmatik tarayıcının sayfayı kaydırmasını/esnetmesini KESİN engelle.
+  // `touch-action: none` hızlı harekette ya da pointer capture güvenilmez olduğunda yetmiyor;
+  // `App.tsx` (1204. satır) aynı yedeği taşıyor. Bu olmadan iOS'ta sürüklerken tahta titriyor,
+  // büyüyüp küçülüyordu (kullanıcı bildirdi, 3 Kasım 2026).
+  useEffect(() => {
+    const preventScrollWhileDragging = (e: TouchEvent) => {
+      if (dragRef.current) e.preventDefault();
+    };
+    document.addEventListener('touchmove', preventScrollWhileDragging, { passive: false });
+    return () => document.removeEventListener('touchmove', preventScrollWhileDragging);
+  }, []);
+  // Ana ekran uygulamasında sürükleme sırasında arka plana düşülürse WebKit `pointerup` göndermeyebilir:
+  // hayalet taş ekranda asılı kalır. Görünürlük/odak değişince sürükleme elle temizlenir (App.tsx ile aynı).
+  useEffect(() => {
+    const clearStuckDrag = () => {
+      if (dragRef.current) {
+        dragRef.current = null;
+        setGhost(null);
+        setDragOverKey(null);
+      }
+    };
+    document.addEventListener('visibilitychange', clearStuckDrag);
+    window.addEventListener('blur', clearStuckDrag);
+    return () => {
+      document.removeEventListener('visibilitychange', clearStuckDrag);
+      window.removeEventListener('blur', clearStuckDrag);
+    };
+  }, []);
+
   // ── Oyna ─────────────────────────────────────────────────────────────────
   const handlePlay = () => {
     if (!canAct || !wordsReady) return;
