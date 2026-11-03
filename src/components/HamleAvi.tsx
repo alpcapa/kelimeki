@@ -203,8 +203,8 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
     if (isCorrect(net, pos)) {
       finish(true, net);
     } else {
-      // Geçerli ama daha iyisi var: pozisyon sıfırlanır, süre SÜRER (kullanıcıya bırakılan
-      // karar — backlog "UYGULAMA KARARLARI").
+      // Geçerli ama daha iyisi var: pozisyon sıfırlanır, süre SÜRER (kullanıcı onayı 3 Kas 2026:
+      // süre SIFIRLANMAZ — backlog "UYGULAMA KARARLARI").
       setNote({ text: `${net} puan aldın — daha iyisi var, tekrar dene.`, type: 'warn' });
       dispatch({ type: 'RESUME_SAVED', state: init });
     }

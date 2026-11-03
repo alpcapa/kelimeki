@@ -563,4 +563,5 @@ seviyeye ulaşan hamle sayısı" ve cevabın tanınır bir kelime olması.
 - **Tekrar yok:** "görülenler" (bulmaca `id`leri) cihazda + hesapta; bulmaca ekrana geldiği an görülmüş sayılır. Banka bitince "Hepsini çözdün" mesajı.
 - **Çevrimdışı:** banka lazy chunk (web, SW önbelleği) / asset (mobil); rekor önce cihaza yazılır, bağlanınca RPC (birleşim idempotent).
 - **Doğru/yanlış:** net puan >= anahtar (`isCorrect`); çözücü ≤8 harf, oyuncu daha iyisini bulabilir. Banka filtresi: en iyi kelime ≥3 harf + sözlükte anlamı var, anahtar ≥10, 1.→2. açıklık ≥2, tam raf, reducer doğrulamalı.
+- **Daha düşük puanlı geçerli hamle (3 Kas 2026, kullanıcı onayı: *"Doğru karar vermişsin. Sıfırlanmamalı"*):** "N puan aldın — daha iyisi var" notu, pozisyon başa döner, **süre SIFIRLANMAZ**, seri bozulmaz (yalnızca süre bitimi/çıkış bozar).
 - **Tuzak (üretimde yakalandı):** `positionToState`te rakibin rafı/torba BOŞ bırakılırsa bingo'lu bir hamle oyunu bitirir ve `endGame` raf düşümü net puanı bozar → dolgu raf + 20 taşlık dolgu torba. `verify-hamle-avi` bankadan örnekleri motorla YENİDEN çözer (banka bayatlığı kapısı).
