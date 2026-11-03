@@ -913,6 +913,8 @@ Uygulama 20/10, Instagram 9/3, Direkt 7/5 — birebir).
 
 Ayrıntı: `docs/decisions/admin-panel.md` → "Hamle Avı kartı".
 
+⚠ **Ölçüm KAPALI** (`HAMLE_AVI_SERVER_ENABLED = false`, 3 Kasım 2026): aşağıdaki maddeler bayrak `true` olunca (gizlilik metni + mobil PR'ı) koşulur. Şimdilik kart yalnızca "Ölçüm KAPALI" yazar.
+
 - [ ] **Kart Büyüme → Kullanıcı'da, "Tanıtım Turu"nun altında; başlıkta "web" etiketi ve "?" ipucu var.**
 - [ ] **Kutular dolu:** Oynayan kişi (altında üye · misafir), Toplam oyun, Kişi başı oyun, Bulma oranı (altında bulundu · süre bitti · çıktı), Ort. bulma süresi, Ort. seri (altında en yüksek seri), Rekorlu üye, Üye başına görülen. Veri yoksa "—".
 - [ ] **Preview/yerel denemeler SAYILMAZ:** preview adresinde birkaç bulmaca oyna → kutular DEĞİŞMEZ; kelimeki.com'da oyna → değişir (yalnızca bu).

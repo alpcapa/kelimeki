@@ -1762,8 +1762,8 @@ Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağ�
 - [ ] Süre bitince "Üzgünüz — en yüksek hamle puanı X (kelime) idi", seri 0, rekor korunur. Son 30 sn geri sayım kırmızı. "Kapat" → doğru hamle TAHTADA taslak taşlarla yerleşik görünür (mesaj: "Doğru hamle: KELİME — N puan"), üstte ÇIK'ın yanında SONRAKİ; tahta kilitli (Oyna/Geri Al pasif).
 - [ ] Seri > 0 iken ÇIK → "Serin sıfırlanır" uyarısı.
 - [ ] Deneme kelimesi GEÇERSİZSE mesaj şeridi nedeni yazar (kırmızı; ör. "Kelime mevcut harflere bağlanmalı."), GEÇERLİYSE "Oyna tuşuyla kelimeyi onayla." (yeşil).
-- [ ] Üye: rekor ve görülenler başka cihazda da gelir (`hamle_avi_stats`); çevrimdışı oynayıp bağlanınca eşitlenir; aynı bulmaca ikinci kez ÇIKMAZ.
+- [ ] Rekor ve görülenler CİHAZDA tutulur; aynı bulmaca ikinci kez ÇIKMAZ. ⚠ Hesapta/başka cihazda senkron KAPALI (`HAMLE_AVI_SERVER_ENABLED = false`, gizlilik metni mobil PR'ıyla gelecek) — bayrak `true` olunca: başka cihazda da gelir, çevrimdışı oynayıp bağlanınca eşitlenir.
 - [ ] Tahtadaki oynanmış kelimeye dokununca anlam penceresi açılır; oyun sırasında taslak taş varken AÇILMAZ. Süre bitip "Kapat"tan sonra doğru hamlenin kelimesine (ve eski kelimelere) dokununca anlam açılır, modal kendiliğinden kapanmaz.
-- [ ] Ölçüm: her bulmaca için TEK anonim olay (bulundu/süre bitti/çıktı) `hamle_avi_events`e düşer (yalnızca kelimeki.com'da `source='prod'`); admin kartı için bkz. `docs/testing-admin.md` §9.17.
+- [ ] Ölçüm KAPALI: Hamle Avı oynanınca `hamle_avi*` isteği ağda GÖRÜNMEZ (devtools → Network). Bayrak açılınca her bulmaca için TEK anonim olay (bulundu/süre bitti/çıktı); bkz. `docs/testing-admin.md` §9.17.
 - [ ] Uçak modu: banka bir kez indiyse oynanır; ilk açılışta çevrimdışıysa "Bulmacalar yüklenemedi" mesajı çıkar (banka parçasının SW önbelleğine girdiği ayrıca doğrulanmalı).
 

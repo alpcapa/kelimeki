@@ -6,6 +6,17 @@ import { supabase } from './supabase';
 import { CLIENT_PLATFORM } from '../utils/platform';
 import { getOrCreateAnonId } from '../utils/visitTracking';
 
+/**
+ * Hamle Avı'nın SUNUCUYA veri gönderen tüm yolları (hesapta rekor/görülenler senkronu + anonim sonuç
+ * ölçümü) bu bayrakla AÇILIR. **KAPALI (3 Kasım 2026, kullanıcı kararı):** Gizlilik metni (§2 rekor
+ * maddesi, §5 silme listesi, §6 "dokuz durum" (9)) web yayınında GÜNCELLENMİYOR — web+port ikizi mobil
+ * PR'ıyla birlikte yayınlanacak (parite testi `legal_text_test.dart` ikisini birbirine bağlıyor). Metin
+ * yayınlanmadan sunucuya yeni veri gönderilmez; rekor/görülenler yalnızca CİHAZDA tutulur.
+ * Metin yayınlanınca bu bayrak `true` yapılır — sunucu tarafı (tablolar, RPC'ler, admin kartı) CANLIDA
+ * ve hazır bekliyor. Taslak metin: docs/decisions/product-backlog.md → "Gizlilik metni TASLAĞI".
+ */
+export const HAMLE_AVI_SERVER_ENABLED = false;
+
 export interface HamleAviServer {
   best: number;
   seen: number[];
@@ -20,7 +31,7 @@ const toServer = (r: Row | undefined): HamleAviServer | null =>
   r ? { best: r.best_streak ?? 0, seen: r.seen_ids ?? [] } : null;
 
 export async function fetchHamleAvi(): Promise<HamleAviServer | null> {
-  if (!supabase) return null;
+  if (!HAMLE_AVI_SERVER_ENABLED || !supabase) return null;
   try {
     const { data, error } = await supabase.rpc('hamle_avi_get');
     if (error) return null;
@@ -31,7 +42,7 @@ export async function fetchHamleAvi(): Promise<HamleAviServer | null> {
 }
 
 export async function reportHamleAvi(best: number, seen: number[]): Promise<HamleAviServer | null> {
-  if (!supabase) return null;
+  if (!HAMLE_AVI_SERVER_ENABLED || !supabase) return null;
   try {
     const { data, error } = await supabase.rpc('hamle_avi_report', {
       p_best_streak: best,
@@ -58,7 +69,7 @@ export async function logHamleAviEvent(
   seconds: number,
   streakBefore: number,
 ): Promise<void> {
-  if (!supabase) return;
+  if (!HAMLE_AVI_SERVER_ENABLED || !supabase) return;
   const host = typeof location !== 'undefined' ? location.hostname : '';
   const source = host === 'kelimeki.com' || host === 'www.kelimeki.com' ? 'prod' : 'preview';
   try {

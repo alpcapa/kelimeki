@@ -136,7 +136,7 @@ kadar mobil işler taslak PR. 2 Ekim'de kapanıp arşive taşınanlar: #25, #34,
 | | #22 | `feedback` hız sınırı XFF ile atlanabilir | Açık, ölçülmedi |
 | **Ertelendi (kullanıcı kararı)** | #32 | E-posta onayı bir kullanıcı kaybı kapısı | "Daha sonra bakalım" (20 Eyl) |
 | | #39 | Takma isim değişince geçmiş oyunlarda eski isim | "Sonra bakılacak" (23 Eyl) |
-| | #48 | **Hamle Avı** — süreli "en iyi hamleyi bul" bulmaca modu | **YAZILIYOR (3 Kas 2026, kullanıcı: *"Tamam, başla"*; hedef 1.1.6 / 9 Kasım treni).** Dal `claude/hamle-avi-web` (web yarısı, taslak PR; mobil port ikizi AYRI PR, taslak). Kararlar + ölçüm: `docs/decisions/product-backlog.md` → "En iyi hamleyi bul" → "UYGULAMA KARARLARI (3 Kas 2026)". Yazılanlar: `utils/hamleAvi.ts`, `scripts/generate-hamle-avi-bank.ts` + `lib/hamle-avi-solver.ts`, `verify-hamle-avi`, migration `hamle_avi_stats` (canlıya UYGULANMADI — SQL kullanıcıya gösterilecek); UI + gizlilik metni YAZILDI (PR #923, taslak; web yarısı kullanıcı onayını bekliyor, mobil port onaydan SONRA). Açık: yayın sonrası hesap silme testi (kullanıcı yapacak) · MOBİL PR'ına (web+port ikizi): "Nasıl Oynanır → Detaylı Kurallar" Hamle Avı bölümü (`HelpModal.tsx` + `help_modal.dart`, parite testi) |
+| | #48 | **Hamle Avı** — süreli "en iyi hamleyi bul" bulmaca modu | **YAZILIYOR (3 Kas 2026, kullanıcı: *"Tamam, başla"*; hedef 1.1.6 / 9 Kasım treni).** Dal `claude/hamle-avi-web` (web yarısı, taslak PR; mobil port ikizi AYRI PR, taslak). Kararlar + ölçüm: `docs/decisions/product-backlog.md` → "En iyi hamleyi bul" → "UYGULAMA KARARLARI (3 Kas 2026)". Yazılanlar: `utils/hamleAvi.ts`, `scripts/generate-hamle-avi-bank.ts` + `lib/hamle-avi-solver.ts`, `verify-hamle-avi`, migration `hamle_avi_stats` (canlıya UYGULANMADI — SQL kullanıcıya gösterilecek); UI + gizlilik metni YAZILDI (PR #923, taslak; web yarısı kullanıcı onayını bekliyor, mobil port onaydan SONRA). Açık: yayın sonrası hesap silme testi (kullanıcı yapacak) · MOBİL PR'ına (web+port ikizi): "Nasıl Oynanır → Detaylı Kurallar" Hamle Avı bölümü (`HelpModal.tsx` + `help_modal.dart`, parite testi) · **3 Kas: web yayına hazır, SUNUCU VERİSİ KAPALI** (`HAMLE_AVI_SERVER_ENABLED=false`; gizlilik metni + bayrak + help bölümü + hesap silme testi MOBİL PR'ıyla birlikte — bkz. product-backlog.md → KARAR 3 Kas) |
 | | #17 | Google ile giriş/kayıt | Sunucu → web → mobil; migration BLOKER |
 | **İsteğe bağlı** | #5 | k-lig puan grafiği | — |
 | | #9 | Admin Üyeler'e "onaylanmamış" filtresi | Gövdesi dondurulmuş arşivde (`roadmap-arsiv-cilt-1.md` → "9.") |
@@ -284,8 +284,6 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunuc
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
 değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
 derleme sha'sını `main`'in başıyla karşılaştır.
-
-**1.1.6'ya binen (3 Kas 2026) — gizlilik metni ikizi (Hamle Avı):** `ui/auth/legal_modals.dart` + `test/legal_text_test.dart` — web `LegalContent.tsx` ile aynı üç değişiklik (§2 rekor maddesi, §5 silme listesi, §6 "dokuz durum" + (9) anonim sonuç ölçümü; tarih 3 Kasım). Parça 252. **Web PR #923 ile BİRLİKTE merge edilir (taslak değil — parite testi web'i kilitliyor); merge `mobile-build.yml`'i tetikler → `mobile-latest` ezilir + TestFlight'a yeni build.** Portta Hamle Avı'nın KENDİSİ yok.
 
 **Yayındaki paket:** Play 1.1.5 (982) = commit `46b7570` (Play 3 Kas 13:36 TSİ; iOS 1.1.5 Waiting for Review, 3 Kas 13:02). Doğrulama:
 `git log --oneline 46b7570..origin/main -- mobile/app mobile/kelimeki_core`

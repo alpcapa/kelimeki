@@ -25,18 +25,6 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
-## Parça 252 — Gizlilik metni ikizi: Hamle Avı (rekor, görülen bulmacalar, anonim sonuç ölçümü) (3 Kasım 2026, web PR #923)
-
-**Ne:** `legal_modals.dart`a web `LegalContent.tsx`in üç değişikliği birebir taşındı: §2 yeni madde (Hamle Avı rekoru + görülen bulmaca numaraları; üyede sunucuda, misafirde yalnızca cihazda), §5 silme listesine "Hamle Avı rekorunuz ve görülen bulmaca listeniz", §6 anonim cihaz kodu **sekiz → DOKUZ durum** — yeni (9): Hamle Avı bulmaca sonucu (numara, sonuç, süre, o ana kadarki seri, girişli mi, platform; hesap kimliği YOK). "Son güncelleme" 18 Ekim → **3 Kasım 2026**.
-
-**Neden mobil dosya:** `legal_text_test.dart` web'in "Son güncelleme" tarihini portunkiyle karşılaştırıyor; web metni değişince port ikizi AYNI PR'da değişmek zorunda (web CI `parite` işi düştü, PR #923). Test de güncellendi: "sekiz durumda" → "dokuz durumda", "Bu sekiz kaydın" → "Bu dokuz kaydın", Hamle Avı §2/§6 cümleleri `sozler` listesine eklendi.
-
-**Bilinçli eksik:** portun KENDİSİNDE Hamle Avı YOK (yalnızca web; mobil PR sonra). Metin web hizmetini anlatıyor, yani portta bu cümleler uygulamada olmayan bir özelliği anar — kullanıcıya yanlış bir şey söylemiyor (veri web'de toplanıyor), ama Hamle Avı portta yazılınca ayrıca bir iş gerekmez.
-
-**⚠ Merge sonucu:** bu PR `mobile/app/` dosyası içerdiği için `main`'e girince `mobile-build.yml` KOŞAR (mobile-latest ezilir, TestFlight'a yeni build). Sürüm treni kuralı (taslak PR, kesim günü) bilinçli ihlal: gizlilik ikizi web yayınıyla BİRLİKTE gitmek zorunda (kullanıcı kararı, 3 Kasım 2026).
-
-**Doğrulama:** `flutter test test/legal_text_test.dart` 4/4 · `dart analyze` temiz · tam mobil paket (CI'ın `parite` işiyle aynı) yerelde koşturuldu.
-
 ## Parça 251 — `AuthRetryableFetchException(522)` yeniden denenmiyordu: durum kodu `statusCode`'da (28 Ekim 2026, günlük hata özeti)
 
 Günlük özet (*"5 kayıt · 3 cihaz"*): `online_games_repo.load` → `AuthRetryableFetchException(message: error code: 522, statusCode: 522)` ve `stats_repo.my_rank` → `PostgrestException(code: 522)`; 25-27 Eki'de toplam 8 kayıt, aynı pencerede Supabase `edge_logs`'ta 5xx YOK (istek Cloudflare'de kopuyor). **Bulgu, istenenden farklı çıktı:** `522`/`524` zaten `isTransientServerError` kümesindeydi (web `GECICI_DURUM_KODLARI` ↔ `_geciciDurumKodlari`) — yani `PostgrestException(code: 522)` zaten tekrarlanıyordu. Kaçan şey auth istisnası: durumu `code`'da DEĞİL `statusCode`'da taşıyor, `_durumKodu` yalnızca `code`'a bakıyordu → liste yeniden denenmeden telemetriye düşüyordu. **Düzeltme:** `_durumKodlari` her iki alanı da okur (`util/offline_notice.dart`). Kapsam BİLEREK dar: küme değişmedi (500/429 dışarıda), auth'un kendi reddi (401) tekrarlanmaz — ikisi de testli (`live_games_test.dart`; düzeltme geri alınınca yeni test DÜŞÜYOR). **Web ikizi YOK:** web'in liste yolu PostgREST'ten geçiyor (`code` zaten okunuyor); `supabase-js` auth hatası bu yolda liste çağrısını düşürmüyor. `stats_repo.my_rank` bu parçada DEĞİŞMEDİ (tekrar denemesi yok, tek seferlik okuma; tekrar ederse ayrı karar). Doğrulama sınırı: cihazda 522 üretilemez; yalnız birim testi + `client_errors`ta bu satırın azalması izlenir (`mobile/docs/testing-olcum.md`).

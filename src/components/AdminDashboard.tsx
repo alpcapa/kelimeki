@@ -38,6 +38,7 @@ import {
   markChatReportHandled,
   setUserBanned,
 } from '../lib/api';
+import { HAMLE_AVI_SERVER_ENABLED } from '../lib/hamleAviApi';
 import type {
   AdminMember,
   AdminUserActivityPoint,
@@ -1914,6 +1915,16 @@ function HamleAviCard({
   stats: AdminHamleAviStats | null | undefined;
   infoHint?: ReactNode;
 }) {
+  if (!HAMLE_AVI_SERVER_ENABLED) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {infoHint && <div className="self-end">{infoHint}</div>}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          Ölçüm KAPALI — gizlilik metni (mobil PR'ıyla birlikte) yayınlanınca açılır. Sunucu tarafı hazır.
+        </div>
+      </div>
+    );
+  }
   if (stats === undefined || stats === null) {
     return (
       <div className="flex flex-col gap-1.5">

@@ -44,7 +44,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
-          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 3 Kasım 2026</P>
+          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 18 Ekim 2026</P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
@@ -76,13 +76,6 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
               e-posta bildirimlerini alma tercihi
             </li>
             <li>Oyun istatistikleri (oynanan oyunlar, kazanma/kaybetme, puan geçmişi)</li>
-            <li>
-              Hamle Avı bulmacalarında ulaştığınız en yüksek seri (rekor) ve daha önce karşınıza
-              çıkan bulmacaların numaraları — aynı bulmacayı size tekrar göstermemek ve
-              rekorunuzu cihazlarınız arasında taşımak için. Bu bilgi yalnızca size görünür;
-              k-lig'e ya da lider tablosuna yansımaz. Üye değilseniz yalnızca cihazınızda
-              tutulur, sunucuya gönderilmez
-            </li>
             <li>
               Arkadaşlık bağlantıları (kiminle arkadaş olduğunuz, gönderdiğiniz/aldığınız
               arkadaşlık istekleri, davet linkinizin kullanım verisi)
@@ -204,8 +197,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             <strong> Hesap Ayarları &rsaquo; Hesabımı Sil</strong> adımıyla kendiniz
             silebilirsiniz; bu işlem onayladığınız anda uygulanır, geri alınamaz ve
             hesabınıza bağlı tüm kişisel verilerinizi (profiliniz, oyun kayıtlarınız ve
-            istatistikleriniz, k-lig puanınız, Hamle Avı rekorunuz ve görülen bulmaca listeniz,
-            arkadaşlık bağlarınız, gönderdiğiniz oyun içi
+            istatistikleriniz, k-lig puanınız, arkadaşlık bağlarınız, gönderdiğiniz oyun içi
             mesajlar, davetleriniz, geri bildirimleriniz ve profil fotoğrafınız) kapsar.
             Tek istisna, birlikte oynadığınız diğer oyuncuların bitmiş oyun kayıtlarıdır:
             onlar başka kullanıcıların kendi verisi olduğu için silinmez, ancak o kayıtlarda
@@ -235,7 +227,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             veya pazarlama amaçlı herhangi bir çerez ya da izleme teknolojisi kullanılmamaktadır.
             Kaç benzersiz ziyaretçimiz olduğunu, hangi cihaz/işletim sistemlerinden geldiğimizi
             ve kaç kişinin oyuna başladığını anlayabilmek için cihazınızda rastgele, kimliğinizle
-            hiçbir şekilde ilişkilendirilmeyen anonim bir kod üretilir. Bu kod dokuz durumda
+            hiçbir şekilde ilişkilendirilmeyen anonim bir kod üretilir. Bu kod sekiz durumda
             sunucuya iletilir: (1) HER ziyarette — oturum açık olsun olmasın — işletim sistemi
             tipiyle (iOS/Android/masaüstü) ve, tarayıcınızdan elde edilebiliyorsa, işletim
             sistemi sürümü/cihaz modeliyle birlikte (bu ikisi bazı tarayıcı ve cihazlarda hiç
@@ -269,12 +261,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             bağlantısına dokunup dokunmadığınız, oturumun süresi ve varsa kaynak etiketi anonim
             kodla birlikte kaydedilir; böylece ziyaretçilerin hangi noktada ayrıldığını ve
             reklamdan gelenlerin kaçının mağazaya gittiğini kişileri tanımadan sayabiliyoruz.
-            (9) Hamle Avı'nda bir bulmacayı sonuçlandırdığınızda (buldunuz, süre bitti ya da
-            çıktınız): bulmaca numarası, sonuç, geçen süre, o ana kadarki seri, girişli olup
-            olmadığınız ve platform bilgisi anonim kodla birlikte kaydedilir; böylece kaç kişinin
-            oynadığını ve bulma oranını kişileri tanımadan sayabiliyoruz. Bu kayda hesap kimliğiniz
-            YAZILMAZ.
-            Bu dokuz kaydın
+            Bu sekiz kaydın
             hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA YER ALMAZ: girişli
             olsanız bile bu veriler hiçbir üçüncü tarafla paylaşılmaz ve hesabınızla asla
             eşleştirilmez. Yazı tipleri de dahil tüm statik
