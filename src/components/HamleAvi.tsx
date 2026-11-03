@@ -528,7 +528,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
       }
       // Tahtadaki "+N" etiketi HAM puanı gösterir; mesaj NET (vergi dahil) toplamı yazar —
       // anahtar net puandır (kullanıcı, 3 Kasım 2026: "vergi dahil toplam N puan").
-      setNote({ text: `Doğru hamle: ${sol.move.word} — vergi dahil toplam ${sol.net} puan · Anlamı için kelimeye dokun`, type: 'ok' });
+      setNote({ text: `Doğru hamle: ${sol.move.word} — vergi dahil toplam ${sol.net} puan`, type: 'ok' });
     }
     setPhase('review');
   };
