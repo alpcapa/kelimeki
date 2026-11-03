@@ -456,7 +456,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
         // Standart modal kabuğu (kullanıcı, 3 Kasım 2026: genişlik/başlık diğer pencerelerle aynı).
         // Kabuk saydam bindirme: tahta arkada görünür, süre "Başla"ya kadar durur.
         // ✕ / Escape / dışarı tıklama = Vazgeç; o bulmaca görülmüş SAYILMAZ (yakılmasın).
-        <Modal title="Hamle Avı" onClose={leaveIntro}>
+        <Modal title={<span className="inline-flex items-center gap-2"><span aria-hidden>🎯</span>Hamle Avı</span>} onClose={leaveIntro}>
           <div data-hamle-avi-intro="">
             <p className="text-sm text-text font-sans leading-relaxed m-0 mb-2">
               <b>{HAMLE_AVI_SECONDS / 60} dakika</b> içinde elindeki harflerle oynanabilecek{' '}
