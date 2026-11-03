@@ -15,6 +15,7 @@ import {
   positionToState, shouldWarnOnLeave, type HamleAviPosition,
 } from '../src/utils/hamleAvi';
 import { solve, replayDelta } from './lib/hamle-avi-solver';
+import { findBestNetMove } from '../src/utils/hamleAviSolve';
 
 let fail = 0;
 const ok = (c: boolean, m: string) => { if (!c) { fail++; console.log('✗ ' + m); } };
@@ -67,6 +68,9 @@ async function main() {
       ok(isCorrect(d ?? -1, p), `#${p.id}: en iyi hamle "doğru" sayılmadı`);
     }
     ok(!isCorrect(p.k - 1, p), `#${p.id}: anahtarın altı doğru sayıldı`);
+    // Cihazdaki çözücü (süre bitince doğru hamleyi tahtada göstermek için) bankayı üreten çözücüyle AYNI anahtarı vermeli.
+    const cli = findBestNetMove(st);
+    ok(!!cli && cli.net === p.k, `#${p.id}: cihaz çözücüsü ${cli?.net} ≠ anahtar ${p.k}`);
   }
   // PLAY yolu: pas geçmek skor farkı 0 → doğru değil
   const st0 = positionToState(sample[0], 'Sen');

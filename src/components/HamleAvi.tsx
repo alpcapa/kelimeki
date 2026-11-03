@@ -40,6 +40,7 @@ import {
 } from '../utils/hamleAvi';
 import { loadHamleAvi, mergeWithServer, saveHamleAvi } from '../utils/hamleAviStore';
 import { fetchHamleAvi, reportHamleAvi } from '../lib/hamleAviApi';
+import { findBestNetMove, type BestMove } from '../utils/hamleAviSolve';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { UserMenu } from './UserMenu';
 import { Board } from './Board';
@@ -63,7 +64,8 @@ const MESSAGE_COLORS: Record<string, string> = {
   '': 'text-muted',
 };
 
-type Phase = 'loading' | 'intro' | 'play' | 'found' | 'missed' | 'exhausted';
+// 'review': süre bitti, oyuncu "Kapat"a basıp doğru hamleyi TAHTADA yerleşik görüyor.
+type Phase = 'loading' | 'intro' | 'play' | 'found' | 'missed' | 'review' | 'exhausted';
 
 interface HamleAviProps {
   playerName: string;
@@ -95,6 +97,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   const bankRef = useRef<HamleAviPosition[] | null>(null);
   const posRef = useRef<HamleAviPosition | null>(null);
   const initialRef = useRef<GameState | null>(null);
+  const solutionRef = useRef<BestMove | null>(null);
   const seenRef = useRef<Set<number>>(new Set(loadHamleAvi().seen));
   const streakRef = useRef(streak);
   streakRef.current = streak;
@@ -149,6 +152,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     posRef.current = pos;
     const st = positionToState(pos, playerName);
     initialRef.current = st;
+    solutionRef.current = null;
     dispatch({ type: 'RESUME_SAVED', state: st });
     setNote(null);
     setRemaining(HAMLE_AVI_SECONDS * 1000);
@@ -188,6 +192,13 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
       setStreak(next);
       setLastNet(net);
       setPhase(found ? 'found' : 'missed');
+      if (!found && initialRef.current) {
+        // Doğru hamleyi pencere açıkken arka planda bul (YZ çözücüsü ~0,1-0,5 sn); "Kapat"a basılınca hazır olsun.
+        const init = initialRef.current;
+        window.setTimeout(() => {
+          solutionRef.current ??= findBestNetMove(init);
+        }, 50);
+      }
       const local = saveHamleAvi({ best: Math.max(loadHamleAvi().best, next.best) });
       if (userId) void reportHamleAvi(local.best, local.seen);
     },
@@ -366,8 +377,41 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     setPhase('play');
   };
 
+  /** Süre bitti → "Kapat": doğru hamle tahtaya taslak taşlar olarak yerleştirilir (kullanıcı, 3 Kasım 2026). */
+  const showSolution = () => {
+    const init = initialRef.current;
+    if (!init) return;
+    solutionRef.current ??= findBestNetMove(init);
+    const sol = solutionRef.current;
+    dispatch({ type: 'RESUME_SAVED', state: init });
+    if (sol) {
+      // `PLACE_TILE` rafın O ANKİ sırasına bakar: yerleştirilen taş rafından çıkınca indeksler kayar.
+      const rack = [...init.players[init.current].rack];
+      for (const p of sol.move.placements) {
+        const idx = rack.findIndex((t) => (p.tile.wild ? t.letter === '?' : t.letter === p.tile.letter));
+        if (idx < 0) continue;
+        rack.splice(idx, 1);
+        dispatch(
+          p.tile.wild
+            ? { type: 'PLACE_TILE', r: p.r, c: p.c, rackIndex: idx, wildLetter: p.tile.wildLetter }
+            : { type: 'PLACE_TILE', r: p.r, c: p.c, rackIndex: idx },
+        );
+      }
+      // Tahtadaki "+N" etiketi HAM puanı gösterir; vergi varsa net puan ondan düşük (anahtar net).
+      const vergi = sol.move.score !== sol.net;
+      setNote({
+        text: `Doğru hamle: ${sol.move.word} — ${sol.net} puan${vergi ? ` (vergi dahil, ham ${sol.move.score})` : ''}`,
+        type: 'ok',
+      });
+    }
+    setPhase('review');
+  };
+
   const leaveRef = useModalA11y(leaveOpen, () => setLeaveOpen(false));
-  const resultRef = useModalA11y(phase === 'found' || phase === 'missed' || phase === 'exhausted', handleExit);
+  const resultRef = useModalA11y(
+    phase === 'found' || phase === 'missed' || phase === 'exhausted',
+    phase === 'missed' ? showSolution : handleExit,
+  );
 
   const mesaj = note?.text ?? (phase === 'play' ? state.message : '');
   const mesajTipi = note?.type ?? (phase === 'play' ? state.messageType : '');
@@ -427,13 +471,24 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: color.base, display: 'inline-block' }} />
               {state.current === 0 ? 'MAVİ' : 'KIRMIZI'}
             </span>
-            <button
-              onClick={handleExit}
-              data-hamle-avi-cik=""
-              className="btn-raised-neutral bg-void border border-border text-text rounded-md px-3 min-h-[28px] tap-expand font-mono text-[11px] font-bold tracking-[1.5px] active:scale-[0.97] transition-transform"
-            >
-              ÇIK ✕
-            </button>
+            <div className="flex items-center gap-1">
+              {phase === 'review' && (
+                <button
+                  onClick={() => loadNext(true)}
+                  data-hamle-avi-sonraki=""
+                  className="btn-raised btn-raised-orange bg-orange text-white rounded-md px-3 min-h-[28px] tap-expand font-mono text-[11px] font-bold tracking-[1.5px] active:scale-[0.97] transition-transform"
+                >
+                  SONRAKİ
+                </button>
+              )}
+              <button
+                onClick={handleExit}
+                data-hamle-avi-cik=""
+                className="btn-raised-neutral bg-void border border-border text-text rounded-md px-3 min-h-[28px] tap-expand font-mono text-[11px] font-bold tracking-[1.5px] active:scale-[0.97] transition-transform"
+              >
+                ÇIK ✕
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -646,7 +701,8 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
                 <p className="text-[26px] leading-[30px] font-bold text-text font-sans m-0">Üzgünüz, bulamadınız</p>
                 <p className="text-sm text-text font-sans m-0">
                   En yüksek hamle puanı <strong className="text-red">{pos?.k}</strong> idi
-                  {pos ? <> (<strong>{pos.w}</strong>)</> : null}. Serin sıfırlandı; rekorun {streak.best}.
+                  {pos ? <> (<strong>{pos.w}</strong>)</> : null}. Serin sıfırlandı; rekorun {streak.best}. Kapat'a basınca
+                  doğru hamleyi tahtada görürsün.
                 </p>
               </>
             )}
@@ -668,10 +724,11 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
                 </button>
               )}
               <button
-                onClick={onExit}
+                onClick={phase === 'missed' ? showSolution : onExit}
+                data-hamle-avi-kapat={phase === 'missed' ? '' : undefined}
                 className="btn-raised-neutral flex-1 min-h-[48px] rounded-md bg-void border border-border text-text text-sm font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
-                {phase === 'exhausted' ? 'Tamam' : 'Çık'}
+                {phase === 'exhausted' ? 'Tamam' : phase === 'missed' ? 'Kapat' : 'Çık'}
               </button>
             </div>
           </div>

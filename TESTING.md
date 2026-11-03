@@ -1759,7 +1759,7 @@ Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağ�
 - [ ] "YENİ" balonu HEP görünür (Hamle Avı'na girip çıkınca da kalkmaz).
 - [ ] İlk giriş: pozisyon tahtanın ÜSTÜNDE tanıtım balonu, süre 3:00'da DURUR; "Başla" ile sayım başlar. "Bir daha gösterme" işaretliyse sonraki girişte balon çıkmaz.
 - [ ] Doğru (en yüksek net puanlı) hamle → "Tebrikler", Seri +1; daha düşük geçerli hamle → "N puan aldın — daha iyisi var", pozisyon sıfırlanır, süre SÜRER.
-- [ ] Süre bitince "Üzgünüz — en yüksek hamle puanı X (kelime) idi", seri 0, rekor korunur. Son 30 sn geri sayım kırmızı.
+- [ ] Süre bitince "Üzgünüz — en yüksek hamle puanı X (kelime) idi", seri 0, rekor korunur. Son 30 sn geri sayım kırmızı. "Kapat" → doğru hamle TAHTADA taslak taşlarla yerleşik görünür (mesaj: "Doğru hamle: KELİME — N puan"), üstte ÇIK'ın yanında SONRAKİ; tahta kilitli (Oyna/Geri Al pasif).
 - [ ] Seri > 0 iken ÇIK → "Serin sıfırlanır" uyarısı.
 - [ ] Üye: rekor ve görülenler başka cihazda da gelir (`hamle_avi_stats`); çevrimdışı oynayıp bağlanınca eşitlenir; aynı bulmaca ikinci kez ÇIKMAZ.
 - [ ] Uçak modu: banka bir kez indiyse oynanır; ilk açılışta çevrimdışıysa "Bulmacalar yüklenemedi" mesajı çıkar (banka parçasının SW önbelleğine girdiği ayrıca doğrulanmalı).
