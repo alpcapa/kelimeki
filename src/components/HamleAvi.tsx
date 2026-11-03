@@ -109,6 +109,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   const posRef = useRef<HamleAviPosition | null>(null);
   const initialRef = useRef<GameState | null>(null);
   const solutionRef = useRef<BestMove | null>(null);
+  const reviewTapRef = useRef<{ r: number; c: number; x: number; y: number } | null>(null);
   const seenRef = useRef<Set<number>>(new Set(loadHamleAvi().seen));
   const streakRef = useRef(streak);
   streakRef.current = streak;
@@ -259,7 +260,22 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     }
   };
 
+  /** Review'da (doğru hamle tahtada): dokunulan karedeki kelime(ler)in anlamı — taslak = DOĞRU HAMLE dahil. */
+  const openMeaningAt = (r: number, c: number) => {
+    const words = [
+      getFullWordAt(state.board, state.placed, r, c, 0, 1),
+      getFullWordAt(state.board, state.placed, r, c, 1, 0),
+    ].filter((w) => w.length >= 2);
+    openMeaning(words);
+  };
+
   const handleCellClick = (r: number, c: number, e: React.MouseEvent) => {
+    // Süre bitti, doğru hamle tahtada: oynanmış kelimeye dokununca anlamı açılır (kullanıcı, 3 Kasım 2026:
+    // "bilmediği bir kelime ise anlamını görmesi iyi olur"). Taslak kuralı burada GEÇERSİZ — taslak cevabın kendisi.
+    if (phase === 'review') {
+      if (state.board[r][c] || state.placed[key(r, c)]) openMeaningAt(r, c);
+      return;
+    }
     if (!canAct) return;
     // Çift dokunuşla zoom: dokunuşun kendi işinden ÖNCE sorulur (App.tsx handleCellClick ile aynı sıra).
     if (!state.board[r][c]) {
@@ -512,7 +528,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
       }
       // Tahtadaki "+N" etiketi HAM puanı gösterir; mesaj NET (vergi dahil) toplamı yazar —
       // anahtar net puandır (kullanıcı, 3 Kasım 2026: "vergi dahil toplam N puan").
-      setNote({ text: `Doğru hamle: ${sol.move.word} — vergi dahil toplam ${sol.net} puan`, type: 'ok' });
+      setNote({ text: `Doğru hamle: ${sol.move.word} — vergi dahil toplam ${sol.net} puan · Anlamı için kelimeye dokun`, type: 'ok' });
     }
     setPhase('review');
   };
@@ -617,10 +633,25 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
             dragHiddenKey={ghost && ghost.source.kind === 'placed' ? key(ghost.source.r, ghost.source.c) : null}
             onTilePointerDown={(r, c, e) => {
               const tile = state.placed[key(r, c)];
+              if (phase === 'review') {
+                reviewTapRef.current = { r, c, x: e.clientX, y: e.clientY };
+                return;
+              }
               if (tile) beginDrag({ kind: 'placed', r, c, tile }, e);
             }}
             onTilePointerMove={moveDrag}
-            onTilePointerUp={endDrag}
+            onTilePointerUp={(e) => {
+              // Review: dokunuş = o kelimenin anlamı. Pencere pointerup'ta açılır ve ardından gelen compat
+              // click yutulur (yoksa yeni açılan modalın dışına düşüp onu hemen kapatır — ghostClick.ts).
+              const t = reviewTapRef.current;
+              reviewTapRef.current = null;
+              if (phase === 'review' && t && Math.hypot(e.clientX - t.x, e.clientY - t.y) < TAP_SLOP_ON_RELEASE) {
+                swallowNextClick();
+                openMeaningAt(t.r, t.c);
+                return;
+              }
+              endDrag(e);
+            }}
             onTilePointerCancel={cancelDrag}
             zoom={boardZoom.zoom}
             viewportRef={boardZoom.viewportRef}

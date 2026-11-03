@@ -1762,6 +1762,6 @@ Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağ�
 - [ ] Süre bitince "Üzgünüz — en yüksek hamle puanı X (kelime) idi", seri 0, rekor korunur. Son 30 sn geri sayım kırmızı. "Kapat" → doğru hamle TAHTADA taslak taşlarla yerleşik görünür (mesaj: "Doğru hamle: KELİME — N puan"), üstte ÇIK'ın yanında SONRAKİ; tahta kilitli (Oyna/Geri Al pasif).
 - [ ] Seri > 0 iken ÇIK → "Serin sıfırlanır" uyarısı.
 - [ ] Üye: rekor ve görülenler başka cihazda da gelir (`hamle_avi_stats`); çevrimdışı oynayıp bağlanınca eşitlenir; aynı bulmaca ikinci kez ÇIKMAZ.
-- [ ] Tahtadaki oynanmış kelimeye dokununca anlam penceresi açılır; taslak taş varken AÇILMAZ.
+- [ ] Tahtadaki oynanmış kelimeye dokununca anlam penceresi açılır; oyun sırasında taslak taş varken AÇILMAZ. Süre bitip "Kapat"tan sonra doğru hamlenin kelimesine (ve eski kelimelere) dokununca anlam açılır, modal kendiliğinden kapanmaz.
 - [ ] Uçak modu: banka bir kez indiyse oynanır; ilk açılışta çevrimdışıysa "Bulmacalar yüklenemedi" mesajı çıkar (banka parçasının SW önbelleğine girdiği ayrıca doğrulanmalı).
 
