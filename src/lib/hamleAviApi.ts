@@ -12,10 +12,10 @@ import { getOrCreateAnonId } from '../utils/visitTracking';
  *
  * **AÇIK (3 Kasım 2026, kullanıcı kararı):** web yayınıyla birlikte, ama Gizlilik Politikası bu veriyi
  * HENÜZ anlatmıyor. BİLİNÇLİ GEÇİCİ İSTİSNA: metin (§2 rekor maddesi, §5 silme listesi, §6 "dokuz durum"
- * (9) + tarih) web+port İKİZİ olarak **1.1.6 ile birlikte** yayınlanacak (~1 hafta); iOS 1.1.5 In Review
- * olduğundan mobil dosyaya dokunan bir merge şimdi istenmiyor. Kullanıcı riski bilerek kabul etti
+ * (9) + tarih) web+port İKİZİ olarak **1.1.6 ile birlikte** yayınlanacak (SÜRE SABİT DEĞİL: 1.1.6 YAYINA ÇIKTIĞINDA —
+ * kullanıcı: "1.1.6 ne zaman yayına çıkarsa"); iOS 1.1.5 In Review olduğundan mobil dosyaya dokunan bir merge şimdi istenmiyor. Kullanıcı riski bilerek kabul etti
  * (anonim sonuç olayı hesap kimliği taşımıyor; hesaba bağlı olan yalnızca rekor sayısı + görülen bulmaca
- * numaraları). ⚠ 1.1.6 kayarsa bu istisna UZAMAZ — metin web'de tek başına yayınlanır ya da bayrak kapanır.
+ * numaraları). İstisna 1.1.6 yayına çıkana kadar sürer; sürenin uzaması riski kullanıcı tarafından bilerek kabul edildi.
  * Takip: docs/decisions/product-backlog.md → "KARAR (3 Kas 2026) — gizlilik gecikmeli".
  */
 export const HAMLE_AVI_SERVER_ENABLED = true;
