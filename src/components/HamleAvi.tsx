@@ -114,7 +114,11 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   const streakRef = useRef(streak);
   streakRef.current = streak;
   const endsAt = useRef(0);
-  const me = state.players[state.current];
+  // Oyuncu = pozisyonun sahibi, `state.current` DEĞİL: doğru hamle `PLAY` ile oynanınca reducer sırayı
+  // rakibe geçirir; `state.current`e bakmak "Tebrikler" penceresinin arkasında rafı rakibin dolgu
+  // taşlarına (E E E…), rozeti/çizgiyi rakibin rengine çevirirdi (denetimde bulundu, 3 Kasım 2026).
+  const ownerIdx = initialRef.current?.current ?? state.current;
+  const me = state.players[ownerIdx];
 
   // ── Veri: sözlük + banka (lazy chunk) + sunucu eşitlemesi ────────────────
   useEffect(() => {
@@ -202,6 +206,9 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   const finish = useCallback(
     (found: boolean, net: number) => {
       const next = found ? onFound(streakRef.current) : onMissed(streakRef.current);
+      // Süre dolarken açık kalan joker penceresi sonuç penceresinin ALTINDA kalıp, "Kapat"tan sonra
+      // kilitli tahtaya taş koyabilirdi.
+      setPendingWild(null);
       setStreak(next);
       setLastNet(net);
       setPhase(found ? 'found' : 'missed');
@@ -392,6 +399,8 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     dragRef.current = null;
     setGhost(null);
     setDragOverKey(null);
+    // Parmak tahtadayken süre bitmiş olabilir: sonuç/review aşamasında bırakma HİÇBİR iş yapmaz.
+    if (!canAct) return;
     if (!d) return;
     const { source } = d;
     const dist = Math.hypot(e.clientX - d.x, e.clientY - d.y);
@@ -459,6 +468,13 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
       window.removeEventListener('blur', clearStuckDrag);
     };
   }, []);
+
+  // "N puan aldın — daha iyisi var" notu geçici: oyuncu yeni bir taş koyunca/aldığında kalkar. Kalmazsa
+  // not canlı mesajı ("Kelime mevcut harflere bağlanmalı." vb.) bir sonraki Oyna'ya kadar ÖRTERDİ.
+  const placedCount = Object.keys(state.placed).length;
+  useEffect(() => {
+    if (placedCount > 0) setNote((n) => (n && n.type === 'warn' ? null : n));
+  }, [placedCount]);
 
   // ── Oyna ─────────────────────────────────────────────────────────────────
   const handlePlay = () => {
@@ -606,7 +622,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
               style={{ background: color.tint, color: color.text }}
             >
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: color.base, display: 'inline-block' }} />
-              {state.current === 0 ? 'MAVİ' : 'KIRMIZI'}
+              {ownerIdx === 0 ? 'MAVİ' : 'KIRMIZI'}
             </span>
             <div className="flex items-center gap-0.5">
               {phase === 'review' && (
