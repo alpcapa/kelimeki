@@ -43,13 +43,13 @@ import { fetchHamleAvi, reportHamleAvi } from '../lib/hamleAviApi';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { Avatar } from './Avatar';
 import { Board } from './Board';
+import { Modal } from './Modal';
 import { Rack } from './Rack';
 import { Tile } from './Tile';
 import { WildcardModal } from './WildcardModal';
 
 /** Tanıtım penceresindeki açıklamalar (ilk versiyonla aynı, süre 3 dk). */
 export const HAMLE_AVI_INTRO_POINTS = [
-  'Bölge vergisi puana dahildir — ham puanı yüksek hamle her zaman en iyisi değildir.',
   'Bulursan sıradakine geç, istediğin kadar devam et.',
   'k-lig puanını etkilemez.',
 ];
@@ -322,6 +322,15 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
     onExit();
   };
 
+  /** Tanıtımdan vazgeç: bulmaca yakılmaz (görülenlerden çıkarılır) ve ekrandan çıkılır. */
+  const leaveIntro = () => {
+    if (posRef.current) {
+      seenRef.current.delete(posRef.current.id);
+      saveHamleAvi({ seen: [...seenRef.current] });
+    }
+    onExit();
+  };
+
   const startPlaying = () => {
     if (dontShow) saveHamleAvi({ introHidden: true });
     endsAt.current = Date.now() + HAMLE_AVI_SECONDS * 1000;
@@ -386,44 +395,6 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
             dragOverKey={dragOverKey}
             dragOverValid={ghost ? bosHucre(dragOverKey) : false}
           />
-          {phase === 'intro' && (
-            <div
-              role="dialog"
-              aria-label="Hamle Avı tanıtımı"
-              data-hamle-avi-intro=""
-              className="absolute left-3 right-3 top-3 z-30 bg-panel border border-border rounded-xl p-3 shadow-[0_12px_30px_rgba(15,23,42,0.35)]"
-              style={{ maxWidth: 640 }}
-            >
-              <div className="font-sans font-bold uppercase tracking-[1px] text-center mb-1">🎯 Hamle Avı</div>
-              <p className="text-[12px] text-text mb-1">
-                Tahtada hazır bir pozisyon göreceksin. <b>{HAMLE_AVI_SECONDS / 60} dakika</b> içinde elindeki harflerle
-                oynanabilecek <b>en yüksek puanlı hamleyi</b> bul.
-              </p>
-              <ul className="text-[11px] text-muted mb-2" style={{ listStyle: 'disc', paddingLeft: 16 }}>
-                {HAMLE_AVI_INTRO_POINTS.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-              <label className="flex items-center gap-2 text-[12px] mb-2">
-                <input type="checkbox" checked={dontShow} onChange={(e) => setDontShow(e.target.checked)} style={{ width: 16, height: 16 }} />
-                Bir daha gösterme
-              </label>
-              <div className="flex gap-2">
-                <button
-                  onClick={onExit}
-                  className="flex-1 btn-raised-neutral bg-panel border border-border min-h-[44px] rounded-md text-xs font-bold uppercase active:scale-[0.97] transition-transform"
-                >
-                  Vazgeç
-                </button>
-                <button
-                  onClick={startPlaying}
-                  className="flex-1 btn-raised btn-raised-orange min-h-[44px] rounded-md text-xs font-bold uppercase bg-orange text-white active:scale-[0.97] transition-transform"
-                >
-                  Başla
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">
@@ -468,6 +439,43 @@ export function HamleAvi({ playerName, avatarUrl, userId, onExit }: HamleAviProp
         <div className="pointer-events-none fixed z-[300]" style={{ left: ghost.x, top: ghost.y, ...GHOST_TILE_STYLE }}>
           <Tile tile={ghost.tile} variant="rack" />
         </div>
+      )}
+
+      {phase === 'intro' && (
+        // Standart modal kabuğu (kullanıcı, 3 Kasım 2026: genişlik/başlık diğer pencerelerle aynı).
+        // Kabuk saydam bindirme: tahta arkada görünür, süre "Başla"ya kadar durur.
+        // ✕ / Escape / dışarı tıklama = Vazgeç; o bulmaca görülmüş SAYILMAZ (yakılmasın).
+        <Modal title="Hamle Avı" onClose={leaveIntro}>
+          <div data-hamle-avi-intro="">
+            <p className="text-sm text-text font-sans leading-relaxed m-0 mb-2">
+              <b>{HAMLE_AVI_SECONDS / 60} dakika</b> içinde elindeki harflerle oynanabilecek{' '}
+              <b>en yüksek puanlı hamleyi</b> bul.
+            </p>
+            <ul className="text-xs text-muted font-sans mb-3" style={{ listStyle: 'disc', paddingLeft: 18 }}>
+              {HAMLE_AVI_INTRO_POINTS.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+            <label className="flex items-center gap-2 text-xs font-sans mb-3">
+              <input type="checkbox" checked={dontShow} onChange={(e) => setDontShow(e.target.checked)} style={{ width: 16, height: 16 }} />
+              Bir daha gösterme
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={leaveIntro}
+                className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+              >
+                Vazgeç
+              </button>
+              <button
+                onClick={startPlaying}
+                className="btn-raised btn-raised-orange flex-1 py-2.5 rounded-md bg-orange text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+              >
+                Başla
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {pendingWild && (
