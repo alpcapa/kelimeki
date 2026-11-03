@@ -418,14 +418,14 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
           </div>
           <div className="flex flex-col items-end gap-1">
             {/* Oyuncunun rengi baştan belli olsun: bankada oyuncu bazen sol-üst (camgöbeği = "Mavi"),
-                bazen sağ-alt (kırmızı = "Pembe") köşede (kullanıcı, 3 Kasım 2026). */}
+                bazen sağ-alt (kırmızı = "Pembe") köşede (kullanıcı, 3 Kasım 2026; metin "MAVİSİN/PEMBESİN" — "SEN · MAVİ" yerine). */}
             <span
               data-hamle-avi-renk=""
               className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono flex items-center gap-1.5 whitespace-nowrap"
               style={{ background: color.tint, color: color.text }}
             >
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: color.base, display: 'inline-block' }} />
-              SEN · {state.current === 0 ? 'MAVİ' : 'PEMBE'}
+              {state.current === 0 ? 'MAVİSİN' : 'PEMBESİN'}
             </span>
             <button
               onClick={handleExit}
