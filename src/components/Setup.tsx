@@ -1,4 +1,5 @@
 // Kelimeki — oyun kurulum ekranı: oyuncu sayısı (2/4) seçimi
+import { HamleAviButton } from "./HamleAviButton";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GUEST_PLAYER_NAME } from "../game/constants";
 import type { PlayerSetup } from "../game/gameReducer";
@@ -258,6 +259,8 @@ interface SetupProps {
   // görülmediyse gösterilsin mi — App.tsx bunu oyun ekranı render'ında kullanır.
   /** `aiLevel`: formdaki ZORLUK seçimi (ROADMAP #23 Faz 3) — 4 kişilikte üç YZ'ye birden. */
   onStart: (players: PlayerSetup[], showTutorial: boolean, aiLevel: AiLevel) => void;
+  /** "Hamle Avı" (ROADMAP #48) — App kendi ekranını açar; kurulum/oyun state'ine dokunmaz. */
+  onOpenHamleAvi: () => void;
   // "Oyun Tipi" seçimi (Yapay Zeka ile / Arkadaşınla) — App.tsx'te tutulur,
   // çünkü Canlı oyun tamamen ayrı bir veri kaynağından (Supabase) besleniyor;
   // Setup burada yalnızca seçiciyi gösterip görünümü değiştirir.
@@ -304,6 +307,7 @@ export function Setup({
   cloudSaves,
   onResumeCloudSave,
   onReplayTutorial,
+  onOpenHamleAvi,
 }: SetupProps) {
   const { user, profile, profileLoading } = useAuth();
   // (27 Eylül 2026: 1. koltuğun rütbe mührü koltuk listesiyle birlikte
@@ -798,6 +802,9 @@ export function Setup({
           )}
         </div>
 
+        {/* Hamle Avı HER görünümde en üstte (kullanıcı, 3 Kasım 2026) — bkz. HamleAviButton. */}
+        <HamleAviButton onOpen={onOpenHamleAvi} />
+
         <div className="flex flex-col gap-2">
           <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
             Kime karşı
@@ -1066,7 +1073,7 @@ export function Setup({
                 <button
                   onClick={handleStart}
                   disabled={!wordsReady || accountPending}
-                  className="flex-1 btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+                  className={`flex-1 btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed`}
                 >
                   {/* accountPending iken de "Hazırlanıyor…" gösterilir — girişli
                     kullanıcı için profil gelmeden basılırsa oyuncu adı kısa

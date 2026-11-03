@@ -20,6 +20,7 @@ import {
   fetchAdminSignupFunnel,
   fetchAdminWebJourney,
   fetchAdminTutorialFunnel,
+  fetchAdminHamleAviStats,
   fetchAdminDeviceBreakdown,
   fetchAdminDeviceModelBreakdown,
   fetchAdminDeviceModelOsBreakdown,
@@ -37,6 +38,7 @@ import {
   markChatReportHandled,
   setUserBanned,
 } from '../lib/api';
+import { HAMLE_AVI_SERVER_ENABLED } from '../lib/hamleAviApi';
 import type {
   AdminMember,
   AdminUserActivityPoint,
@@ -58,6 +60,7 @@ import type {
   AdminSignupFunnelRow,
   AdminWebJourneyRow,
   AdminTutorialFunnelRow,
+  AdminHamleAviStats,
   AdminAppVersionRow,
   AdminPushVersionRow,
   AdminDeviceBreakdownRow,
@@ -524,6 +527,24 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         önizleme/tarama botları (27 Eylül 2026'da ölçüldü: "Yeni" 20 oturumun 14'ü böyleydi,
         çoğu ikişer ikişer aynı milisaniyede açılmış). ⚠ Kapanış pingini kaybeden gerçek
         bir ziyaretçi de buraya düşebilir.
+      </>
+    ),
+  },
+  'hamle-avi': {
+    title: 'Hamle Avı',
+    body: (
+      <>
+        <b>Hamle Avı</b> bulmaca modunun ölçümü (ROADMAP #48). Olay tablosu <b>ANONİM</b>:
+        hesap kimliği yok, yalnızca cihazın rastgele kodu; yalnızca <b>kelimeki.com</b>
+        sayılır (preview/yerel denemeler hariç). <b>Oynayan kişi</b> = BENZERSİZ CİHAZ (bir kişi
+        iki cihazdan oynarsa iki sayılır). <b>Bulma oranı</b> = bulunan / (bulundu + süre bitti +
+        çıktı). <b>Ort. seri</b> = seri BOZULURKEN (süre bitti/çıkıldı) ulaşılan seri.{' '}
+        <b>Üye rekoru</b> kutuları hesaba bağlı rekor tablosundan gelir ve zaman penceresinden
+        BAĞIMSIZDIR (tüm zamanlar).
+        <br />
+        <br />
+        ⚠ Ölçüm 3 Kasım 2026'dan itibaren birikir; geçmiş veri yok. Web yarısı yayındayken uygulama
+        (iOS/Android) henüz Hamle Avı'na sahip değil.
       </>
     ),
   },
@@ -1882,6 +1903,110 @@ function WebJourneyTable({
   );
 }
 
+/**
+ * Hamle Avı kutuları (ROADMAP #48, 3 Kasım 2026): kaç kişi oynadı, toplam oyun, kişi başı ortalama,
+ * bulma oranı, süre, seri, üye rekoru + günlük seri. Sözleşme ve sayım kuralları: `AdminHamleAviStats`.
+ * `undefined` = yükleniyor, `null` = Supabase yok/veri yok.
+ */
+function HamleAviCard({
+  stats,
+  infoHint,
+}: {
+  stats: AdminHamleAviStats | null | undefined;
+  infoHint?: ReactNode;
+}) {
+  if (!HAMLE_AVI_SERVER_ENABLED) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {infoHint && <div className="self-end">{infoHint}</div>}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          Ölçüm KAPALI — gizlilik metni (mobil PR'ıyla birlikte) yayınlanınca açılır. Sunucu tarafı hazır.
+        </div>
+      </div>
+    );
+  }
+  if (stats === undefined || stats === null) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {infoHint && <div className="self-end">{infoHint}</div>}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          {stats === undefined ? 'Yükleniyor…' : 'Veri yok.'}
+        </div>
+      </div>
+    );
+  }
+  const pct = (n: number, d: number) => (d > 0 ? `%${Math.round((n / d) * 100)}` : '—');
+  const num = (n: number | null | undefined, digits = 1) =>
+    n === null || n === undefined ? '—' : n.toLocaleString('tr-TR', { maximumFractionDigits: digits });
+  const perPlayer = stats.players > 0 ? stats.plays / stats.players : null;
+  const boxes: { label: string; value: string; sub?: string }[] = [
+    {
+      label: 'Oynayan kişi',
+      value: num(stats.players, 0),
+      sub: `üye ${num(stats.players_members, 0)} · misafir ${num(stats.players_guests, 0)}`,
+    },
+    { label: 'Toplam oyun', value: num(stats.plays, 0) },
+    { label: 'Kişi başı oyun', value: num(perPlayer), sub: 'ortalama' },
+    {
+      label: 'Bulma oranı',
+      value: pct(stats.found, stats.plays),
+      sub: `bulundu ${num(stats.found, 0)} · süre bitti ${num(stats.missed, 0)} · çıktı ${num(stats.left, 0)}`,
+    },
+    { label: 'Ort. bulma süresi', value: stats.avg_seconds_found === null ? '—' : `${num(stats.avg_seconds_found)} sn` },
+    {
+      label: 'Ort. seri',
+      value: num(stats.avg_streak_lost),
+      sub: `bozulurken · en yüksek seri ${num(stats.max_streak, 0)}`,
+    },
+    {
+      label: 'Rekorlu üye',
+      value: num(stats.members_with_record, 0),
+      sub: `tüm zamanlar · ort. ${num(stats.avg_record)} · en yüksek ${num(stats.max_record, 0)}`,
+    },
+    {
+      label: 'Üye başına görülen',
+      value: num(stats.avg_seen_members),
+      sub: `bulmaca · ${num(stats.members_total, 0)} üye`,
+    },
+  ];
+  const days = stats.daily.slice(-14);
+  const maxPlays = Math.max(1, ...days.map((d) => d.plays));
+  return (
+    <div className="flex flex-col gap-2" data-admin-hamle-avi="">
+      {infoHint && <div className="self-end">{infoHint}</div>}
+      <div className="grid grid-cols-2 min-[580px]:grid-cols-4 gap-2">
+        {boxes.map((b) => (
+          <div key={b.label} className="bg-panel border border-border rounded-md p-2 flex flex-col gap-0.5">
+            <span className="text-[10px] font-mono uppercase tracking-[0.5px] text-muted">{b.label}</span>
+            <span className="text-xl font-mono font-bold text-text leading-tight">{b.value}</span>
+            {b.sub && <span className="text-[9px] font-mono text-muted leading-snug">{b.sub}</span>}
+          </div>
+        ))}
+      </div>
+      {days.length === 0 ? (
+        <div className="text-xs font-mono text-muted text-center py-3">Bu aralıkta oyun yok.</div>
+      ) : (
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-mono uppercase tracking-[0.5px] text-muted">
+            Günlük (son {days.length} gün) — oyun · kişi
+          </span>
+          {days.map((d) => (
+            <div key={d.day} className="flex items-center gap-2 text-[10px] font-mono">
+              <span className="w-12 shrink-0 text-muted">{d.day.slice(8, 10)}.{d.day.slice(5, 7)}</span>
+              <div className="flex-1 h-2 rounded bg-void overflow-hidden">
+                <div className="h-full bg-accent" style={{ width: `${(d.plays / maxPlays) * 100}%` }} />
+              </div>
+              <span className="w-14 shrink-0 text-right text-text">
+                {d.plays} · {d.players}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TutorialFunnelTable({
   rows,
   infoHint,
@@ -2763,6 +2888,7 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
   const [journeyDevice, setJourneyDevice] = useState<string>('all');
   const [journeyEntry, setJourneyEntry] = useState<string>('landing');
   const [tutorialFunnel, setTutorialFunnel] = useState<AdminTutorialFunnelRow[] | null>(null);
+  const [hamleAvi, setHamleAvi] = useState<AdminHamleAviStats | null | undefined>(undefined);
   const [deviceBreakdown, setDeviceBreakdown] = useState<AdminDeviceBreakdownRow[] | null>(null);
   const [deviceModels, setDeviceModels] = useState<AdminDeviceModelRow[] | null>(null);
   const [osVersions, setOsVersions] = useState<AdminOsVersionRow[] | null>(null);
@@ -2954,6 +3080,7 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
       fetchAdminFunnel(days).then(setFunnelV2),
       fetchAdminSignupFunnel(days).then(setSignupFunnel),
       fetchAdminTutorialFunnel(days).then(setTutorialFunnel),
+      fetchAdminHamleAviStats(days).then(setHamleAvi),
       fetchAdminDeviceBreakdown(days).then(setDeviceBreakdown),
       fetchAdminDeviceModelBreakdown(days).then(setDeviceModels),
       fetchAdminOsVersionBreakdown(days).then(setOsVersions),
@@ -4089,6 +4216,16 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
                     <TutorialFunnelTable
                       rows={tutorialFunnel}
                       infoHint={<InfoHint id="tanitim-turu" onOpen={setHint} />}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Hamle Avı (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <PlatformTag kind="web" />
+                    </span>
+                    <HamleAviCard
+                      stats={hamleAvi}
+                      infoHint={<InfoHint id="hamle-avi" onOpen={setHint} />}
                     />
                   </div>
                   <div className="flex flex-col gap-2">

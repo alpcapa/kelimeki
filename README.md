@@ -106,6 +106,7 @@ src/
 │   ├── LogoMark.tsx             # "kelimeki" logosu — statik SVG path (üretilmiş, bkz. scripts/generate-logo-paths.mjs), font bağımsız
 │   ├── UserMenu.tsx             # hesap menüsü (giriş / hesap ayarları / skor kartı)
 │   ├── TutorialGame.tsx         # ilk oyunda açılan "oynayarak öğren" tanıtımı — raylı, 4 sahne, gerçek motorla oynanır (kendi useReducer'ı; kayıt/telemetri/k-lig ÇALIŞMAZ). "Nasıl oynanır?" penceresinden TEKRAR de oynanır (o modda kapanışta oyun başlamaz)
+│   ├── HamleAvi.tsx             # "Hamle Avı" bulmaca ekranı (3 dk, en iyi hamleyi bul; kendi useReducer'ı — kayıt/k-lig ÇALIŞMAZ); Setup'ta `HamleAviButton.tsx`
 │   ├── HelpModal.tsx            # nasıl oynanır sayfası (artık kendiliğinden AÇILMIYOR — tanıtım onun yerini aldı; Yardım linkinden ve /nasil-oynanir/ten erişilir)
 │   ├── AuthModal.tsx            # giriş / kayıt / şifre sıfırlama
 │   ├── ResetPasswordModal.tsx   # şifre sıfırlama e-postasındaki bağlantıdan sonra yeni şifre belirleme
@@ -198,6 +199,7 @@ src/
 │   ├── onboarding.ts   # ilk açılış / tanıtım / zoom balonu bayrakları + bağlamsal ipuçlarının kararı (pickOnboardingHint)
 │   ├── dragFeel.ts     # sürükleme jestinin "hissi" (eşikler, parmağın üstünde kaldırma, hayalet görseli) — App + OnlineGameScreen + TutorialGame ortak
 │   ├── tutorialScript.ts # tanıtımın senaryosu: 4 sahne + rakibin 4 cevabı, senaryolu torba/raf, beklenen puanlar (npm run verify-tutorial-script kilitler)
+│   ├── hamleAvi.ts / hamleAviStore.ts # Hamle Avı saf mantığı (doğru/yanlış, seri-rekor, görülenler) + cihaz deposu; banka `data/hamleAviBank.json` (npm run generate-hamle-avi-bank; npm run verify-hamle-avi bankayı motorla yeniden çözer)
 │   ├── visitTracking.ts # anonim misafir ziyaret kimliği, cihaz/standalone tespiti, UTM kaynağı
 │   ├── deviceLabels.ts # admin cihaz tablolarının saf etiketleyicileri: model KODUNDAN marka (SM- → Samsung), platform/OS sürümü etiketleri + iki açılır ağaç (marka→model, cihaz→OS sürümü) (npm run verify-device-labels kilitler)
 │   ├── adminGroups.ts  # admin AÇILIR tablolarının gruplayıcıları: `?ref=` etiketi → kanal (ig-bio → Instagram, fbi → Diğer) ve (platform, sürüm) ağacı + sürümün SAYISAL sıralaması (npm run verify-admin-groups kilitler)

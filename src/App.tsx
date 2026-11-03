@@ -56,6 +56,7 @@ import { useOnboardingHints } from './hooks/useOnboardingHints';
 import { HintBubble } from './components/HintBubble';
 import { zoomHintTarget } from './utils/boardZoom';
 import { TutorialGame } from './components/TutorialGame';
+import { HamleAvi } from './components/HamleAvi';
 import { swallowNextClick } from './utils/ghostClick';
 import { useBoardZoom } from './hooks/useBoardZoom';
 import { getFormedWords, getFullWordAt, key } from './utils/board';
@@ -855,6 +856,8 @@ export default function App() {
   // Setup ekranında "Oyunu Başlat" tıklandığında Tutorial ilk kez
   // görülmemişse, oyun ekranı açılır açılmaz burada gösterilir.
   const [showPostStartTutorial, setShowPostStartTutorial] = useState(false);
+  // Hamle Avı (ROADMAP #48): kendi ekranı + kendi reducer'ı; oyun state'ine dokunmaz.
+  const [hamleAviOpen, setHamleAviOpen] = useState(false);
   /**
    * "Oynayarak öğren" tanıtımı (7 Eylül 2026) — ilk oyunda Hızlı Başlangıç
    * PENCERESİ yerine 60 saniyelik raylı bir mini oyun açılır. Burada
@@ -1458,6 +1461,18 @@ export default function App() {
     return <OnlineGameScreen game={onlineGame} myUserId={user.id} onBack={() => setOnlineGame(null)} />;
   }
 
+  // ── Hamle Avı ──────────────────────────────────────────────────────────────
+  // Tanıtımla aynı yalıtım: kayıt/k-lig/istatistik ÇALIŞMAZ (bkz. `HamleAvi`).
+  if (hamleAviOpen) {
+    return (
+      <HamleAvi
+        playerName={tutorialReplayName || 'Sen'}
+        userId={user?.id ?? null}
+        onExit={() => setHamleAviOpen(false)}
+      />
+    );
+  }
+
   // ── Tanıtım ekranı ("Oynayarak öğren") ────────────────────────────────────
   // Kurulum/oyun ağacının önüne geçer: tanıtımın kendi `useReducer`'ı var ve
   // App'in oyun state'ine hiç dokunmaz (yalıtım — bkz. `TutorialGame`).
@@ -1527,6 +1542,7 @@ export default function App() {
             /* Tekrar izleme (Faz 3): kadro YOK — kapanışta oyun başlamaz,
                bu ekrana geri dönülür. "Görüldü" işareti burada da konur:
                yardımı OKUMAK tanıtımı tüketmez, ama OYNAMAK tüketir. */
+            onOpenHamleAvi={() => setHamleAviOpen(true)}
             onReplayTutorial={() => {
               markTutorialSeen();
               journeyStep('tutorial_start');

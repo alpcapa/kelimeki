@@ -1643,3 +1643,33 @@ export interface AdminWebJourneyRow {
    */
   idle: number;
 }
+
+/**
+ * `admin_hamle_avi_stats(p_days, p_source)` — Hamle Avı kartı (ROADMAP #48, 3 Kasım 2026).
+ *
+ * `players*`/`plays`/`found`/… `hamle_avi_events`ten (ANONİM, `user_id` YOK; yalnızca `source='prod'`
+ * yani kelimeki.com — preview/yerel denemeler sayılmaz), `members_*`/`*_record`/`avg_seen_members`
+ * hesaba bağlı `hamle_avi_stats`tan (zaman penceresinden BAĞIMSIZ, tüm zamanlar).
+ * `players` BENZERSİZ CİHAZ: bir kişi iki cihazdan oynarsa iki sayılır, depolaması kapalı (anon_id yok)
+ * oyuncu hiç sayılmaz ama `plays`e girer.
+ */
+export interface AdminHamleAviStats {
+  players: number;
+  players_members: number;
+  players_guests: number;
+  plays: number;
+  found: number;
+  missed: number;
+  left: number;
+  /** Bulunanların ortalama süresi (sn) — hiç bulunan yoksa null. */
+  avg_seconds_found: number | null;
+  /** Seri BOZULURKEN (süre bitti/çıkıldı) ortalama seri uzunluğu — null: hiç bozulan yok. */
+  avg_streak_lost: number | null;
+  max_streak: number;
+  members_with_record: number;
+  members_total: number;
+  avg_record: number | null;
+  max_record: number;
+  avg_seen_members: number | null;
+  daily: { day: string; players: number; plays: number; found: number }[];
+}

@@ -40,6 +40,8 @@ npm run verify-own-row-pin       # k-lig listelerinde sabit "senin sıran" satı
 npm run verify-league-points     # k-lig PUAN tablosu (seviyeye göre): league_points_for SQL ↔ leaguePoints.ts ↔ league_points.dart
 npm run verify-sql-engine-parity # motorun DÖRDÜNCÜ (SQL) kopyası ↔ src/ sabitleri ve hata metinleri
 npm run simulate-ai-levels       # YZ↔YZ kadran ölçümü (ROADMAP #23): üretimin findAIMoves+pickTopMove çiftiyle "en iyi N'den rastgele" ↔ Normal; `-- --oyun 200 --n 2,3,4`
+npm run generate-hamle-avi-bank # Hamle Avı pozisyon bankası (`src/data/hamleAviBank.json`, ~1000 pozisyon, ~50 dk) — `-- --n 1000 --tohum 1`
+npm run verify-hamle-avi         # Hamle Avı: seri/rekor kuralları + tekrar yok + BANKA TAZELİĞİ (örnekler motorla yeniden çözülür; puan/vergi kuralı değişirse düşer)
 npm run measure-hamle-avi       # "Hamle Avı" fizibilite ölçümü: N rastgele pozisyonda vergi DAHİL 1./2./3. puan açıklığı + çözücü süresi + reducer doğrulaması (`-- --n 50 --tohum 1 --json yol`); motora dokunmaz
 npm run generate-initial-main-view-golden # Giriş sekmesi kuralı: web→port davranış golden'ı (CI tazeliği zorluyor)
 npm run verify-live-games-load    # Canlı oyun listesi: düşen istek sessizce tekrarlanır (boş liste sanılmaz) — ağ hatası VE geçici sunucu hatası (504/503/502/408); 500 ve 429 bilerek DIŞARIDA
@@ -610,7 +612,7 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, beyinLigi, onboarding, csvExport, friendInvite, liveGameRequest, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, randomGames, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, chatRules, webJourney, pageVisible, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
+  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, beyinLigi, onboarding, csvExport, friendInvite, liveGameRequest, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, randomGames, hamleAvi, hamleAviStore, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, chatRules, webJourney, pageVisible, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan

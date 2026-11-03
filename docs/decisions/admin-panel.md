@@ -1818,3 +1818,15 @@ yok, yalnızca grup etiketi.
   bilerek EKLENMEDİ. İstek yalnızca etiketti, Meta satırı üye geldiğinde
   kendiliğinden çıkar.
 
+## Hamle Avı kartı (3 Kasım 2026, ROADMAP #48)
+
+Admin → Büyüme → Kullanıcı, "Tanıtım Turu"nun altında, `PlatformTag kind="web"` ile (uygulamada Hamle Avı henüz YOK). Kullanıcı isteği: *"kaç kişi oynamış, toplam oyun, ortalama oyun sayısı, win ratio vb. kutular"*; seçimler: **üye + misafir ANONİM**, kutular = oynayan kişi + toplam oyun · bulma oranı · süre ve seri · günlük trend.
+
+- **Kaynak:** `hamle_avi_events` (anonim: `anon_id`, `is_guest` [sunucu `auth.uid() is null` varsayılanı], `puzzle_id`, `result` found/missed/left, `seconds`, `streak_before`, `source`, `platform`) — **`user_id` YOK**, `tutorial_events`/`game_starts` ile aynı gizlilik kararı (Gizlilik §6 (9)). Yazma `anon`+`authenticated` INSERT (select YOK); okuma yalnızca `admin_hamle_avi_stats(p_days, p_source)` (jsonb, `is_admin()` kapılı).
+- **`source`:** istemci `location.hostname` kelimeki.com ise 'prod', değilse 'preview' yazar; RPC varsayılan 'prod' sayar → preview/yerel denemeler kutulara KARIŞMAZ.
+- **Sayım kuralları:** *Oynayan kişi* = benzersiz cihaz (`anon_id`; depolaması kapalı olan sayılmaz ama adede girer). *Bulma oranı* = found / (found+missed+left). *Ort. seri* = seri BOZULURKEN (missed/left) ulaşılan seri. *Rekorlu üye / üye başına görülen* `hamle_avi_stats`tan, zaman penceresinden BAĞIMSIZ.
+- **Olay anı:** bulundu → `finish(true)`; süre bitti → `finish(false)`; bulmaca SÜRERKEN ÇIK/logo → 'left'. Her bulmaca için TEK olay (`loggedRef`); tanıtım penceresinden vazgeçmek ölçülmez; review'dan çıkış ikinci olay üretmez.
+- **Geçmiş yok:** ölçüm 3 Kasım 2026'dan itibaren birikir. Migration `20261103152534_hamle_avi_events` (canlıda; ilk denemede `drop policy/function if exists` ifadeleri Supabase aracını onay sormaya itip zaman aşımına uğrattı — yeni tablo/fonksiyonda `drop` gereksiz, `create or replace` + düz `create policy` yeterli).
+- **Ölçüm AÇIK ama Gizlilik metni GECİKMELİ (3 Kas 2026, kullanıcı kararı):** `HAMLE_AVI_SERVER_ENABLED = true` (`hamleAviApi.ts`); metin 1.1.6 ile web+port birlikte gelecek (bkz. product-backlog.md → "gizlilik GECİKMELİ"). Süre sabit değil: 1.1.6 yayına çıkana kadar.
+- **Doğrulama sınırı:** kartın görünümü preview'da admin olarak teyit edilmeli (yerelde admin oturumu yok, yalnızca tip kontrolü + RPC'nin SQL'de gerçek satırlarla denenmesi yapıldı).
+

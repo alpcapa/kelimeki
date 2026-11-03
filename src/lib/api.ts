@@ -45,6 +45,7 @@ import type {
   AdminClientErrorRow,
   AdminSignupFunnelRow,
   AdminWebJourneyRow,
+  AdminHamleAviStats,
   AdminTutorialFunnelRow,
   AdminMemberQualityRow,
   AdminFunnelRow,
@@ -3108,6 +3109,17 @@ export async function fetchAdminWebJourney(
   });
   if (error) rethrowSupabase(error);
   return (data as AdminWebJourneyRow[]) ?? [];
+}
+
+/**
+ * Hamle Avı kutuları + günlük seri (admin → Büyüme → Kullanıcı). Sözleşme: `AdminHamleAviStats`.
+ * Yalnızca `source='prod'` sayılır (preview/yerel denemeler hariç).
+ */
+export async function fetchAdminHamleAviStats(days = 30): Promise<AdminHamleAviStats | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.rpc('admin_hamle_avi_stats', { p_days: days, p_source: 'prod' });
+  if (error) rethrowSupabase(error); // panelin .catch(setError) zinciri hatayı görmeli
+  return (data as AdminHamleAviStats) ?? null;
 }
 
 /**

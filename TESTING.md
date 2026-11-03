@@ -1751,3 +1751,19 @@ ama **gerçek ağ koşulunu** (yanıtı kaybolan istek) kanıtlayamaz.
 Kayıt: `docs/decisions/live-game.md` → "Sahte 'Sıra sende değil.'" ve
 "Sonsuz 'Yükleniyor…'".
 
+## 9. Hamle Avı (3 Kasım 2026, ROADMAP #48 — web yarısı)
+
+Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağısı elle:
+
+- [ ] Setup (her görünümde: misafir formu, girişli liste, misafirin devam eden oyunu, Arkadaşınla sekmesi): en üstte geniş "Hamle Avı" satırı (🎯, "3 dk · en iyi hamleyi bul", "YENİ" balonu) + "Ya da bir oyun kur" ayırıcısı; Zorluk seçicisinin yanında DEĞİL.
+- [ ] "YENİ" balonu HEP görünür (Hamle Avı'na girip çıkınca da kalkmaz).
+- [ ] İlk giriş: pozisyon tahtanın ÜSTÜNDE tanıtım balonu, süre 3:00'da DURUR; "Başla" ile sayım başlar. "Bir daha gösterme" işaretliyse sonraki girişte balon çıkmaz.
+- [ ] Doğru (en yüksek net puanlı) hamle → "Tebrikler", Seri +1; daha düşük geçerli hamle → "N puan aldın — daha iyisi var", pozisyon sıfırlanır, süre SÜRER.
+- [ ] Süre bitince "Üzgünüz — en yüksek hamle puanı X (kelime) idi", seri 0, rekor korunur. Son 30 sn geri sayım kırmızı. "Kapat" → doğru hamle TAHTADA taslak taşlarla yerleşik görünür (mesaj: "Doğru hamle: KELİME — N puan"), üstte ÇIK'ın yanında SONRAKİ; tahta kilitli (Oyna/Geri Al pasif).
+- [ ] Seri > 0 iken ÇIK → "Serin sıfırlanır" uyarısı.
+- [ ] Deneme kelimesi GEÇERSİZSE mesaj şeridi nedeni yazar (kırmızı; ör. "Kelime mevcut harflere bağlanmalı."), GEÇERLİYSE "Oyna tuşuyla kelimeyi onayla." (yeşil).
+- [ ] Üye: rekor ve görülenler başka cihazda/tarayıcıda da gelir (`hamle_avi_stats`); çevrimdışı oynayıp bağlanınca eşitlenir; aynı bulmaca ikinci kez ÇIKMAZ. Misafir: yalnızca cihazda. (Bayrak `HAMLE_AVI_SERVER_ENABLED = true`; Gizlilik metni 1.1.6'da.)
+- [ ] Tahtadaki oynanmış kelimeye dokununca anlam penceresi açılır; oyun sırasında taslak taş varken AÇILMAZ. Süre bitip "Kapat"tan sonra doğru hamlenin kelimesine (ve eski kelimelere) dokununca anlam açılır, modal kendiliğinden kapanmaz.
+- [ ] Ölçüm: her bulmaca için TEK anonim olay (bulundu/süre bitti/çıktı) `hamle_avi_events`e düşer (devtools → Network; yalnızca kelimeki.com `source='prod'` sayılır, preview 'preview'); admin kartı için bkz. `docs/testing-admin.md` §9.17.
+- [ ] Uçak modu: banka bir kez indiyse oynanır; ilk açılışta çevrimdışıysa "Bulmacalar yüklenemedi" mesajı çıkar (banka parçasının SW önbelleğine girdiği ayrıca doğrulanmalı).
+
