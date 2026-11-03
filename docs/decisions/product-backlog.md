@@ -577,3 +577,4 @@ seviyeye ulaşan hamle sayısı" ve cevabın tanınır bir kelime olması.
   3. **"Son güncelleme: 18 Ekim 2026"** → yeni tarih.
   4. §3 (kullanım amacı) için ayrı madde GEREKMEZ: "Oyun deneyiminin kişiselleştirilmesi" zaten kapsıyor.
   Terms'e dokunulmaz. Mağaza formları (Play Data safety / App Store gizlilik cevapları) için: bu veri mevcut "oyun istatistikleri" kategorisine girer, ayrı satır beklenmiyor — `marketing/*/console-formlari.md` ile teyit edilmeli.
+- **Kelime anlamı (3 Kas 2026, kullanıcı: tahtadaki kelimeler zaten ortada, oyuna fark etmemeli):** tahtadaki oynanmış kelimeye dokununca `MeaningModal` açılır; **taslak taş varken AÇILMAZ** (App.tsx ile aynı kural, ıskalama kurtarma o dalda). Süre anlam penceresi açıkken de akar. Doğru hamlenin kendi kelimesi (review'daki taslak taşlar) anlam açmaz.

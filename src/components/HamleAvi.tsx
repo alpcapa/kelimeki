@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { PLAYER_COLORS, SIZE } from '../game/constants';
 import { gameReducer, isFirstMove } from '../game/gameReducer';
 import type { GameState, Tile as TileModel } from '../game/types';
-import { getFormedWords, key } from '../utils/board';
+import { getFormedWords, getFullWordAt, key } from '../utils/board';
 import { calcScore, validatePlacement } from '../utils/validator';
 import { swallowNextClick } from '../utils/ghostClick';
 import {
@@ -40,6 +40,9 @@ import {
 } from '../utils/hamleAvi';
 import { loadHamleAvi, mergeWithServer, saveHamleAvi } from '../utils/hamleAviStore';
 import { fetchHamleAvi, reportHamleAvi } from '../lib/hamleAviApi';
+import { fetchMeaning } from '../lib/api';
+import type { WordMeaning } from '../lib/database.types';
+import { MeaningModal } from './MeaningModal';
 import { findBestNetMove, type BestMove } from '../utils/hamleAviSolve';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { useBoardZoom } from '../hooks/useBoardZoom';
@@ -95,6 +98,11 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
   const [lastNet, setLastNet] = useState(0);
   const [note, setNote] = useState<{ text: string; type: 'ok' | 'err' | 'warn' | '' } | null>(null);
   const [loadError, setLoadError] = useState(false);
+  // Tahtadaki oynanmış kelimeye dokununca anlam (kullanıcı, 3 Kasım 2026: cevabı ele vermez, çünkü
+  // tahtada ZATEN duran kelimeler). Taslak taş varken AÇILMAZ — App.tsx ile aynı kural.
+  const [meaning, setMeaning] = useState<{
+    entries: { word: string; data: WordMeaning | null; loading: boolean }[];
+  } | null>(null);
   const [pendingWild, setPendingWild] = useState<{ r: number; c: number; rackIndex: number; editing?: boolean } | null>(null);
 
   const bankRef = useRef<HamleAviPosition[] | null>(null);
@@ -238,6 +246,19 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     dispatch({ type: 'PLACE_TILE', r, c, rackIndex });
   };
 
+  const openMeaning = (words: string[]) => {
+    const unique = [...new Set(words)];
+    if (unique.length === 0) return;
+    setMeaning({ entries: unique.map((word) => ({ word, data: null, loading: true })) });
+    for (const word of unique) {
+      void fetchMeaning(word).then((data) => {
+        setMeaning((cur) =>
+          cur ? { entries: cur.entries.map((en) => (en.word === word ? { ...en, data, loading: false } : en)) } : cur,
+        );
+      });
+    }
+  };
+
   const handleCellClick = (r: number, c: number, e: React.MouseEvent) => {
     if (!canAct) return;
     // Çift dokunuşla zoom: dokunuşun kendi işinden ÖNCE sorulur (App.tsx handleCellClick ile aynı sıra).
@@ -265,7 +286,15 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
       return !!target;
     };
     if (state.board[r][c]) {
-      if (hasDraft) rescue();
+      if (hasDraft) {
+        rescue();
+        return;
+      }
+      const words = [
+        getFullWordAt(state.board, {}, r, c, 0, 1),
+        getFullWordAt(state.board, {}, r, c, 1, 0),
+      ].filter((w) => w.length >= 2);
+      openMeaning(words);
       return;
     }
     if (state.placed[key(r, c)]) {
@@ -707,6 +736,8 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
           </div>
         </Modal>
       )}
+
+      {meaning && <MeaningModal entries={meaning.entries} onClose={() => setMeaning(null)} />}
 
       {pendingWild && (
         <WildcardModal
