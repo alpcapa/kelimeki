@@ -461,7 +461,9 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
                 tiles={me?.rack ?? []}
                 selectedTile={state.selectedTile}
                 onSelect={() => {}}
-                title={playerName}
+                // Oyuncunun rengi baştan belli olsun (kullanıcı, 3 Kasım 2026): bankada oyuncu bazen
+                // sol-üst (camgöbeği="Mavi"), bazen sağ-alt (kırmızı="Pembe") köşede.
+                title={`Sen - ${state.current === 0 ? 'Mavi' : 'Pembe'}`}
                 color={color}
                 draggable={canAct}
                 dragHiddenIndex={ghost && ghost.source.kind === 'rack' ? ghost.source.index : null}
