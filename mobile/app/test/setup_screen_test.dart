@@ -147,10 +147,18 @@ void main() {
   // (ROADMAP #41 karar 2) "Oyuncular" koltuk listesi tek satıra indi, form
   // kısaldı ve düğme web'le aynı yere, AKIŞA döndü — bu test hâlâ onu
   // KAYDIRMADAN, ilk karede ölçüyor; akıştaki düğme üç bileşimde de geçiyor.
-  for (final (genislik, yukseklik, olcek) in const [
-    (375.0, 812.0, 1.0),
-    (375.0, 812.0, kMaxTextScale),
-    (393.0, 852.0, kMaxTextScale),
+  // ⚠ 3 KASIM 2026 (ROADMAP #48): Hamle Avı girişi + "Ya da bir oyun kur"
+  // ayırıcısı (~126 px) HER görünümde en üstte (kullanıcı kararı, web ile
+  // aynı). 375 pt'te 1,3 yazı ölçeğiyle OYUNU BAŞLAT bu yüzden ilk kareden
+  // ~35 px aşağı düştü (813,5 > 778) — BİLİNÇLİ TAKAS: bileşim iPhone SE /
+  // Display Zoom + büyük sistem yazısı, düğme kaydırmayla bir hareket uzakta.
+  // Ölçek 1,0 (375) ve 393 pt @1,3 sıkı kalır; yalnızca o tek bileşim
+  // ilk-kare şartından muaf. Düğmeyi tekrar yukarı almak istenirse çözüm
+  // Hamle Avı satırını küçültmek, bu muafiyeti sessizce silmek değil.
+  for (final (genislik, yukseklik, olcek, ilkKare) in const [
+    (375.0, 812.0, 1.0, true),
+    (375.0, 812.0, kMaxTextScale, false),
+    (393.0, 852.0, kMaxTextScale, true),
   ]) {
     testWidgets(
         'OYUNU BAŞLAT ilk karede GÖRÜNÜR — ${genislik.toInt()} pt @$olcek '
@@ -172,6 +180,11 @@ void main() {
       await tester.pumpAndSettle();
 
       final r = tester.getRect(find.text('OYUNU BAŞLAT'));
+      if (!ilkKare) {
+        // Muaf bileşim: yine de ekranda VAR (kaydırılabilir gövdede), kaybolmadı.
+        expect(r.top, greaterThan(0));
+        return;
+      }
       expect(r.bottom, lessThanOrEqualTo(yukseklik - guvenli.bottom),
           reason: 'buton alt gösterge payının üstünde kalmalı: '
               '${r.bottom} > ${yukseklik - guvenli.bottom}');
@@ -908,8 +921,12 @@ void main() {
     // olsun"): link ALTI da 16 — web `-mb-3`, port `SizedBox(8)` (ikisi de
     // yalnızca misafir dalında; girişlide logo→"OYUN TİPİ" hâlâ 20, aşağıdaki
     // ayrı test onu kilitliyor). Üstteki ile AYNI sayı olması testin konusu.
-    final oyunTipi = tester.getRect(find.text('KİME KARŞI'));
-    expect(oyunTipi.top - link.bottom, closeTo(16, 1.5));
+    // 3 KASIM 2026 (ROADMAP #48): link ile "KİME KARŞI" arasına Hamle Avı
+    // girişi + "Ya da bir oyun kur" ayırıcısı girdi (web `Setup.tsx`: ayırıcı
+    // `HamleAviButton`ın içinde, hepsi kabın `gap-5`i). 16 px artık link →
+    // DÜĞME aralığı; düğmeden sonrası ayrı test (aşağıda) kilitliyor.
+    final hamleAvi = tester.getRect(find.byKey(const ValueKey('hamle-avi-buton')));
+    expect(hamleAvi.top - link.bottom, closeTo(16, 1.5));
 
     // Web Setup'ın en altındaki hukuki linkler — port hiç taşımamıştı.
     await tester.scrollUntilVisible(find.text('Kullanım Koşulları'), 200,
@@ -970,10 +987,36 @@ void main() {
     expect(find.text('Nasıl oynanır?'), findsNothing);
     expect(find.text('Tanıtım'), findsNothing);
 
+    // logo → ilk öğe (3 Kasım 2026'dan beri Hamle Avı girişi) TAM 20 px.
     final logo = tester.getRect(find.byType(LogoMark).first);
-    final oyunTipi = tester.getRect(find.text('KİME KARŞI'));
-    expect(oyunTipi.top - logo.bottom, closeTo(20, 1.5));
+    final hamleAvi = tester.getRect(find.byKey(const ValueKey('hamle-avi-buton')));
+    expect(hamleAvi.top - logo.bottom, closeTo(20, 1.5));
   });
+
+  // Web `HamleAviButton` (3 Kasım 2026): düğme, "Ya da bir oyun kur" ayırıcısı
+  // ve "KİME KARŞI" kabın `gap-5`iyle (20 px) dizilir; hem misafirde hem
+  // girişlide EN ÜSTTE ve "YENİ" balonu hep görünür.
+  for (final girisli in [false, true]) {
+    testWidgets(
+        'Hamle Avı girişi (${girisli ? "girişli" : "misafir"}): düğme → ayırıcı '
+        '→ "KİME KARŞI" 20 px aralıkla, YENİ balonu görünür', (tester) async {
+      await setPhoneViewSize(tester, const Size(420, 900));
+      await pumpSetup(
+          tester,
+          services(
+              auth: girisli ? AuthService.fake(user: fakeUser('me')) : null));
+      final dugme =
+          tester.getRect(find.byKey(const ValueKey('hamle-avi-buton')));
+      final ayirici = tester.getRect(find.text('YA DA BİR OYUN KUR'));
+      final oyunTipi = tester.getRect(find.text('KİME KARŞI'));
+      expect(find.text('HAMLE AVI'), findsOneWidget);
+      expect(find.text('3 dk · en iyi hamleyi bul'), findsOneWidget);
+      expect(find.byKey(const ValueKey('hamle-avi-yeni')), findsOneWidget);
+      expect(dugme.height, greaterThanOrEqualTo(56));
+      expect(ayirici.top - dugme.bottom, closeTo(20, 2));
+      expect(oyunTipi.top - ayirici.bottom, closeTo(20, 2));
+    });
+  }
 
   // Negatif eş: misafirde bu blok KOŞULSUZ gösterilseydi yukarıdaki test de
   // geçerdi — misafirin görünümü BİREBİR eskisi gibi kalmalı (mevcut

@@ -1820,7 +1820,7 @@ yok, yalnızca grup etiketi.
 
 ## Hamle Avı kartı (3 Kasım 2026, ROADMAP #48)
 
-Admin → Büyüme → Kullanıcı, "Tanıtım Turu"nun altında, `PlatformTag kind="web"` ile (uygulamada Hamle Avı henüz YOK). Kullanıcı isteği: *"kaç kişi oynamış, toplam oyun, ortalama oyun sayısı, win ratio vb. kutular"*; seçimler: **üye + misafir ANONİM**, kutular = oynayan kişi + toplam oyun · bulma oranı · süre ve seri · günlük trend.
+Admin → Büyüme → Kullanıcı, "Tanıtım Turu"nun altında, `PlatformTag kind="web"` ile (uygulama portu 3 Kasım 2026'da yazıldı, 1.1.6 ile gelir — `platform=ios/android` olayları o zaman düşer; kart etiketi o PR/sürümde gözden geçirilmeli). Kullanıcı isteği: *"kaç kişi oynamış, toplam oyun, ortalama oyun sayısı, win ratio vb. kutular"*; seçimler: **üye + misafir ANONİM**, kutular = oynayan kişi + toplam oyun · bulma oranı · süre ve seri · günlük trend.
 
 - **Kaynak:** `hamle_avi_events` (anonim: `anon_id`, `is_guest` [sunucu `auth.uid() is null` varsayılanı], `puzzle_id`, `result` found/missed/left, `seconds`, `streak_before`, `source`, `platform`) — **`user_id` YOK**, `tutorial_events`/`game_starts` ile aynı gizlilik kararı (Gizlilik §6 (9)). Yazma `anon`+`authenticated` INSERT (select YOK); okuma yalnızca `admin_hamle_avi_stats(p_days, p_source)` (jsonb, `is_admin()` kapılı).
 - **`source`:** istemci `location.hostname` kelimeki.com ise 'prod', değilse 'preview' yazar; RPC varsayılan 'prod' sayar → preview/yerel denemeler kutulara KARIŞMAZ.

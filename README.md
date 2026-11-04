@@ -304,6 +304,9 @@ mobile/                    # Flutter (iOS+Android) portu — ayrıntı: mobile/C
     │                      # web TutorialGame/tutorialScript'in ikizi; senaryo
     │                      # ve metinler web kaynağından test/tutorial_parity_test
     │                      # ile kilitli, senaryo Dart motorunda oynatılıyor
+    ├── lib/src/ui/hamle_avi/ # "Hamle Avı" (3 dk, en iyi hamleyi bul) — web HamleAvi.tsx ikizi;
+    │                      # banka assets/hamle_avi/bank.json web dosyasının BAYT-EŞİT kopyası
+    │                      # (test/hamle_avi_parity_test kilitler), çözücü Dart motorunda
     └── assets/fonts/      # Space Grotesk / Space Mono / Nunito (web'le aynı aileler)
                            # + MPLUSRounded1c-ExtraBold-subset.ttf — YALNIZCA k-lig
                            # rütbe rozetinin harfi; ÜRETİLMİŞ (alt kümelenmiş),

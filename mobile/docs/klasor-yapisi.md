@@ -263,6 +263,18 @@ mobile/
                              # sabitleri, web dragFeel.ts ikizi), pulse_ring
                              # (Tailwind tile-pulse eşleniği — tanıtımın
                              # hedef kareleri/vurgulu raf taşları)
+      ui/hamle_avi/          # "Hamle Avı" (ROADMAP #48, 3 Kasım 2026): hamle_avi_screen
+                             # — web HamleAvi.tsx portu; tanıtımla AYNI yalıtım
+                             # (kendi GameController'ı, kayıt/k-lig ÇALIŞMAZ, motora
+                             # action eklenmedi). Sürükleme/joker/zoom game_screen
+                             # ile aynı jest (drag_feel ortak). Açan yer setup_screen
+                             # (`_HamleAviButonu`, en üstte).
+      util/hamle_avi.dart    # saf mantık + Dart çözücüsü (web hamleAvi.ts +
+                             # hamleAviSolve.ts ikizi); banka `assets/hamle_avi/
+                             # bank.json` web dosyasının BAYT-EŞİT kopyası
+      storage/hamle_avi_store.dart # cihaz deposu (rekor/görülenler/tanıtım tercihi)
+      data/hamle_avi_api.dart # RPC (hamle_avi_get/report) + hamle_avi_events
+                             # ölçümü; `kHamleAviServerEnabled` web bayrağıyla AYNI
       ui/tutorial/           # ilk OYUNDA açılan "oynayarak öğren" tanıtımı
                              # (Onboarding Faz 4, 7 Eylül 2026): tutorial_script
                              # (senaryo — web tutorialScript.ts ikizi, parite
