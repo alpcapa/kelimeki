@@ -1626,7 +1626,7 @@ Otomatik kapsam: `hamle_avi_parity_test` + `hamle_avi_screen_test`. Cihazda elle
 
 - [ ] Setup'ta (misafir formu, girişli liste, Arkadaşınla sekmesi) en üstte "🎯 HAMLE AVI · 3 dk · en iyi hamleyi bul" satırı + kırmızı "YENİ" balonu + altında "YA DA BİR OYUN KUR" ayırıcısı. **375 pt iPhone (SE / Display Zoom):** `OYUNU BAŞLAT` kaydırmayla ulaşılıyor mu? (bilinçli takas, Parça 252)
 - [ ] Giriş → tanıtım penceresi (3 madde + "Bir daha gösterme"); süre 3:00'da DURUR, "BAŞLA" ile akar; "VAZGEÇ" bulmacayı yakmaz.
-- [ ] **Süre biterken parmak taşın üzerindeyken** (4 Kas bulgusu): hayalet taş/rafta boşluk KALMAMALI, sonraki bulmacada da. **Sürükleme gerçek parmakla:** raftan tahtaya, konmuş taşı taşıma/rafa bırakma, ıskalama kurtarma, çift dokunuş zoom + pan; joker (harf penceresi). Sürüklerken sayfa kaymaz.
+- [ ] **Süre biterken parmak taşın üzerindeyken** (savunma amaçlı; hata webde görüldü, portta GÖZLENMEDİ — Parça 252): hayalet taş/rafta boşluk KALMAMALI, sonraki bulmacada da. **Sürükleme gerçek parmakla:** raftan tahtaya, konmuş taşı taşıma/rafa bırakma, ıskalama kurtarma, çift dokunuş zoom + pan; joker (harf penceresi). Sürüklerken sayfa kaymaz.
 - [ ] Doğru hamle → "Tebrikler! 🎯", Seri +1; daha düşük geçerli hamle → "N puan aldın — daha iyisi var", pozisyon başa döner, süre SÜRER.
 - [ ] Süre bitince "Üzgünüz" → KAPAT → doğru hamle tahtada; ⚠ **donma süresini ölç** (Dart çözücüsü ana izolatta senkron; kabul ≤ ~1 sn, fazlaysa `compute` ile izolata alınmalı — ROADMAP #48). Kelimelere dokununca anlam açılır.
 - [ ] Seri > 0 iken ÇIK/logo/geri tuşu → "Serin sıfırlanır" uyarısı; ÇIK → seri 0, rekor korunur.
