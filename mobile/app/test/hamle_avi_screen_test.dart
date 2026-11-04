@@ -194,6 +194,33 @@ void main() {
     expect(h.gw.events.single['seconds'], kHamleAviSeconds);
   });
 
+  testWidgets('parmak taşın ÜZERİNDEYKEN süre biterse hayalet taş ASILI KALMAZ',
+      (tester) async {
+    // 4 Kas 2026, kullanıcı ekran görüntüsüyle bildirdi: sonuç penceresi yeni
+    // bir rota olduğundan parmağın `pointerup`ı tahtanın Listener'ına değil
+    // pencerenin perdesine gider; sürükleme durumu temizlenmezse hayalet kalır.
+    final pos = _jokersiz();
+    await pumpScreen(tester, pos, introHidden: true);
+    final hayalet = find.byKey(const ValueKey('hamle-avi-hayalet'));
+    final tas = tester.getCenter(find.byKey(const ValueKey('rack-0')));
+    final g = await tester.startGesture(tas);
+    await g.moveBy(const Offset(0, -120));
+    await tester.pump();
+    await g.moveBy(const Offset(0, -40));
+    await tester.pump();
+    expect(hayalet, findsOneWidget, reason: 'sürüklerken hayalet görünmeli');
+
+    // Parmak BASILI tutulurken süre biter.
+    await tester.pump(const Duration(seconds: 100));
+    await tester.pump(const Duration(seconds: 90));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('Üzgünüz, bulamadınız'), findsOneWidget);
+    expect(hayalet, findsNothing,
+        reason: 'hayalet taş pencerenin altında kaldı');
+    await g.up();
+    await tester.pump();
+  });
+
   testWidgets('seri yokken ÇIK uyarısız çıkar ve "left" ölçülür',
       (tester) async {
     final pos = _jokersiz();

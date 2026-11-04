@@ -146,7 +146,8 @@ class HamleAviScreen extends StatefulWidget {
   State<HamleAviScreen> createState() => _HamleAviScreenState();
 }
 
-class _HamleAviScreenState extends State<HamleAviScreen> {
+class _HamleAviScreenState extends State<HamleAviScreen>
+    with WidgetsBindingObserver {
   late GameController _controller;
   GameState get _state => _controller.state;
 
@@ -196,6 +197,7 @@ class _HamleAviScreenState extends State<HamleAviScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = GameController(words: _wordsPlaceholder, autoPlayAi: false)
       ..restore(hamleAviPositionToState(_emptyPosition, widget.playerName));
     _controller.addListener(_onState);
@@ -210,6 +212,7 @@ class _HamleAviScreenState extends State<HamleAviScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _alive = false;
     _ticker?.cancel();
     _controller.removeListener(_onState);
@@ -273,6 +276,9 @@ class _HamleAviScreenState extends State<HamleAviScreen> {
     final st = hamleAviPositionToState(pos, widget.playerName);
     _initial = st;
     _solution = null;
+    // Yeni bulmaca ESKİ bulmacadan kalan bir sürüklemeyi (hayalet/gizli raf
+    // taşı) ASLA taşımaz — cihazda görülen "asılı harf" (4 Kas 2026).
+    _clearGesture();
     _zoom.reset();
     _controller.restore(st);
     _note = null;
@@ -285,8 +291,37 @@ class _HamleAviScreenState extends State<HamleAviScreen> {
     }
   }
 
+  /// Takılı kalmış sürükleme/pan jestini temizler. İKİ durumda şart:
+  /// (1) süre bitip sonuç penceresi (yeni rota) açılırken parmak taşın
+  /// üzerindeyse `pointerup` artık tahtanın Listener'ına değil pencerenin
+  /// perdesine gider — durum temizlenmezse hayalet taş ekranda ASILI kalır
+  /// (4 Kas 2026, kullanıcı ekran görüntüsüyle bildirdi); (2) uygulama arka
+  /// plana düşerse (game_screen `didChangeAppLifecycleState` ikizi).
+  void _clearGesture() {
+    if (_dragRef == null &&
+        _hiddenSource == null &&
+        _panRef == null &&
+        _dragNotifier.value == null) {
+      return;
+    }
+    setState(() {
+      _dragRef = null;
+      _hiddenSource = null;
+      _panRef = null;
+    });
+    _dragNotifier.value = null;
+    _reviewTap = null;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycle) {
+    if (lifecycle != AppLifecycleState.resumed) _clearGesture();
+  }
+
   void _setPhase(HamleAviPhase p) {
     if (!_alive) return;
+    // Oynanabilir evreyi terk ederken parmak hâlâ tahtada olabilir.
+    if (p != HamleAviPhase.play) _clearGesture();
     setState(() => _phase = p);
     _syncTicker();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -688,12 +723,22 @@ class _HamleAviScreenState extends State<HamleAviScreen> {
   // ── Taş sürükleme ──────────────────────────────────────────────────────
   void _beginTileDrag(_DragSource source, PointerDownEvent e) {
     if (!_canAct) return;
-    setState(() => _dragRef = _DragRef(source: source, start: e.position));
+    // Yeni dokunuş, önceki jestin artığını (iptal olayı gelmemiş) devralmaz.
+    _dragNotifier.value = null;
+    setState(() {
+      _hiddenSource = null;
+      _dragRef = _DragRef(source: source, start: e.position);
+    });
   }
 
   void _moveTileDrag(PointerMoveEvent e) {
     final d = _dragRef;
     if (d == null) return;
+    // Oynanabilir evre bittiyse (süre doldu) sürüklemeyi sürdürme, temizle.
+    if (!_canAct) {
+      _clearGesture();
+      return;
+    }
     if (!d.moved) {
       if ((e.position - d.start).distance < dragThresholdFor(e.kind)) return;
       d.moved = true;
@@ -1083,6 +1128,7 @@ class _HamleAviScreenState extends State<HamleAviScreen> {
     final local = box == null ? g.global : box.globalToLocal(g.global);
     final isRack = g.source is _RackSource;
     return Positioned(
+      key: const ValueKey('hamle-avi-hayalet'),
       left: local.dx - kGhostTileSize / 2,
       top: local.dy - kGhostTileSize / 2,
       child: IgnorePointer(
