@@ -483,6 +483,19 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
     };
   }, []);
 
+  // Oynanabilir evre biterken (süre doldu, doğru hamle bulundu, çıkış) parmak bir taşın üzerinde olabilir.
+  // `Rack` taşın `onPointerUp`/`onPointerCancel` dinleyicilerini `draggable` false olunca SÖKER
+  // (`draggable={canAct}`), pointer capture ise o elementte kalır: bırakma olayını kimse yakalamaz,
+  // `setGhost(null)` hiç çalışmaz ve hayalet taş ekranda ASILI kalırdı (canlıda kullanıcı bildirdi,
+  // 4 Kasım 2026). Bu yüzden evre değişince sürükleme burada ZORLA temizlenir. Yeni bir sürükleme
+  // ekranı yazılırken: bir elementin dinleyicisi koşula bağlıysa, koşul düşünce jest temizlenmeli.
+  useEffect(() => {
+    if (phase === 'play') return;
+    dragRef.current = null;
+    setGhost(null);
+    setDragOverKey(null);
+  }, [phase]);
+
   // "N puan aldın — daha iyisi var" notu geçici: oyuncu yeni bir taş koyunca/aldığında kalkar. Kalmazsa
   // not canlı mesajı ("Kelime mevcut harflere bağlanmalı." vb.) bir sonraki Oyna'ya kadar ÖRTERDİ.
   const placedCount = Object.keys(state.placed).length;
@@ -776,7 +789,11 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
       </main>
 
       {ghost && (
-        <div className="pointer-events-none fixed z-[300]" style={{ left: ghost.x, top: ghost.y, ...GHOST_TILE_STYLE }}>
+        <div
+          className="pointer-events-none fixed z-[300]"
+          data-hamle-avi-hayalet=""
+          style={{ left: ghost.x, top: ghost.y, ...GHOST_TILE_STYLE }}
+        >
           <Tile tile={ghost.source.tile} variant="rack" />
         </div>
       )}
