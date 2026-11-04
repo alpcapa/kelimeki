@@ -2612,3 +2612,39 @@ test.describe('tanıtım sürükleme', () => {
     await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
   });
 });
+
+// 4 Kasım 2026 — Hamle Avı: süre biterken parmak raftaki taşın ÜZERİNDEYSE hayalet taş asılı kalıyordu
+// (kullanıcı canlıda bildirdi). `Rack`, `draggable` false olunca taşın pointerup/cancel dinleyicilerini söker;
+// bırakma olayını kimse yakalamadığından `setGhost(null)` hiç çalışmıyordu.
+test('Hamle Avı: süre biterken sürüklenen taş ASILI KALMAZ', async ({ page }) => {
+  await donenKullanici(page);
+  await oynamisKullanici(page);
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('kelimeki:hamle-avi:v1', JSON.stringify({ best: 0, seen: [], introHidden: true }));
+    } catch {
+      // depolama kapalıysa tanıtım açılır ve test düşer — o durum bu testin konusu değil
+    }
+  });
+  await page.clock.install();
+  await page.goto('/');
+  await page.locator('[data-hamle-avi-buton]').click();
+  await expect(page.locator('[data-hamle-avi-sure]')).toHaveText('3:00', { timeout: 30_000 });
+
+  const tas = page.locator('[data-rack-tile="0"]');
+  const kutu = await tas.boundingBox();
+  if (!kutu) throw new Error('raf taşı bulunamadı');
+  const x = kutu.x + kutu.width / 2;
+  const y = kutu.y + kutu.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y - 150, { steps: 8 });
+  await expect(page.locator('[data-hamle-avi-hayalet]')).toHaveCount(1);
+
+  // Fare/parmak BASILI tutulurken süre biter.
+  await page.clock.fastForward(181_000);
+  await expect(page.locator('[data-hamle-avi-sonuc="missed"]')).toBeVisible();
+  await expect(page.locator('[data-hamle-avi-hayalet]')).toHaveCount(0);
+  await page.mouse.up();
+  await expect(page.locator('[data-hamle-avi-hayalet]')).toHaveCount(0);
+});
