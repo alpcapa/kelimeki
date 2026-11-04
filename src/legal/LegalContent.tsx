@@ -44,7 +44,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
-          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 3 Kasım 2026</P>
+          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 9 Kasım 2026</P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
