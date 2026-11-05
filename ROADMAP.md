@@ -291,6 +291,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 (önceki: 1.1.4 (933) = `bf550a3`, Play 23 Eki, App Store 24 Eki)
 (24 Ekim'de BOŞ — 1.1.5 treninin işleri (#884 #886 #889) taslak PR'da, `main`'de değil).
 
+**1.1.6'ya binecek (5 Kasım, taslak PR, kesim 9 Kasım) — Canlı oyunda taslak rakip oynayınca / çıkıp girince KALIR (Parça 253, web ikizi AYNI PR):** sıra rakipteyken denenen hamle artık rakibin hamlesiyle silinmiyor ve ekrandan çıkıp girince geri geliyor; taslak YALNIZCA bir hücresine rakibin taşı oturduysa ya da raf uyuşmazsa atılır (geçersiz de olsa kalır; çakışmada tek satır bilgi). Yerel kayıt BU cihaz, SQLite `live_drafts` (**şema v5**). ⚠ `SYNC_ONLINE_STATE` değişti (31 Temmuz'dan beri bilinçli "rafa döner" davranışı); golden vector'lar bu davranışı KAPSAMAZ. Cihazda: `mobile/docs/testing-arkadaslar-canli.md` Tahta bölümü (eski sürümün ÜSTÜNE kurulum dahil), web: `TESTING.md` §2. **Merge öncesi `mobile/` değiştiği için `mobile-latest` ezilir + TestFlight'a build gider.**
+
 **1.1.5'e binecek (28 Ekim, taslak PR #898, kesim 2 Kasım):** `AuthRetryableFetchException(522)` artık sessizce yeniden deneniyor — durum kodu `statusCode` alanından da okunuyor (Parça 251; 25-27 Eki'de 8 kayıt, sunucuda iz yok). Cihaz kontrolü gerekmez; `client_errors`ta `online_games_repo.load` 522 satırlarının azalması izlenir.
 
 **1.1.4'e binen (17 Ekim):** uçak modunda açılış hızı — çevrimdışıyken bulut senkronu ağa gitmiyor, "Devam Edenler" anında geliyor (Parça 246; kullanıcı uçakta ölçtü: 20-30 sn). Taslak PR, kesim 19 Ekim. Cihaz kontrolü: `mobile/TESTING.md` §8.

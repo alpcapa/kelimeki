@@ -26,6 +26,7 @@ npm run generate-demo-board-dart # Karşılama tahtası → portun intro ekranı
 npm run verify-cloud-save-mirror # Bulut kaydı offline karar mantığı (saf fonksiyon kontrolleri)
 npm run verify-draft-rescue      # Iskalanan dokunuşun en yakın taslak taşına yönlendirilmesi
 npm run verify-swap-invariants   # Taş değiştirme: taslak taşlar yok olmuyor + senkron rafı yeniden sıralarsa seçim düşüyor + torbada kalandan fazla taş değiştirilemiyor
+npm run verify-live-draft        # Canlı oyunda TASLAK kuralı (5 Kas 2026): rakip oynayınca/ekrandan çıkıp girince kalır; YALNIZCA hücre çakışması ya da raf uyuşmazlığı atar (`liveDraft.ts` + `SYNC_ONLINE_STATE`; port ikizi `live_draft_test` + core `testLiveDraft`)
 npm run verify-edge-engine-parity # Motorun ÜÇÜNCÜ kopyası (supabase/functions/_game/) src/'den ayrışmadı mı — play-ai-turn onu kullanıyor
 npm run verify-game-list-order   # Liste sıralaması: "sıra bende" artan ↔ "sıra rakipte" azalan, null en sona
 npm run verify-recent-game-avatars # "Son Oynananlar" avatar çözümü: eşleme OYUNLA sınırlı mı (yanlış yüz koruması)

@@ -144,6 +144,7 @@ jobs:
       # ikisinde de aynı olan bir hatayı değil (ikisi de aynı biçimde
       # yanlıştı). Bu adım DOĞRULUĞU sınıyor.
       - run: npm run verify-swap-invariants
+      - run: npm run verify-live-draft
 
       # Motorun ÜÇÜNCÜ kopyası (`supabase/functions/_game/`) `src/`den
       # ayrışmasın (5 Eylül 2026 hata avı geçişi #23). O kopyayı

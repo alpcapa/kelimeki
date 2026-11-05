@@ -18,6 +18,7 @@ import 'package:kelimeki/src/ui/text_scale.dart' show kMaxTextScale;
 import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/util/online_status.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
+import 'package:kelimeki/src/storage/app_storage.dart';
 import 'package:kelimeki/src/game/game_controller.dart';
 import 'package:kelimeki/src/ui/game/neo_box.dart'
     show ShapeDecorationWithCssShadows;
@@ -31,9 +32,12 @@ import 'package:kelimeki/src/ui/game/tile_widget.dart' show TileWidget;
 import 'package:kelimeki/src/util/offline_notice.dart';
 import 'package:kelimeki/src/ui/live/online_game_screen.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'support/fake_online_gateway.dart';
+import 'support/real_io.dart';
 import 'support/test_fonts.dart';
 import 'support/test_view.dart';
 
@@ -139,11 +143,39 @@ Map<String, Object?> stateJson(
       'started_at': s.startedAt,
     };
 
+int _dbSeq = 0;
+
+/// Gerçek (ffi) SQLite depo — `online_game_chat_test.dart`taki aynı köprü.
+Future<AppStorage> newStorageForWidget(WidgetTester tester) async {
+  late AppStorage storage;
+  await tester.runAsync(() async {
+    SharedPreferences.setMockInitialValues({});
+    final dir = Directory.systemTemp.createTempSync('kelimeki-draft-test');
+    storage = await AppStorage.open(
+      factory: databaseFactoryFfi,
+      path: '${dir.path}/t${_dbSeq++}.db',
+      prefs: await SharedPreferences.getInstance(),
+      nowMs: () => DateTime.now().millisecondsSinceEpoch,
+    );
+  });
+  return storage;
+}
+
+/// Boş tahta + verilen hücrelerde RAKİBİN (owner 1) taşı.
+Board oppBoard(List<(int, int)> cells) {
+  final b = [for (final row in createEmptyBoard()) List<Tile?>.of(row)];
+  for (final (r, c) in cells) {
+    b[r][c] = const Tile(letter: 'K', pts: 5, owner: 1);
+  }
+  return b;
+}
+
 Finder rackTile(int i) => find.byKey(ValueKey('rack-$i'));
 Finder boardCell(int r, int c) => find.byKey(ValueKey('cell-$r-$c'));
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  sqfliteFfiInit();
 
   setUpAll(() async {
     await loadAppFonts();
@@ -339,11 +371,16 @@ void main() {
       Size view = const Size(420, 900),
       ChatRepo? chat,
       FriendsRepo? friends,
+      Future<AppStorage>? storage,
+      Board? board,
+      int turnCount = 0,
     }) async {
       await setPhoneViewSize(tester, view);
-      final s = _baseState(opponentIsAi: opponentIsAi);
+      final s0 = _baseState(opponentIsAi: opponentIsAi);
+      final s = board == null ? s0 : s0.copyWith(board: board);
       final gw = FakeOnlineGamesGateway()
-        ..stateRow = stateJson(s, current: current, isGameOver: isGameOver)
+        ..stateRow = stateJson(s,
+            current: current, turnCount: turnCount, isGameOver: isGameOver)
         ..rackRows = [for (final tile in myRackTiles) tile.toJson()]
         ..moveRows = moveRows ?? const [];
       final row = gameRow(
@@ -364,6 +401,7 @@ void main() {
         onlineStatus: onlineStatus,
         chat: chat,
         friends: friends,
+        storage: storage,
       );
       if (boundaryKey != null) {
         screen = RepaintBoundary(key: boundaryKey, child: screen);
@@ -872,7 +910,16 @@ void main() {
         expect(outsideGhostFinder(), findsOneWidget);
 
         // Rakip AYNI ANDA oynadı: sunucudaki tur ilerledi, sıra karşıya geçti.
-        gw.stateRow = stateJson(_baseState(), current: 1, turnCount: 1);
+        // Tahtadan sürüklenen taslak taş ancak rakibin taşı AYNI hücreye
+        // oturduysa silinir (5 Kasım 2026: taslak artık yalnızca çakışmada /
+        // raf uyuşmazlığında atılıyor) — kaynağın ortadan kalktığı durum bu.
+        gw.stateRow = stateJson(
+          fromRack
+              ? _baseState()
+              : _baseState().copyWith(board: oppBoard([(0, 0)])),
+          current: 1,
+          turnCount: 1,
+        );
         gw.gameListener!();
         await tester.pump();
         await tester.pump();
@@ -899,6 +946,136 @@ void main() {
         await unmount(tester);
       });
     }
+
+    // ── Canlı oyunda TASLAK (5 Kasım 2026) ─────────────────────────────────
+    // Kural: sıra rakipteyken bulunan iyi hamle rakip oynayınca da ve ekrandan
+    // çıkıp girince KAYBOLMAZ; taslak YALNIZCA bir hücresine rakibin taşı
+    // oturduysa (ya da raf uyuşmazsa) atılır. Çekirdek vakaları
+    // `kelimeki_core/test/run_all.dart` → testLiveDraft'ta; burada ekran
+    // akışı: kalma, atma + bilgi satırı, kalıcılık.
+    int rackCount() => find
+        .descendant(
+            of: find.byType(RackWidget), matching: find.byType(TileWidget))
+        .evaluate()
+        .length;
+    const draftNote = 'Rakibin hamlesi taslağınla çakıştı, taşların rafa döndü.';
+
+    Future<void> placeDraft(WidgetTester tester) async {
+      await tester.tap(rackTile(0));
+      await tester.pump();
+      await tester.tap(boardCell(0, 0));
+      await tester.pump();
+    }
+
+    testWidgets('rakip ÇAKIŞMAYAN hamle yaparsa taslak KALIR', (tester) async {
+      final gw = await pumpScreen(tester, current: 1);
+      await placeDraft(tester);
+      expect(rackCount(), 6);
+
+      gw.stateRow = stateJson(
+        _baseState().copyWith(board: oppBoard([(6, 6)])),
+        current: 0,
+        turnCount: 1,
+      );
+      gw.gameListener!();
+      await tester.pump();
+      await tester.pump();
+
+      expect(rackCount(), 6,
+          reason: 'çakışma yok ama taslak rakibin hamlesiyle silindi');
+      expect(find.text(draftNote), findsNothing);
+      await unmount(tester);
+    });
+
+    testWidgets('rakip taslağın HÜCRESİNE oynarsa taşlar rafa döner + bilgi satırı',
+        (tester) async {
+      final gw = await pumpScreen(tester, current: 1);
+      await placeDraft(tester);
+      expect(rackCount(), 6);
+
+      gw.stateRow = stateJson(
+        _baseState().copyWith(board: oppBoard([(0, 0)])),
+        current: 0,
+        turnCount: 1,
+      );
+      gw.gameListener!();
+      await tester.pump();
+      await tester.pump();
+
+      expect(rackCount(), 7, reason: 'çakışan taslak rafa dönmedi');
+      expect(find.text(draftNote), findsOneWidget,
+          reason: 'sessiz kayıp: kullanıcıya neden söylenmedi');
+      await unmount(tester);
+    });
+
+    testWidgets('ekrandan çıkıp girince taslak GERİ GELİR (aynı cihaz)',
+        (tester) async {
+      final storage = await newStorageForWidget(tester);
+      await pumpScreen(tester, current: 1, storage: Future.value(storage));
+      await drainRealIo(tester);
+      await placeDraft(tester);
+      expect(rackCount(), 6);
+      await drainRealIo(tester); // kayıt yazılsın
+      await unmount(tester);
+
+      await pumpScreen(tester, current: 1, storage: Future.value(storage));
+      await drainRealIo(tester);
+      expect(rackCount(), 6, reason: 'kayıtlı taslak geri yüklenmedi');
+      await unmount(tester);
+    });
+
+    testWidgets('çıkıp girince: rakip ÇAKIŞMAYAN hamle yaptıysa taslak yine gelir',
+        (tester) async {
+      final storage = await newStorageForWidget(tester);
+      await pumpScreen(tester, current: 1, storage: Future.value(storage));
+      await drainRealIo(tester);
+      await placeDraft(tester);
+      await drainRealIo(tester);
+      await unmount(tester);
+
+      await pumpScreen(tester,
+          current: 0,
+          turnCount: 1,
+          board: oppBoard([(6, 6)]),
+          storage: Future.value(storage));
+      await drainRealIo(tester);
+      expect(rackCount(), 6, reason: 'rakip oynadı ama kayıtlı taslak silindi');
+      expect(find.text(draftNote), findsNothing);
+      await unmount(tester);
+    });
+
+    testWidgets('çıkıp girince: rakip taslağın hücresine oynadıysa atılır + bilgi',
+        (tester) async {
+      final storage = await newStorageForWidget(tester);
+      await pumpScreen(tester, current: 1, storage: Future.value(storage));
+      await drainRealIo(tester);
+      await placeDraft(tester);
+      await drainRealIo(tester);
+      await unmount(tester);
+
+      await pumpScreen(tester,
+          current: 0,
+          turnCount: 1,
+          board: oppBoard([(0, 0)]),
+          storage: Future.value(storage));
+      await drainRealIo(tester);
+      expect(rackCount(), 7, reason: 'çakışan kayıtlı taslak geri yüklendi');
+      expect(find.text(draftNote), findsOneWidget);
+      await drainRealIo(tester);
+      await unmount(tester);
+
+      // Atılan taslak kayıttan da silinmeli — üçüncü açılışta geri gelmesin.
+      await pumpScreen(tester,
+          current: 0,
+          turnCount: 1,
+          board: oppBoard([(0, 0)]),
+          storage: Future.value(storage));
+      await drainRealIo(tester);
+      expect(rackCount(), 7);
+      expect(find.text(draftNote), findsNothing,
+          reason: 'bilgi satırı her açılışta tekrarlandı: kayıt silinmedi');
+      await unmount(tester);
+    });
 
     testWidgets(
         'sürükleme ortasında arka plana alınırsa drag İPTAL olur '

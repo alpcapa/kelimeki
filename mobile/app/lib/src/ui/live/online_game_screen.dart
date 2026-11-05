@@ -314,6 +314,15 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   }
 
   String? _lastPlacedSignature;
+
+  /// Taslak, rakibin hamlesiyle ÇAKIŞTIĞI için atıldıysa tek satır bilgi —
+  /// sessiz kayıp "unutmak" sorununun tersi olurdu (web `draftNote`). Yeni taş
+  /// konunca silinir.
+  String? _draftNote;
+
+  /// Son kaydedilen taslağın imzası — aynı taslağı her bildirimde yeniden
+  /// yazmayalım (controller çok sık bildiriyor).
+  String? _draftSavedSignature;
   List<OnlineMoveRow> _moves = const [];
   bool _gameOverShown = false;
 
@@ -500,6 +509,29 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     if (_uiHint != null && _controller.state.placed.isNotEmpty) {
       _hintTimer?.cancel();
       setState(() => _uiHint = null);
+    }
+    if (_draftNote != null && _controller.state.placed.isNotEmpty) {
+      setState(() => _draftNote = null);
+    }
+    unawaited(_persistDraft());
+  }
+
+  /// Taslağı BU cihaza kaydeder (`storage/live_draft_store.dart`): ekrandan
+  /// çıkıp girince ya da rakip oynayınca bulunan hamle kaybolmasın. İlk senkron
+  /// BİTMEDEN yazmıyoruz (boş taslak kayıtlı olanı silerdi); taslak boşalınca
+  /// satır silinir; oyun bitince temizlenir. Karar (geri yükle/at) çekirdekte.
+  Future<void> _persistDraft() async {
+    final storageFuture = widget.storage;
+    if (storageFuture == null || !_loaded || _mySlot < 0) return;
+    final s = _controller.state;
+    final sig = s.isGameOver ? '' : _placedSignature;
+    if (sig == _draftSavedSignature) return;
+    _draftSavedSignature = sig;
+    final store = (await storageFuture).liveDrafts;
+    if (s.isGameOver || s.placed.isEmpty) {
+      await store.clear(widget.myUserId, widget.game.id);
+    } else {
+      await store.save(widget.myUserId, widget.game.id, s.placed);
     }
   }
 
@@ -855,10 +887,32 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       return;
     }
     final turnAdvanced = snap.state.turnCount > state.turnCount;
+    // Taslak kuralı (kelimeki_core `engine/live_draft.dart`): İLK senkronda bu
+    // cihazdaki kayıtlı taslak, sonrakilerde ekrandaki taslak aynı kuralla
+    // sınanır — YALNIZCA hücre çakışması ya da raf uyuşmazlığı atar.
+    Placed? savedDraft;
+    final storageFuture = widget.storage;
+    if (!_loaded && storageFuture != null) {
+      try {
+        savedDraft = await (await storageFuture)
+            .liveDrafts
+            .load(widget.myUserId, widget.game.id);
+      } catch (e) {
+        debugPrint('[Kelimeki] taslak okunamadı: $e');
+      }
+      if (!mounted) return;
+    }
+    final draftBefore = state.placed.isNotEmpty ? state.placed : savedDraft;
+    if (draftBefore != null &&
+        !shouldKeepDraft(draftBefore, snap.state.board, snap.myRack) &&
+        discardedByOpponent(draftBefore, snap.state.board, _mySlot)) {
+      _draftNote = 'Rakibin hamlesi taslağınla çakıştı, taşların rafa döndü.';
+    }
     _controller.dispatch(SyncOnlineStateAction(
       publicState: snap.state,
       myRack: snap.myRack,
       mySlotIndex: _mySlot,
+      savedDraft: savedDraft,
     ));
     // Rakip AYNI ANDA oynadıysa reducer'ın `turnAdvanced` dalı deneme
     // taşlarını rafa geri döndürüp rafı sunucudakiyle değiştiriyor — yani
@@ -872,6 +926,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       _loaded = true;
       _loadFailed = false;
     });
+    unawaited(_persistDraft());
     unawaited(_ipucuKarar());
 
     if (snap.state.isGameOver) return;
@@ -1963,6 +2018,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                 : submitError ??
                     offTurnNote ??
                     myTurnNote ??
+                    _draftNote ??
                     (state.message.isNotEmpty ? state.message : last.text);
         final liveKind = invalid
             ? MessageKind.err
@@ -1974,7 +2030,9 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                         ? MessageKind.warn
                         : valid
                             ? MessageKind.ok
-                            : state.message.isNotEmpty
+                            : _draftNote != null
+                                ? MessageKind.warn
+                                : state.message.isNotEmpty
                                 ? state.messageType
                                 : last.kind;
 
