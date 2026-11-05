@@ -20,7 +20,7 @@ import 'fluid.dart';
 import 'logo_mark.dart';
 import 'player_colors.dart';
 
-/// "← Geri" etiketi — web `GameHeader.tsx`in BACK_FONT_SIZE/BACK_GAP'i.
+/// "← Çıkış" etiketi (5 Kasım 2026'a kadar "← Geri") — web `GameHeader.tsx`in BACK_FONT_SIZE/BACK_GAP'i.
 /// İnce (normal ağırlık) ve KOYU (paletin ana metin rengi); kullanıcı
 /// gri ve siyah varyantları yan yana görüp siyahı seçti (21 Ağustos 2026).
 /// Web'le ELLE senkron — biri değişirse öteki de değişmeli.
@@ -137,7 +137,7 @@ class GameHeader extends StatelessWidget {
                       left: 0,
                       top: logoHeight + kBackGap,
                       child: const Text(
-                        '← Geri',
+                        '← Çıkış',
                         softWrap: false,
                         style: TextStyle(
                           fontFamily: 'SpaceMono',
