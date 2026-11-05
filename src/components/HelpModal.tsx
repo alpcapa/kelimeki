@@ -352,6 +352,24 @@ export function DetailedRules() {
         </P>
       </Section>
 
+      <Section title="Hamle Avı">
+        <P>
+          Ana ekrandaki <strong>Hamle Avı</strong>'nda hazır bir tahta ve 7 harflik raf verilir;{' '}
+          <strong>3 dakika</strong> içinde elindeki harflerle oynanabilecek{' '}
+          <strong>en yüksek puanlı hamleyi</strong> bulursun. Bölge vergisi puana dahildir.
+        </P>
+        <P>
+          <strong>Seri:</strong> Doğru hamleyi bulunca sıradaki bulmacaya geçersin ve serin bir
+          artar; süre dolarsa ya da çıkarsan serin sıfırlanır. En yüksek serin rekor olarak
+          saklanır. Daha düşük puanlı geçerli bir hamle yaparsan pozisyon başa döner, süre
+          akmaya devam eder.
+        </P>
+        <P>
+          <strong>Süre bitince:</strong> Doğru hamle tahtada gösterilir; kelimelere dokunarak
+          anlamlarına bakabilirsin. Hamle Avı k-lig puanını etkilemez.
+        </P>
+      </Section>
+
       <Section title="Skor Kartı ve Puanlama">
         <P>
           Oyun oynamak için giriş yapman gerekmez. Sadece arkadaşınla canlı oyun, k-lig
