@@ -352,6 +352,25 @@ export function DetailedRules() {
         </P>
       </Section>
 
+      <Section title="Hamle Avı">
+        <P>
+          Hamle Avı, tek başına oynadığın kısa bir bulmaca modudur. Başlangıç ekranının
+          en üstündeki <strong>Hamle Avı</strong> düğmesinden açılır. Karşına oyunu yarıda
+          kalmış bir tahta ve 7 harf gelir; <strong>3 dakika</strong> içinde bu harflerle
+          oynayabileceğin <strong>en yüksek puanlı hamleyi</strong> bulman gerekir.
+        </P>
+        <P>
+          <strong>Puan:</strong> Hamlenin puanı bölge vergisi düşüldükten sonraki net puandır.
+          Hamlen en iyi hamlenin puanına ulaşırsa ya da geçerse bulmuş sayılırsın; aynı kelimeyi
+          bulman gerekmez.
+        </P>
+        <P>
+          <strong>Seri:</strong> Bulursan sıradaki bulmacaya geçersin, istediğin kadar devam
+          edebilirsin. Üst üste bulduğun bulmaca sayısı serindir; süre dolarsa ya da vazgeçersen
+          seri sıfırlanır, rekorun korunur. Hamle Avı k-lig puanını etkilemez.
+        </P>
+      </Section>
+
       <Section title="Skor Kartı ve Puanlama">
         <P>
           Oyun oynamak için giriş yapman gerekmez. Sadece arkadaşınla canlı oyun, k-lig

@@ -297,6 +297,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **1.1.5'e binecek (20 Ekim, taslak PR, kesim 2 Kasım) — Kolay YZ kolaylaştı:** `AI_LEVEL_TOP_N.kolay` 4 → 8 + `AI_LEVEL_SEARCH.kolay.maxWordLen` 7 → 5, üç motor kopyası (`src/` · `kelimeki_core` · Edge `_game/`) + golden'lar (`ai_level.json`, `reducer_ai2_kolay.json`). Saha: Kolay'da YZ %47 kazanıyordu (hedef ~%30); simülasyon Normal'e karşı %34 → %13. ⚠ Merge günü `play-ai-turn` yeniden deploy (`verify_jwt` değerini önce oku). Gerekçe: `docs/decisions/ai-levels.md` §9.
 
+**1.1.6'ya binecek (5 Kasım 2026, taslak PR, kesim 9 Kasım):** "Nasıl Oynanır?" yardımına **Hamle Avı** bölümü (3 dk, net puan eşiği, seri/rekor; web `HelpModal.tsx` + port `help_modal.dart` BİRLİKTE — `help_text_parity_test` bölüm başlığını zorluyor). ⚠ Port yarısı Hamle Avı'nın kendisi (#924) ile AYNI trende gitmeli; yoksa 1.1.5 kullanıcısı olmayan bir modu okur.
+
 **Sıradaki treni bekleyen (23 Ekim 2026):** son taslak taş geri alınınca bayat "Oyna tuşuyla kelimeyi onayla." mesajı silinsin (kullanıcı ekran görüntüsüyle bildirdi) — `kelimeki_core` `RecallCellAction` + web `RECALL_CELL` ikizi + `reducer_human2.json` golden'ı. **Taslak PR #889, 2 Kasım 1.1.5 trenine biner** (kullanıcı kararı 23 Ekim: 1.1.4 gönderimi bitmeden `main`'e mobil merge YOK).
 
 **Aynı tren (23 Ekim 2026):** konmuş taşı bir üst hücreye taşımak taşı rafa döndürüyordu (kullanıcı bildirdi) — web + port, hayalet ne gösteriyorsa o olsun (Parça 250). Taslak PR.

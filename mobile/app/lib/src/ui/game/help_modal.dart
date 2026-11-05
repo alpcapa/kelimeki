@@ -655,6 +655,23 @@ class _DetailedRules extends StatelessWidget {
         ],
       ),
       const _Section(
+        title: 'Hamle Avı',
+        children: [
+          _P('Hamle Avı, tek başına oynadığın kısa bir bulmaca modudur. '
+              'Başlangıç ekranının en üstündeki **Hamle Avı** düğmesinden '
+              'açılır. Karşına oyunu yarıda kalmış bir tahta ve 7 harf gelir; '
+              '**3 dakika** içinde bu harflerle oynayabileceğin **en yüksek '
+              'puanlı hamleyi** bulman gerekir.'),
+          _P('**Puan:** Hamlenin puanı bölge vergisi düşüldükten sonraki net '
+              'puandır. Hamlen en iyi hamlenin puanına ulaşırsa ya da '
+              'geçerse bulmuş sayılırsın; aynı kelimeyi bulman gerekmez.'),
+          _P('**Seri:** Bulursan sıradaki bulmacaya geçersin, istediğin kadar '
+              'devam edebilirsin. Üst üste bulduğun bulmaca sayısı serindir; '
+              'süre dolarsa ya da vazgeçersen seri sıfırlanır, rekorun '
+              'korunur. Hamle Avı k-lig puanını etkilemez.'),
+        ],
+      ),
+      const _Section(
         title: 'Skor Kartı ve Puanlama',
         children: [
           _P('Oyun oynamak için giriş yapman gerekmez. Sadece arkadaşınla '
