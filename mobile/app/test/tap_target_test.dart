@@ -241,7 +241,7 @@ void main() {
     _olc(tester, find.text('Yardım'), 'alt şerit: Yardım');
   });
 
-  testWidgets('oyun başlığı: ← Geri (girişsiz — GİRİŞ butonu)',
+  testWidgets('oyun başlığı: ← Çıkış (girişsiz — GİRİŞ butonu)',
       (tester) async {
     await setPhoneViewSize(tester, const Size(390, 844));
     await tester.pumpWidget(MaterialApp(
@@ -258,7 +258,7 @@ void main() {
     // satırının ALTINDA, tahtayla arasındaki boşlukta duruyor; 48'lik bir
     // yükseklik oraya 20 px'lik boş bir bant açardı. Aynı eylem için hemen
     // üstündeki logo zaten tam boy bir hedef (yukarıda ölçülüyor).
-    _olc(tester, find.text('← Geri'), 'başlık: ← Geri', minHeight: 24);
+    _olc(tester, find.text('← Çıkış'), 'başlık: ← Çıkış', minHeight: 24);
     _olc(tester, find.text('GİRİŞ'), 'başlık: GİRİŞ');
   });
 
