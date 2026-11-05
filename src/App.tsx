@@ -2,7 +2,7 @@
 import { LIVE_GAME_REQUEST_EVENT, requestRandomGameOpen } from './utils/liveGameRequest';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { GameHeader } from './components/GameHeader';
+import { GameHeader, SETUP_LOGO_HEIGHT } from './components/GameHeader';
 import { Board } from './components/Board';
 import { Rack } from './components/Rack';
 import { GameOver } from './components/GameOver';
@@ -1523,8 +1523,12 @@ export default function App() {
             içeriği aşağı iter, logoyu ÖRTMEZ (bkz. AppStoreStrip'in başlığı). */}
         <AppStoreStrip userId={user?.id ?? null} authLoading={authLoading} />
         <div
-          className="w-full max-w-[460px] flex items-center justify-end px-3.5 pt-3"
+          className="w-full max-w-[460px] flex items-center justify-between px-3.5 pt-3"
         >
+          {/* Logo sol üstte, Giriş/avatar ile aynı satırda (5 Kasım 2026,
+            kullanıcı isteği; önceden Setup'ta ortada 52px'ti). `<h1>` Setup'ta
+            görünmez kaldı (SEO/ekran okuyucu). Port ikizi: `setup_screen.dart`. */}
+          <LogoMark height={SETUP_LOGO_HEIGHT} />
           {/* Karşılama sayfasına dönüş oku (`<`, `?tanitim=1`) 2 Ekim 2026'da
             kaldırıldı (kullanıcı isteği). `?tanitim=1` kapısı DURUYOR — adrese
             elle yazılınca katman yine açılır. Tarihçe: docs/decisions/landing-page.md. */}
