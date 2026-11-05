@@ -189,7 +189,8 @@ mobile/
       storage/               # SQLite + prefs katmanı (bkz. "Depolama Katmanı"):
                              # app_database (şema), app_storage (giriş kapısı),
                              # local_save_store (karantinalı kayıt), pending_queue_store,
-                             # pending_event_store, chat_read_store, flags_store
+                             # pending_event_store, chat_read_store, flags_store,
+                             # live_draft_store (Canlı oyun taslağı, şema v5)
       ui/                    # app.dart, update_required_screen.dart,
                              # theme.dart (ÜRÜNÜN TEK teması — testler de
                              # `kelimekiTheme()` kullanır; M3'ün varsayılan
@@ -574,6 +575,7 @@ mobile/
       actions.dart           # sealed GameAction sınıfları (Action union'ı)
       engine/reducer.dart    # GameEngine.reduce (gameReducer.ts) + createInitialState
       engine/bag.dart        # buildBag/drawTiles/remainingTiles (bag.ts)
+      engine/live_draft.dart # Canlı oyunda TASLAK kararı: shouldKeepDraft/discardedByOpponent (web utils/liveDraft.ts; 5 Kas 2026)
       rules/board.dart       # kelime çıkarımı (board.ts)
       rules/validator.dart   # doğrulama+bölge+vergi+puanlama (validator.ts)
       rules/ranking.dart     # rankPlayers (ranking.ts)

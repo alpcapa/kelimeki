@@ -22,6 +22,7 @@ import '../rules/board.dart';
 import '../rules/validator.dart';
 import '../text/turkish.dart';
 import 'bag.dart';
+import 'live_draft.dart';
 
 /// Kurulum ekranıyla başlayan boş durum.
 GameState createInitialState() => GameState(
@@ -893,10 +894,21 @@ class GameEngine {
   GameState _syncOnlineState(GameState state, SyncOnlineStateAction action) {
     final pub = action.publicState;
     final turnAdvanced = pub.turnCount != state.turnCount;
-    final placed = turnAdvanced ? <String, Tile>{} : state.placed;
-    final myRack = turnAdvanced
-        ? action.myRack
-        : _subtractPlacedFromRack(action.myRack, placed);
+    // TASLAK KURALI (5 Kasım 2026, kullanıcı: sıra rakipteyken bulunan iyi
+    // hamle rakip oynayınca da unutulmasın) — web `gameReducer.ts`in
+    // SYNC_ONLINE_STATE'indeki aynı yerin birebir portu. Önceden
+    // `turnAdvanced` taslağı KOŞULSUZ siliyordu; artık YALNIZCA bir hücresine
+    // bir taş oturduysa ya da taşları sunucudaki rafımda bulunamıyorsa
+    // atılır (geçersiz olması/puanının değişmesi sebep DEĞİL). Kendi
+    // hamlemden sonra da bu kural siler: taşlarım artık tahtada (çakışma) ve
+    // raf yenilenmiş. İlk senkronda kayıtlı taslak aynı kuralla geri yüklenir.
+    final candidate = state.placed.isEmpty && action.savedDraft != null
+        ? action.savedDraft!
+        : state.placed;
+    final Placed placed = shouldKeepDraft(candidate, pub.board, action.myRack)
+        ? candidate
+        : <String, Tile>{};
+    final myRack = _subtractPlacedFromRack(action.myRack, placed);
     // `swapSelection` raf İNDEKSLERİ tutuyor — bkz. gameReducer.ts'teki aynı
     // yerdeki not (5 Eylül 2026 hata avı geçişi). Turn ilerlemediyse seçim
     // bilerek korunuyor, ama raf sunucu sırasına geri yazıldığından

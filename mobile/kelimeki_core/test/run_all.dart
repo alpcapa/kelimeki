@@ -415,6 +415,206 @@ void testReducerScenario(String name) {
   }
 }
 
+/// Canlı oyunda TASLAK kuralı — web `scripts/verify-live-draft.ts`in AYNI
+/// vakaları (5 Kasım 2026). Kural: taslak YALNIZCA bir hücresine taş
+/// oturduysa ya da taşları sunucudaki rafımda bulunamıyorsa atılır;
+/// geçersiz olması sebep DEĞİL. Golden'lar bu davranışı KAPSAMAZ (fixture'lar
+/// değişmedi), bu yüzden iki taraf da kendi vakalarını koşar.
+void testLiveDraft() {
+  final engine = GameEngine(
+    words: words,
+    rng: Mulberry32(777),
+    nowIso: () => '',
+  );
+  GameState basla() => engine.reduce(
+        createInitialState(),
+        const StartAction([
+          PlayerSetup(name: 'Ben', isAI: false),
+          PlayerSetup(name: 'Rakip', isAI: false),
+        ]),
+      );
+  Board kopya(Board b) => [for (final row in b) List<Tile?>.of(row)];
+  OnlineGameStatePublic pubOf(GameState base, Board board, int turn) =>
+      OnlineGameStatePublic(
+        board: board,
+        bonuses: base.bonuses,
+        players: [
+          for (final p in base.players)
+            OnlinePlayerPublic(
+              name: p.name,
+              corners: p.corners,
+              colorIndex: p.colorIndex,
+              isAI: p.isAI,
+              surrendered: p.surrendered,
+              rackCount: 7,
+              score: p.score,
+              bestMoveScore: p.bestMoveScore,
+              bestWordScore: p.bestWordScore,
+              longestWord: p.longestWord,
+              moveCount: p.moveCount,
+              moveScoreSum: p.moveScoreSum,
+            ),
+        ],
+        current: 0,
+        turnCount: turn,
+        consecutivePasses: 0,
+        isGameOver: false,
+        endReason: null,
+        lastMoveCells: const [],
+        bagCount: base.bag.length,
+        startedAt: base.startedAt,
+      );
+  GameState sync(GameState s, Board board, int turn, List<Tile> myRack,
+          {Placed? savedDraft, GameState? base}) =>
+      engine.reduce(
+        s,
+        SyncOnlineStateAction(
+          publicState: pubOf(base ?? s, board, turn),
+          myRack: myRack,
+          mySlotIndex: 0,
+          savedDraft: savedDraft,
+        ),
+      );
+
+  // Ortak kurulum: ilk senkron yapılmış, iki taş (0,0)-(0,1)'e konmuş taslak.
+  ({GameState s, List<Tile> tamRaf, Board bos}) kurulum() {
+    var s = basla();
+    final tamRaf = List<Tile>.of(s.players[0].rack); // sunucudaki ham raf
+    final bos = kopya(s.board);
+    s = sync(s, bos, 0, tamRaf);
+    s = engine.reduce(s, const PlaceTileAction(r: 0, c: 0, rackIndex: 0));
+    s = engine.reduce(s, const PlaceTileAction(r: 0, c: 1, rackIndex: 0));
+    return (s: s, tamRaf: tamRaf, bos: bos);
+  }
+
+  // ── 1. Rakip ÇAKIŞMAYAN bir hamle yaptı → taslak KALIR ─────────────────
+  {
+    final k = kurulum();
+    check(k.s.placed.length == 2, () => 'senaryo: ${k.s.placed.length} taş');
+    final board = kopya(k.bos);
+    board[6][6] = const Tile(letter: 'K', pts: 5, owner: 1);
+    final t = sync(k.s, board, k.s.turnCount + 1, k.tamRaf);
+    check(t.turnCount == k.s.turnCount + 1, () => 'tur ilerlemedi');
+    check(t.placed.length == 2,
+        () => 'çakışma yok → taslak korunmalı: ${t.placed.length}');
+    check(t.players[0].rack.length == 5,
+        () => 'raf taslak taşlarını düşmeli: ${t.players[0].rack.length}');
+  }
+
+  // ── 2. Rakip taslağın bir hücresine oynadı → taslak ATILIR ──────────────
+  {
+    final k = kurulum();
+    final board = kopya(k.bos);
+    board[0][1] = const Tile(letter: 'A', pts: 1, owner: 1);
+    final t = sync(k.s, board, k.s.turnCount + 1, k.tamRaf);
+    check(t.placed.isEmpty, () => 'hücre çakıştı → taslak atılmalı');
+    check(t.players[0].rack.length == 7,
+        () => 'taşlar rafa dönmeli: ${t.players[0].rack.length}');
+    check(discardedByOpponent(k.s.placed, board, 0),
+        () => 'atma sebebi RAKİP olmalı (bilgi satırı)');
+  }
+
+  // ── 3. Kendi hamlem sonrası → sessizce temizlenir ───────────────────────
+  {
+    final k = kurulum();
+    final board = kopya(k.bos);
+    for (final e in k.s.placed.entries) {
+      final (r, c) = parseKey(e.key);
+      board[r][c] = e.value.copyWith(owner: 0);
+    }
+    final yeniRaf = List<Tile>.of(k.tamRaf)..removeRange(0, 2);
+    final t = sync(k.s, board, k.s.turnCount + 1, yeniRaf);
+    check(t.placed.isEmpty, () => 'kendi hamlemden sonra taslak temizlenmeli');
+    check(!discardedByOpponent(k.s.placed, board, 0),
+        () => 'kendi taşlarım için bilgi satırı ÇIKMAMALI');
+  }
+
+  // ── 4. Raf uyuşmazlığı (başka cihazdan taş değiştirdim) → atılır, sessiz ─
+  {
+    final k = kurulum();
+    final baskaRaf = List<Tile>.generate(7, (_) => const Tile(letter: 'Z', pts: 4));
+    final t = sync(k.s, k.bos, k.s.turnCount + 1, baskaRaf);
+    check(t.placed.isEmpty, () => 'raf karşılamıyor → taslak atılmalı');
+    check(!discardedByOpponent(k.s.placed, k.bos, 0),
+        () => 'raf uyuşmazlığında bilgi satırı ÇIKMAMALI');
+  }
+
+  // ── 5. Tur ilerlemedi (sekme odağa döndü) → taslak aynen korunur ────────
+  {
+    final k = kurulum();
+    final t = sync(k.s, k.bos, k.s.turnCount, k.tamRaf);
+    check(t.placed.length == 2 && t.players[0].rack.length == 5,
+        () => 'tur aynı: taslak ${t.placed.length}, raf ${t.players[0].rack.length}');
+  }
+
+  // ── 6. İlk senkronda KAYITLI taslak geri yüklenir ───────────────────────
+  {
+    final s0 = basla();
+    final tamRaf = List<Tile>.of(s0.players[0].rack);
+    final bos = kopya(s0.board);
+    final kayit = <String, Tile>{
+      '0,0': tamRaf[0].copyWith(owner: 0),
+      '0,1': tamRaf[1].copyWith(owner: 0),
+    };
+    final t = sync(createInitialState(), bos, 3, tamRaf,
+        savedDraft: kayit, base: s0);
+    check(t.placed.length == 2, () => 'kayıtlı taslak geri yüklenmeli');
+    check(t.players[0].rack.length == 5, () => 'raf 5 taş olmalı');
+
+    final cakisan = kopya(bos);
+    cakisan[0][0] = const Tile(letter: 'M', pts: 2, owner: 1);
+    final t2 = sync(createInitialState(), cakisan, 3, tamRaf,
+        savedDraft: kayit, base: s0);
+    check(t2.placed.isEmpty, () => 'çakışan kayıt geri YÜKLENMEMELİ');
+    check(discardedByOpponent(kayit, cakisan, 0),
+        () => 'geri yükleme atıldığında bilgi satırı çıkmalı');
+
+    final baskaRaf = List<Tile>.generate(7, (_) => const Tile(letter: 'Z', pts: 4));
+    final t3 = sync(createInitialState(), bos, 3, baskaRaf,
+        savedDraft: kayit, base: s0);
+    check(t3.placed.isEmpty, () => 'rafı karşılamayan kayıt geri YÜKLENMEMELİ');
+
+    // Ekranda zaten taslak varsa kayıt onu EZMEZ.
+    final k = kurulum();
+    final t4 = sync(k.s, k.bos, k.s.turnCount, k.tamRaf, savedDraft: {
+      '5,5': const Tile(letter: 'X', pts: 9, owner: 0),
+    });
+    check(t4.placed.length == 2 && !t4.placed.containsKey('5,5'),
+        () => 'ekrandaki taslak kayıtla EZİLMEMELİ');
+  }
+
+  // ── 7. Saf yardımcılar ──────────────────────────────────────────────────
+  {
+    final bos = kopya(basla().board);
+    final joker = <String, Tile>{
+      '3,3': const Tile(
+          letter: '?', pts: 0, wild: true, wildLetter: 'E', owner: 0),
+    };
+    check(rackCoversDraft([const Tile(letter: '?', pts: 0)], joker),
+        () => 'joker: raftaki "?" karşılamalı');
+    check(!rackCoversDraft([const Tile(letter: 'E', pts: 1)], joker),
+        () => 'joker: "E" harfi jokerin yerini TUTMAMALI');
+    check(
+        !rackCoversDraft(
+            [const Tile(letter: 'A', pts: 1)],
+            {
+              '1,1': const Tile(letter: 'A', pts: 1),
+              '1,2': const Tile(letter: 'A', pts: 1),
+            }),
+        () => 'çoklu küme: iki "A" gerekir');
+    check(shouldKeepDraft(<String, Tile>{}, bos, const []),
+        () => 'boş taslak her zaman korunur');
+    final b2 = kopya(bos);
+    b2[2][2] = const Tile(letter: 'T', pts: 1, owner: 1);
+    final c = draftConflicts({
+      '2,2': const Tile(letter: 'A', pts: 1),
+      '2,3': const Tile(letter: 'B', pts: 3),
+    }, b2);
+    check(c.length == 1 && c.first == '2,2',
+        () => 'draftConflicts yalnızca dolu hücreyi bulmalı: $c');
+  }
+}
+
 void main() {
   final wordsFile = File('../app/assets/dictionary/words_tr.txt');
   if (!wordsFile.existsSync()) {
@@ -434,6 +634,7 @@ void main() {
   testScoring();
   testRemainingTiles();
   testSwapLimit();
+  testLiveDraft();
   for (final name in [
     'reducer_ai2',
     'reducer_ai2_kolay',
