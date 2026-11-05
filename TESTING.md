@@ -366,7 +366,9 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       oynayınca eski taslak **geri gelmemeli**; (e) **başka cihaz/tarayıcı**
       açılırsa taslak sıfırdan başlar (bilinçli). Taş sayısı hep 7 kalmalı
       (raf + taslak), hiçbir taş çoğalmamalı/kaybolmamalı. Joker taşıyla da dene
-      (seçilen harf geri gelmeli).
+      (seçilen harf geri gelmeli). **5 Kasım 2026 elle test (T2/T3): (a)-(e) GEÇTİ, joker
+      DENENEMEDİ** (rafa joker gelmedi) — rafın jokerli geldiği ilk oyunda koş; portun
+      ekran testi bunu kapsıyor, web penceresi akışı henüz elle görülmedi.
 
 ## 3. Oyun içi mesajlaşma
 

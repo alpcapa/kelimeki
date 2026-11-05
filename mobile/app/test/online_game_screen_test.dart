@@ -1077,6 +1077,79 @@ void main() {
       await unmount(tester);
     });
 
+    // JOKER taslağı (5 Kasım 2026): iki hesapla elle testte rafa joker
+    // gelmedi (100 taşta 2 adet), bu yüzden akış ekran testiyle sınanıyor:
+    // joker koy → harf penceresi → çıkıp gir. Harf KORUNMALI.
+    Future<void> placeJokerDraft(WidgetTester tester) async {
+      await tester.tap(rackTile(6)); // '?' (rafta ★)
+      await tester.pump();
+      await tester.tap(boardCell(1, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('JOKER HANGİ HARF OLSUN?'), findsOneWidget);
+      await tester.tap(find.text('B').first);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('JOKER taslağı: çıkıp girince AYNI HARFLE geri gelir',
+        (tester) async {
+      final storage = await newStorageForWidget(tester);
+      await pumpScreen(tester, current: 1, storage: Future.value(storage));
+      await drainRealIo(tester);
+      await placeJokerDraft(tester);
+      expect(rackCount(), 6, reason: 'joker rafta kaldı (tahtaya konmadı)');
+      expect(find.descendant(of: boardCell(1, 0), matching: find.text('B')),
+          findsWidgets);
+      await drainRealIo(tester); // kayıt yazılsın
+      await unmount(tester);
+
+      await pumpScreen(tester, current: 1, storage: Future.value(storage));
+      await drainRealIo(tester);
+      expect(rackCount(), 6, reason: 'kayıtlı joker taslağı geri yüklenmedi');
+      expect(find.descendant(of: boardCell(1, 0), matching: find.text('B')),
+          findsWidgets,
+          reason: 'joker geri geldi ama SEÇİLEN HARFİ (B) kaybetti');
+      await unmount(tester);
+    });
+
+    testWidgets('JOKER taslağı: rakip ÇAKIŞMAYAN hamle yapınca harfiyle KALIR',
+        (tester) async {
+      final gw = await pumpScreen(tester, current: 1);
+      await placeJokerDraft(tester);
+      gw.stateRow = stateJson(
+        _baseState().copyWith(board: oppBoard([(6, 6)])),
+        current: 0,
+        turnCount: 1,
+      );
+      gw.gameListener!();
+      await tester.pump();
+      await tester.pump();
+      expect(rackCount(), 6, reason: 'joker taslağı rakibin hamlesiyle silindi');
+      expect(find.descendant(of: boardCell(1, 0), matching: find.text('B')),
+          findsWidgets);
+      await unmount(tester);
+    });
+
+    testWidgets('JOKER taslağı: rakip jokerin hücresine oynarsa joker RAFA döner',
+        (tester) async {
+      final gw = await pumpScreen(tester, current: 1);
+      await placeJokerDraft(tester);
+      gw.stateRow = stateJson(
+        _baseState().copyWith(board: oppBoard([(1, 0)])),
+        current: 0,
+        turnCount: 1,
+      );
+      gw.gameListener!();
+      await tester.pump();
+      await tester.pump();
+      expect(rackCount(), 7, reason: 'joker rafa dönmedi');
+      expect(
+          find.descendant(
+              of: find.byType(RackWidget), matching: find.byType(TileWidget)),
+          findsNWidgets(7));
+      expect(find.text(draftNote), findsOneWidget);
+      await unmount(tester);
+    });
+
     testWidgets(
         'sürükleme ortasında arka plana alınırsa drag İPTAL olur '
         '(web clearStuckDrag)', (tester) async {
