@@ -1581,7 +1581,7 @@ oyna (ya da birkaç oyuna böl — sıra kaldığı yerden sürer).
       penceresi; balonlar birbirinin üstüne binmez.
 - [ ] **Balon dokunuşu yutmaz:** Balon dururken altındaki düğmeye (Torba,
       Hamleler, avatar) basmak o düğmeyi açar.
-- [ ] **Tekrar oynama (Faz 3):** Setup → "Nasıl oynanır?" → penceresinin EN
+- [ ] **Tekrar oynama (Faz 3):** Setup → alttaki **"Yardım"** (footer'ın en sonu; 5 Kasım'dan beri, eski "Nasıl oynanır?" linki) → penceresinin EN
       BAŞINDA **"Tanıtım turunu oyna (1 dk)"**. Bas → tanıtım açılıyor;
       bitir → kapanış butonu **"Kapat"** diyor ve **gerçek oyun BAŞLAMIYOR**,
       Setup'a dönülüyor.
