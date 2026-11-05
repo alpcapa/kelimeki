@@ -1729,7 +1729,7 @@ Bütçesi"); yeni Rastgele Oyuncu kontrolleri BURAYA değil oraya yazılır.
 ## 14+ — Tarihli turlar → `docs/testing-turlari.md`
 
 Belirli bir düzeltmenin gerilemediğini doğrulayan tarihli turlar (14'ten
-sonrası: "← Geri", giriş varsayılanı, joker dokunmatik, hukuki sayfalar,
+sonrası: "← Çıkış" (eski "← Geri", 5 Kas), giriş varsayılanı, joker dokunmatik, hukuki sayfalar,
 dokunma hedefleri, bölge kuralı, davet sayfası, hesap silme, `destek@`
 ayrımı ve devamı) ayrı dosyaya taşındı — 7 Eylül 2026, doküman boyutu
 bütçesi. Bölüm numaraları korundu.

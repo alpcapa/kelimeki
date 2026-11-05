@@ -692,7 +692,7 @@ test('Sayfada tek bir h1 var, tahta demoları role="img" taşıyor', async ({ pa
 //
 // Negatif eş: `GameHeader`taki `<span>` kaldırılırsa ilk expect, etiket
 // logo butonunun DIŞINA taşınırsa ikinci expect düşer.
-test('Oyun ekranında logonun altında "← Geri" var ve Setup\'a döndürür', async ({ page }) => {
+test('Oyun ekranında logonun altında "← Çıkış" var ve Setup\'a döndürür', async ({ page }) => {
   page.on('dialog', (dialog) => dialog.accept());
   await donenKullanici(page);
   await page.goto('/');
@@ -709,13 +709,13 @@ test('Oyun ekranında logonun altında "← Geri" var ve Setup\'a döndürür', 
   // Oyun ekranındayız: tahta çizildi.
   await expect(page.getByRole('button', { name: 'Oyna', exact: true })).toBeVisible();
 
-  const geri = page.locator('header').getByText('← Geri');
+  const geri = page.locator('header').getByText('← Çıkış');
   await expect(geri).toBeVisible();
 
   // Etiket logoyla AYNI butonun içinde olmalı — dokunma alanı ikisini
   // birden kapsıyor (kullanıcı: "Logo alanı da dahil basıldığında").
   await expect(
-    page.locator('header button[aria-label="Oyundan çık"]').getByText('← Geri'),
+    page.locator('header button[aria-label="Oyundan çık"]').getByText('← Çıkış'),
   ).toBeVisible();
 
   await geri.click();
