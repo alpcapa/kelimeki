@@ -1077,15 +1077,6 @@ export function Setup({
             320'de iki satıra sarıp yatay taşmayı 0'da tutuyor, 356+ genişlikte
             hiçbir şey değişmiyor. */}
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] font-mono text-muted">
-            {/* "Yardım" (5 Kasım 2026): eski "Nasıl oynanır?" bağlantısının yeni
-              yeri — herkes için, hukuki linklerle AYNI className. */}
-            <button
-              onClick={() => setShowHelp(true)}
-              className="flex items-center min-h-[48px] hover:underline active:opacity-70 transition-opacity"
-            >
-              Yardım
-            </button>
-            <span>·</span>
             <button
               onClick={() => setShowTerms(true)}
               className="flex items-center min-h-[48px] hover:underline active:opacity-70 transition-opacity"
@@ -1117,6 +1108,15 @@ export function Setup({
             >
               <ShareIcon size={12} />
               {shareCopied ? "Link kopyalandı!" : "Paylaş"}
+            </button>
+            <span>·</span>
+            {/* "Yardım" (5 Kasım 2026): eski "Nasıl oynanır?" bağlantısının yeni
+              yeri (footer'ın EN SONU) — herkes için, hukuki linklerle AYNI className. */}
+            <button
+              onClick={() => setShowHelp(true)}
+              className="flex items-center min-h-[48px] hover:underline active:opacity-70 transition-opacity"
+            >
+              Yardım
             </button>
           </div>
           <p className="font-mono text-[10px] text-muted" style={{ margin: 0 }}>

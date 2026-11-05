@@ -1448,22 +1448,6 @@ class _SetupScreenState extends State<SetupScreen>
                           spacing: 8,
                           runSpacing: 4,
                           children: [
-                            // "Yardım" (5 Kasım 2026): eski "Nasıl oynanır?"
-                            // bağlantısının yeni yeri — web `Setup.tsx` footer'ıyla
-                            // AYNI sıra (Yardım · Kullanım Koşulları · Gizlilik …).
-                            _LegalLink('Yardım',
-                                onTap: () => showHelpModal(
-                                      context,
-                                      onReplayTutorial: () {
-                                        Navigator.of(context).pop();
-                                        unawaited(_replayTutorial());
-                                      },
-                                    )),
-                            const Text('·',
-                                style: TextStyle(
-                                    fontFamily: 'SpaceMono',
-                                    fontSize: 10,
-                                    color: _muted)),
                             _LegalLink('Kullanım Koşulları',
                                 onTap: () => showTermsModal(context,
                                     onFeedback: _openFeedback)),
@@ -1521,6 +1505,22 @@ class _SetupScreenState extends State<SetupScreen>
                                 ],
                               ),
                             ),
+                            const Text('·',
+                                style: TextStyle(
+                                    fontFamily: 'SpaceMono',
+                                    fontSize: 10,
+                                    color: _muted)),
+                            // "Yardım" (5 Kasım 2026): eski "Nasıl oynanır?"
+                            // bağlantısının yeni yeri — web `Setup.tsx` footer'ıyla
+                            // AYNI sıra (… · Paylaş · Yardım: EN SONDA).
+                            _LegalLink('Yardım',
+                                onTap: () => showHelpModal(
+                                      context,
+                                      onReplayTutorial: () {
+                                        Navigator.of(context).pop();
+                                        unawaited(_replayTutorial());
+                                      },
+                                    )),
                           ],
                         ),
                         // Web'in "Son çağrı" footer'ıyla aynı telif satırı
