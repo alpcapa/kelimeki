@@ -29,7 +29,7 @@ export function HamleAviButton({ onOpen }: { onOpen: () => void }) {
           <span className="flex flex-col items-start leading-tight">
             <span className="text-sm uppercase tracking-[0.5px]">Hamle Avı</span>
             <span className="text-[10px] text-muted font-mono normal-case font-normal">
-              3 dk · en iyi hamleyi bul
+              3 dakikada en iyi hamleyi bul!
             </span>
           </span>
         </span>
@@ -37,7 +37,11 @@ export function HamleAviButton({ onOpen }: { onOpen: () => void }) {
           ›
         </span>
       </button>
-      <div className="flex items-center gap-2" aria-hidden>
+      {/* `-mb-3`: Setup'ın ana akışı bloklar arası 20 px bırakıyor; ayıraç altındaki
+          "Kime karşı" başlığının ÖNSÖZÜ gibi okunduğundan ona yapışık durur (5 Kasım
+          2026, kullanıcı: "ekstra boşluğu kaldır"). Ölçüm: ayıraç→başlık 20 → 8 px,
+          başlığın kendi altındaki boşlukla (gap-2) aynı. */}
+      <div className="-mb-3 flex items-center gap-2" aria-hidden>
         <div className="flex-1 h-px bg-border" />
         <span className="text-[10px] font-mono text-muted uppercase">Ya da bir oyun kur</span>
         <div className="flex-1 h-px bg-border" />
