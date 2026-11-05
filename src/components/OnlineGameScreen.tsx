@@ -54,6 +54,13 @@ import {
 import { getFormedWords, getFullWordAt, key } from '../utils/board';
 import { nearbyDraftCell } from '../utils/draftRescue';
 import {
+  clearLiveDraft,
+  discardedByOpponent,
+  loadLiveDraft,
+  saveLiveDraft,
+  shouldKeepDraft,
+} from '../utils/liveDraft';
+import {
   buildRematchPlan,
   rematchBlockedMessage,
   rematchConfirmText,
@@ -238,6 +245,13 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
   });
 
   const [state, dispatch] = useReducer(onlineGameReducerRef.current, undefined, createInitialState);
+  // Senkron anında "bu taslak neden atıldı"yı söyleyebilmek için GÜNCEL state
+  // (refresh bir effect kapanışında yaşıyor, `state`i bayat görür).
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  // Taslak, rakibin hamlesiyle ÇAKIŞTIĞI için atıldıysa tek satır bilgi
+  // (sessiz kayıp "unutmak" sorununun tersi olurdu). Yeni taş konunca silinir.
+  const [draftNote, setDraftNote] = useState<string | null>(null);
   const [moveRows, setMoveRows] = useState<OnlineMoveRow[]>([]);
   const [loaded, setLoaded] = useState(false);
   // İlk yükleme başarısız olduysa — "ekranı koru" davranışı yalnızca
@@ -636,7 +650,19 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         scheduleAutoRetry();
         return;
       }
-      dispatch({ type: 'SYNC_ONLINE_STATE', publicState, myRack, mySlotIndex });
+      // Taslak kuralı (utils/liveDraft.ts): ilk senkronda bu cihazdaki kayıtlı
+      // taslak, sonrakilerde ekrandaki taslak aynı kuralla sınanır.
+      const savedDraft = !loadedRef.current ? (loadLiveDraft(myUserId, game.id) ?? undefined) : undefined;
+      const draftBefore =
+        Object.keys(stateRef.current.placed).length > 0 ? stateRef.current.placed : savedDraft;
+      if (
+        draftBefore &&
+        !shouldKeepDraft(draftBefore, publicState.board, myRack) &&
+        discardedByOpponent(draftBefore, publicState.board, mySlotIndex)
+      ) {
+        setDraftNote('Rakibin hamlesi taslağınla çakıştı, taşların rafa döndü.');
+      }
+      dispatch({ type: 'SYNC_ONLINE_STATE', publicState, myRack, mySlotIndex, savedDraft });
       setMoveRows(rows);
       loadedRef.current = true;
       setLoaded(true);
@@ -1275,7 +1301,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
     ? moveStatus.reason
     : state.isGameOver
       ? 'Oyun bitti.'
-      : submitError ?? offTurnValidNote ?? myTurnValidNote ?? (state.message || lastMoveMessage.message);
+      : submitError ?? offTurnValidNote ?? myTurnValidNote ?? draftNote ?? (state.message || lastMoveMessage.message);
   const liveMessageType = moveStatus && !moveStatus.valid && moveStatus.reason
     ? 'err'
     : state.isGameOver
@@ -1286,9 +1312,30 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
           ? 'warn'
           : moveStatus?.valid
             ? 'ok'
-            : state.message
+            : draftNote
+              ? 'warn'
+              : state.message
               ? state.messageType
               : lastMoveMessage.messageType;
+
+  // Taslağı bu cihaza kaydet (utils/liveDraft.ts): ekrandan çıkıp girince ya
+  // da rakip oynayınca bulunan hamle kaybolmasın. İlk senkron BİTMEDEN
+  // yazmıyoruz (boş taslak kayıtlı olanı silerdi); taslak boşalınca (hamle
+  // gönderildi / çakışma / Geri Al) kayıt da silinir; oyun bitince temizlenir.
+  // Bağımlılıklar string/boolean — `user` NESNESİ değil (auth kuralı).
+  const draftCount = Object.keys(state.placed).length;
+  useEffect(() => {
+    if (!loaded) return;
+    if (state.isGameOver) {
+      clearLiveDraft(myUserId, game.id);
+      return;
+    }
+    saveLiveDraft(myUserId, game.id, state.placed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, myUserId, game.id, state.placed, state.isGameOver]);
+  useEffect(() => {
+    if (draftCount > 0) setDraftNote(null);
+  }, [draftCount]);
 
   const handlePlay = async () => {
     if (!wordsReady || !canAct || busy || !me) return;

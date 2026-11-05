@@ -15,6 +15,7 @@ import type { OnlineGameStatePublic } from '../lib/database.types';
 import { buildBag, drawTiles } from '../utils/bag';
 import { shuffle } from '../utils/random';
 import { trUpper } from '../utils/turkish';
+import { shouldKeepDraft, type Draft } from '../utils/liveDraft';
 import {
   createEmptyBoard,
   getFormedWords,
@@ -59,6 +60,12 @@ export type Action =
       publicState: OnlineGameStatePublic;
       myRack: Tile[];
       mySlotIndex: number;
+      /**
+       * Yalnızca ekranın İLK senkronunda verilir: bu cihazda kayıtlı taslak
+       * (`utils/liveDraft.ts`). `state.placed` boşken ve kural (çakışma yok +
+       * raf karşılıyor) izin veriyorsa geri yüklenir.
+       */
+      savedDraft?: Draft;
     }
   | { type: 'RESUME_SAVED'; state: GameState };
 
@@ -977,10 +984,18 @@ export function gameReducer(state: GameState, action: Action): GameState {
     // arka plandaki bir yenilemeyle sebepsiz kaybolmaması için.
     case 'SYNC_ONLINE_STATE': {
       const turnAdvanced = action.publicState.turn_count !== state.turnCount;
-      const placed = turnAdvanced ? {} : state.placed;
-      const myRack = turnAdvanced
-        ? action.myRack
-        : subtractPlacedFromRack(action.myRack, placed);
+      // TASLAK KURALI (5 Kasım 2026, kullanıcı: sıra rakipteyken bulunan iyi
+      // hamle rakip oynayınca da unutulmasın): önceden `turnAdvanced` taslağı
+      // KOŞULSUZ siliyordu. Artık taslak YALNIZCA bir hücresine bir taş
+      // oturduysa ya da taşları sunucudaki rafımda bulunamıyorsa atılır;
+      // geçersiz olması/puanının değişmesi sebep DEĞİL (bkz. utils/liveDraft.ts).
+      // Kendi hamlemden sonra da bu kural silmeyi sağlar: taşlarım artık
+      // tahtada (çakışma) ve raf yenilenmiş. İlk senkronda kayıtlı taslak
+      // (`savedDraft`) aynı kuralla geri yüklenir.
+      const candidate =
+        Object.keys(state.placed).length === 0 && action.savedDraft ? action.savedDraft : state.placed;
+      const placed = shouldKeepDraft(candidate, action.publicState.board, action.myRack) ? candidate : {};
+      const myRack = subtractPlacedFromRack(action.myRack, placed);
       // `swapSelection` raf İNDEKSLERİ tutuyor, taş kimliği değil. Aşağıda
       // turn ilerlemediyse seçim bilerek KORUNUYOR (arka plandan dönen sekme
       // kullanıcının seçimini silmesin) — ama raf sunucudaki sıraya geri

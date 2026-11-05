@@ -350,6 +350,26 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       bir eksik, oyunun kendisini değil yalnızca kaydı bozar — yani oyun doğru
       bitmiş görünse bile bu maddeyi ayrıca koş.
 
+- [ ] **Canlı oyunda TASLAK rakip oynayınca / çıkıp girince KALIR (5 Kasım 2026, ROADMAP).**
+      İki hesap (A ve B), 2 kişilik bir Canlı oyun. **Sıra B'de iken** A'nın
+      ekranında rafından iki taş koy (deneme taşları). Kontrol et:
+      (a) **B'nin hamlesi A'nın taslağıyla ÇAKIŞMIYORSA** (tahtanın başka
+      yerine oynasın) A'nın taşları **YERİNDE KALMALI**, sıra A'ya geçince
+      mesaj satırı durumu söylemeli ("Oyna tuşuyla kelimeyi onayla." ya da
+      geçersizse nedeni) — **geçersiz de olsa taşlar silinmemeli**;
+      (b) **B, A'nın taslağının BİR HÜCRESİNE oynarsa** A'nın taşları rafına
+      DÖNMELİ ve mesaj satırında "Rakibin hamlesi taslağınla çakıştı, taşların
+      rafa döndü." yazmalı; (c) **A ekrandan çıkıp** (Setup'a dön) tekrar
+      girerse taslak **geri gelmeli** — B bu arada çakışmayan bir hamle
+      yaptıysa yine gelmeli, çakışan bir hamle yaptıysa gelmemeli (bilgi satırı
+      bir kez çıkar, bir sonraki girişte tekrarlanmaz); (d) A kendi hamlesini
+      oynayınca eski taslak **geri gelmemeli**; (e) **başka cihaz/tarayıcı**
+      açılırsa taslak sıfırdan başlar (bilinçli). Taş sayısı hep 7 kalmalı
+      (raf + taslak), hiçbir taş çoğalmamalı/kaybolmamalı. Joker taşıyla da dene
+      (seçilen harf geri gelmeli). **5 Kasım 2026 elle test (T2/T3): (a)-(e) GEÇTİ, joker
+      DENENEMEDİ** (rafa joker gelmedi) — rafın jokerli geldiği ilk oyunda koş; portun
+      ekran testi bunu kapsıyor, web penceresi akışı henüz elle görülmedi.
+
 ## 3. Oyun içi mesajlaşma
 
 - [ ] **İlk açılış.** Tahtanın altındaki "Mesajlaşma" → hoşgeldin popup'ı
