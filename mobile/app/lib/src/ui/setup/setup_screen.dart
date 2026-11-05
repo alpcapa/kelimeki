@@ -94,7 +94,7 @@ class SetupScreen extends StatefulWidget {
   /// desen. Verilmezse gerçek `shareBoard` (sistem paylaş sayfası) kullanılır.
   final ShareBoardFn? share;
 
-  /// Alttaki teşhis satırı (`Derleme … · Sürüm … · Sözlük … · depo …`)
+  /// Alttaki teşhis satırı (`Derleme … · Sürüm … · depo …`)
   /// çizilsin mi. **Üretimde HER ZAMAN true** — satır bilinçli olarak
   /// kalıcı (bkz. `mobile/CLAUDE.md` → "Derleme kimliği": bir düzeltmenin
   /// cihazda gerçekten çalıştığını kanıtlayan tek yer orası).
@@ -1594,39 +1594,33 @@ class _SetupScreenState extends State<SetupScreen>
                           // Teşhis alt satırı (iskelet HomeScreen'in durum
                           // panelinden kalan tek iz — cihazda ilk açılış doğrulaması
                           // için faydalı, göze batmayan tek satır).
-                          FutureBuilder<SetWordSource>(
-                            future: widget.services.dictionary,
-                            builder: (context, snap) => Text(
-                              [
-                                // Derleme kimliği SÜRÜMDEN ÖNCE geliyor:
-                                // ekran görüntüsünde ilk okunan şey "hangi
-                                // kod çalışıyor" olmalı (bkz. env.dart,
-                                // `buildSha`'nın varlık gerekçesi).
-                                'Derleme $buildLabel',
-                                'Sürüm $appVersion',
-                                snap.hasData
-                                    ? 'Sözlük: ${snap.data!.length} kelime'
-                                    : 'Sözlük: yükleniyor…',
-                                widget.services.supabase != null
-                                    ? 'sunucu bağlı'
-                                    : 'offline mod',
-                                _diagStorage,
-                                // -1 = sayaç OKUNAMADI (depo erişilemedi).
-                                // "bekleyen 0" ile karıştırılmamalı: ilk
-                                // sürümde ikisi de 0 görünüyordu ve cihazda
-                                // "ayna gerçekten boş mu?" sorusu
-                                // yanıtlanamıyordu (16 Ağustos 2026).
-                                if (_diagPendingMirrors < 0) 'bekleyen ?',
-                                if (_diagPendingMirrors > 0)
-                                  'bekleyen $_diagPendingMirrors',
-                                if (_diagHatirlatma != null) _diagHatirlatma!,
-                              ].join(' · '),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontFamily: 'SpaceMono',
-                                fontSize: 9,
-                                color: Color(0xFF8A93A2),
-                              ),
+                          Text(
+                            [
+                              // Derleme kimliği SÜRÜMDEN ÖNCE geliyor:
+                              // ekran görüntüsünde ilk okunan şey "hangi
+                              // kod çalışıyor" olmalı (bkz. env.dart,
+                              // `buildSha`'nın varlık gerekçesi).
+                              'Derleme $buildLabel',
+                              'Sürüm $appVersion',
+                              widget.services.supabase != null
+                                  ? 'sunucu bağlı'
+                                  : 'offline mod',
+                              _diagStorage,
+                              // -1 = sayaç OKUNAMADI (depo erişilemedi).
+                              // "bekleyen 0" ile karıştırılmamalı: ilk
+                              // sürümde ikisi de 0 görünüyordu ve cihazda
+                              // "ayna gerçekten boş mu?" sorusu
+                              // yanıtlanamıyordu (16 Ağustos 2026).
+                              if (_diagPendingMirrors < 0) 'bekleyen ?',
+                              if (_diagPendingMirrors > 0)
+                                'bekleyen $_diagPendingMirrors',
+                              if (_diagHatirlatma != null) _diagHatirlatma!,
+                            ].join(' · '),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontFamily: 'SpaceMono',
+                              fontSize: 9,
+                              color: Color(0xFF8A93A2),
                             ),
                           ),
                         ],
