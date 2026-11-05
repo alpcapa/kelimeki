@@ -202,7 +202,7 @@ doğrulama). Tek ölçüm, garanti değil.
 
 DSA aynı şeyi Google Play'den de istiyor. Kelimeki Play'de kapalı testte
 olduğu için henüz tetiklenmemiş olabilir; **üretime çıkınca gelecek.**
-Depoda Play tarafında trader beyanı kaydı **yok**.
+**Play tarafı 5 Kasım 2026'da beyan edildi** (hesap + uygulama düzeyi trader, aynı iletişim bilgileri; Submission 26 `Published` 10:13) — kayıt: `marketing/play-store/console-formlari.md` §0.5.
 
 **İki mağazada AYNI bilgi beyan edilmeli** — farklı bilgi vermek açıklaması
 zor bir tutarsızlık. Apple tarafı 9 Eylül 2026'da dolduruldu, yani
