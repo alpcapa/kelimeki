@@ -993,13 +993,14 @@ void main() {
     expect(hamleAvi.top - logo.bottom, closeTo(20, 1.5));
   });
 
-  // Web `HamleAviButton` (3 Kasım 2026): düğme, "Ya da bir oyun kur" ayırıcısı
-  // ve "KİME KARŞI" kabın `gap-5`iyle (20 px) dizilir; hem misafirde hem
-  // girişlide EN ÜSTTE ve "YENİ" balonu hep görünür.
+  // Web `HamleAviButton` (3 Kasım 2026): düğme → ayırıcı kabın `gap-5`iyle
+  // (20 px), ayırıcı → "KİME KARŞI" ise 8 px (5 Kasım 2026, kullanıcı: "ekstra
+  // boşluğu kaldır"; web ayırıcıda `-mb-3`, 20 → 8, Chromium'da ölçüldü); hem
+  // misafirde hem girişlide EN ÜSTTE ve "YENİ" balonu hep görünür.
   for (final girisli in [false, true]) {
     testWidgets(
         'Hamle Avı girişi (${girisli ? "girişli" : "misafir"}): düğme → ayırıcı '
-        '→ "KİME KARŞI" 20 px aralıkla, YENİ balonu görünür', (tester) async {
+        '→ "KİME KARŞI" 20 + 8 px aralıkla, YENİ balonu görünür', (tester) async {
       await setPhoneViewSize(tester, const Size(420, 900));
       await pumpSetup(
           tester,
@@ -1010,11 +1011,11 @@ void main() {
       final ayirici = tester.getRect(find.text('YA DA BİR OYUN KUR'));
       final oyunTipi = tester.getRect(find.text('KİME KARŞI'));
       expect(find.text('HAMLE AVI'), findsOneWidget);
-      expect(find.text('3 dk · en iyi hamleyi bul'), findsOneWidget);
+      expect(find.text('3 dakikada en iyi hamleyi bul!'), findsOneWidget);
       expect(find.byKey(const ValueKey('hamle-avi-yeni')), findsOneWidget);
       expect(dugme.height, greaterThanOrEqualTo(56));
       expect(ayirici.top - dugme.bottom, closeTo(20, 2));
-      expect(oyunTipi.top - ayirici.bottom, closeTo(20, 2));
+      expect(oyunTipi.top - ayirici.bottom, closeTo(8, 2));
     });
   }
 

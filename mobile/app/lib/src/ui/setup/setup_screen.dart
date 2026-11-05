@@ -1428,7 +1428,12 @@ class _SetupScreenState extends State<SetupScreen>
                         // Hamle Avı HER görünümde en üstte (web `Setup.tsx`,
                         // kullanıcı 3 Kasım 2026) — bkz. `_HamleAviButonu`.
                         _HamleAviButonu(onOpen: _openHamleAvi),
-                        const SizedBox(height: 20),
+                        // 8, 20 DEĞİL (5 Kasım 2026, kullanıcı: "ekstra boşluğu
+                        // kaldır"): "Ya da bir oyun kur" ayırıcısı altındaki
+                        // "KİME KARŞI" başlığının önsözü gibi okunduğundan ona
+                        // yapışık durur. Web ikizi `HamleAviButton.tsx`in `-mb-3`ü
+                        // (20 → 8, ölçüldü).
+                        const SizedBox(height: 8),
                         const _SectionLabel('KİME KARŞI'),
                         const SizedBox(height: 8),
                         Row(
@@ -2188,7 +2193,7 @@ class _HamleAviButonu extends StatelessWidget {
                                   fontSize: 14,
                                   letterSpacing: 0.5,
                                   color: kText)),
-                          Text('3 dk · en iyi hamleyi bul',
+                          Text('3 dakikada en iyi hamleyi bul!',
                               style: TextStyle(
                                   fontFamily: 'SpaceMono',
                                   fontSize: 10,
