@@ -65,7 +65,13 @@ const BOX_PADDING_Y = 'clamp(2.7px, calc(-0.63px + 0.89vw), 3.5px)';
 // kullanan bir clamp'e bağlandı; LogoMark artık string bir height alınca
 // (bkz. LogoMark.tsx/generate-logo-paths.mjs) SVG width/height attribute'u
 // yerine CSS height + aspect-ratio kullanıyor.
-const LOGO_HEIGHT = 'clamp(28px, calc(-5.33px + 8.89vw), 36px)';
+export const LOGO_HEIGHT = 'clamp(28px, calc(-5.33px + 8.89vw), 36px)';
+// Setup'ın sol üst logosu (5 Kasım 2026, kullanıcı: "Giriş butonuyla aynı boya
+// getirmek için büyüt"). Oyundaki logonun 1,2 katı: kutu zaten Giriş düğmesiyle
+// AYNIYDI (390px'te 29 / 29,3) ama yazı gövdesi kutuyu doldurmadığından
+// küçük görünüyordu; 1,2 katı görünen boyu eşitliyor. Port ikizi:
+// `fluidSize(w, 33.6, -6.4, 10.67, 43.2)` (`setup_screen.dart`).
+export const SETUP_LOGO_HEIGHT = 'clamp(33.6px, calc(-6.4px + 10.67vw), 43.2px)';
 // "← Geri" etiketi — İNCE ve KOYU (kullanıcı isteği, 21 Ağustos 2026;
 // gri ve siyah varyantlar yan yana render edilip siyah seçildi).
 // Kalın/accent bir ilk deneme reddedildi: bu bir aksiyon düğmesi değil,

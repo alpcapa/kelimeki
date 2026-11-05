@@ -18,7 +18,7 @@
 
 ### `Setup`
 
-- **`Setup`** — Oyun başlangıç ekranı. "Nasıl oynanır?" linki burada da bulunur.
+- **`Setup`** — Oyun başlangıç ekranı. **5 Kasım 2026 (kullanıcı isteği):** logo Setup'tan çıkıp `App.tsx`'teki üst satıra (sol üst, GİRİŞ/avatar ile aynı satır) taşındı, boy oyun başlığındaki logonun 1,2 katı (`SETUP_LOGO_HEIGHT`; kutu zaten Giriş düğmesiyle eşitti ama yazı gövdesi kutuyu doldurmadığından küçük görünüyordu); görünmez `<h1>` Setup'ta kaldı (SEO). "Nasıl oynanır?" bağlantısı logo altından KALKTI → footer'ın EN SONUNDA, herkes için **"Yardım"** (eskiden yalnız misafire görünüyordu). Port ikizi: `setup_screen.dart` (`fluidSize(w, 33.6, -6.4, 10.67, 43.2)`). Aşağıdaki Ağustos notlarındaki "logo altı boşluk/link" ölçüleri TARİHÇEDİR. Bedeli: Hamle Avı satırı (#924) ile `setup_screen.dart`'ta birleşme çakışması beklenir.
   **Misafir giriş uyarısındaki ikinci buton "DEVAM" DEĞİL "OYNA" (18 Ağustos
   2026, kullanıcı bildirdi):** Girişsizken "Oyunu Başlat"a basınca çıkan
   uyarının butonları "Giriş Yap" ve "Devam"dı. Uyarı metni üyeliğin

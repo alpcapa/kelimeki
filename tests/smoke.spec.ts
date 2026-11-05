@@ -2541,7 +2541,7 @@ test('Tanıtım kapısı: daha önce oynamış cihazda tanıtım açılmaz', asy
 // ⚠ Cihaz "daha önce oynamış" işaretiyle geliyor (miras quickstart bayrağı):
 // böylece kapının kendiliğinden açtığı tanıtımla karışmaz — burada AÇILAN
 // tanıtımın tek sebebi kullanıcının butona basması olabilir.
-test('Faz 3: "Nasıl oynanır?" penceresinden tanıtım tekrar oynanır, oyun BAŞLAMAZ', async ({
+test('Faz 3: Yardım penceresinden tanıtım tekrar oynanır, oyun BAŞLAMAZ', async ({
   page,
 }) => {
   page.on('dialog', (dialog) => dialog.accept());
@@ -2555,7 +2555,7 @@ test('Faz 3: "Nasıl oynanır?" penceresinden tanıtım tekrar oynanır, oyun BA
   });
   await page.goto('/');
 
-  await page.getByText('Nasıl oynanır?').click();
+  await page.getByRole('button', { name: 'Yardım', exact: true }).click();
   const tekrar = page.getByRole('button', { name: 'Tanıtım turunu oyna (1 dk)' });
   await expect(tekrar).toBeVisible();
   await tekrar.click();

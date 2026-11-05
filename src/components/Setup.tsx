@@ -22,7 +22,6 @@ import { HelpModal } from "./HelpModal";
 import { LiveGamesTab, TurnTriangle } from "./LiveGamesTab";
 import { PRIMARY_ACTION_BTN } from "./actionButton";
 import { orderByExpiry } from "../utils/gameListOrder";
-import { LogoMark } from "./LogoMark";
 import { AvatarScoreRow, PlayerAvatarRow, type AvatarRowPlayer } from "./PlayerAvatarRow";
 import { RecentGamesSection } from "./RecentGamesSection";
 import { ShareIcon } from "./RelationIcons";
@@ -735,72 +734,17 @@ export function Setup({
       {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
 
       <div className="w-full max-w-[460px] px-4 py-6 flex flex-col gap-5">
-        {/* `-mt-5` (−20px), kaptaki `py-6`nın (24px) üst yarısını yiyerek
-          GİRİŞ/avatar satırı ile logo arasını 0'a indirir (17 Ağustos 2026; 13 Ağustos'ta 4'tü) — 13 Ağustos
-          2026, kullanıcı isteği: "App'de logoyla avatar satırı arası ideal,
-          web'de ekstra boşluk var". Mobil port da AYNI 4px'i kullanıyor
-          (`setup_screen.dart`); biri değişirse öteki de değişmeli. */}
-        <div className="text-center flex flex-col items-center gap-1 -mt-6">
-          <h1
-            className="flex flex-col items-center gap-1"
-            style={{ margin: 0 }}
-          >
-            <LogoMark height={52} />
-            <span className="sr-only">
-              Kelimeki — Ücretsiz Online Türkçe Stratejik Kelime Bulmaca Oyunu
-            </span>
-          </h1>
-          {/* 17 Ağustos 2026 — bu iki öğe (tanıtım paragrafı, "Nasıl oynanır?")
-            yalnızca MİSAFİR (girişsiz) kullanıcıda görünür. Kullanıcı isteği:
-            "girişli ise logo altındaki yazıları olmayan, direkt oyun tipi
-            başlığından itibaren başlayan versiyonu görecek." Girişli
-            kullanıcının erişimi kaybolmuyor — "Nasıl oynanır?" hesap
-            menüsünde ve oyun içi tahta şeridinde duruyor. ÖLÇÜLDÜ: bu blok
-            kalkınca logo altı → "OYUN TİPİ" arası kabın kendi `gap-5`'i
-            (20px) kadar kalıyor — telafi amaçlı ekstra bir `mt-*`/`gap`
-            EKLEME.
-
-            "Arkadaşınla paylaş" burada 18 Ağustos 2026'da kaldırıldı
-            (kullanıcı isteği: "arkadaşınla paylaş linkini de kaldırıp
-            tanıtımdaki gibi alta paylaş koyalım") — küçük bir metin linki
-            yerine sayfanın en altında, footer'ın hemen üstünde Landing'in
-            Oyna/Giriş CTA butonlarıyla AYNI stilde tam genişlikte bir "Paylaş"
-            butonu var (aşağı bkz., footer'ın hemen üstü) — artık girişli/
-            girişsiz FARK ETMEKSİZİN aynı tek giriş noktası, önceden ikisi
-            farklı yerdeydi (misafir burada, girişli footer'da). */}
-          {!user && (
-            <>
-              {/* 27 Eylül 2026 (ROADMAP #41, karar 2): tanıtım paragrafı
-                ("Kelimeler kurarak bölgeni genişlet…") KALKTI — Setup artık
-                herkes için tek standart form; oyunun fikrini karşılamanın
-                ilk ekranı anlatıyor. "Nasıl oynanır?" duruyor. Port ikizi
-                (`setup_screen.dart`) 1 Ekim 2026'da aynı şeyi yaptı. */}
-              {/* 7 Eylül 2026 (kullanıcı: "alt ve üstündeki fazla boşlukları
-                makul hale getir"): `mt-3` + 48px'lik dokunma hedefi paragraf
-                ile "OYUN TİPİ" arasına ~30px'lik iki boş bant açıyordu. Hedef
-                32px'e, üst marj 4px'e indi — port ikizi (`setup_screen.dart`,
-                SizedBox 8 + TapTarget minHeight 32) aynı ölçülerde.
-
-                `-mb-3` aynı gün, ikinci turda (kullanıcı: "Oyun tipi ile
-                nasıl oynanır arasındaki fazla boşluğu da al, metinle nasıl
-                oynanır arası kadar olsun"): ALTTAKİ boşluk kabın kendi
-                `gap-5`i (20px) + dokunma hedefinin alt yarısı (~8px) = ~28px
-                idi, ÜSTTEKİ ise `gap-1` + `mt-1` + üst yarı = ~16px. −12px
-                ikisini eşitler. Marj yalnızca misafir dalında, yani GİRİŞLİ
-                kullanıcının logo→"OYUN TİPİ" arası hâlâ tam 20px (o değer
-                Chromium'da ölçülmüş bir değişmez, bkz. yukarı). Port ikizi:
-                bloğun ardındaki SizedBox misafirde 8, girişlide 20. */}
-              <div className="mt-1 -mb-3 flex items-center gap-2">
-                <button
-                  onClick={() => setShowHelp(true)}
-                  className="flex items-center min-h-[32px] font-mono text-[11px] font-bold text-accent hover:underline active:opacity-70 transition-opacity"
-                >
-                  Nasıl oynanır?
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        {/* 5 Kasım 2026 (kullanıcı isteği): logo sol üste, Giriş/avatar satırına
+          taşındı (`App.tsx`, kurulum dalı; oyun başlığıyla aynı yerleşim, 1,2×
+          boy — `SETUP_LOGO_HEIGHT`). Burada yalnızca SEO/ekran okuyucu için
+          görünmez `<h1>` kaldı; `sr-only` mutlak konumlu olduğundan kabın
+          `gap-5`ine bir öğe olarak KATILMAZ. "Nasıl oynanır?" bağlantısı da
+          buradan kalktı: aynı pencere artık herkes için footer'daki "Yardım"
+          düğmesinden (eskiden yalnız misafire gösteriliyordu). Port ikizi:
+          `setup_screen.dart`. */}
+        <h1 className="sr-only" style={{ margin: 0 }}>
+          Kelimeki — Ücretsiz Online Türkçe Stratejik Kelime Bulmaca Oyunu
+        </h1>
 
         {/* Hamle Avı HER görünümde en üstte (kullanıcı, 3 Kasım 2026) — bkz. HamleAviButton. */}
         <HamleAviButton onOpen={onOpenHamleAvi} />
@@ -1164,6 +1108,15 @@ export function Setup({
             >
               <ShareIcon size={12} />
               {shareCopied ? "Link kopyalandı!" : "Paylaş"}
+            </button>
+            <span>·</span>
+            {/* "Yardım" (5 Kasım 2026): eski "Nasıl oynanır?" bağlantısının yeni
+              yeri (footer'ın EN SONU) — herkes için, hukuki linklerle AYNI className. */}
+            <button
+              onClick={() => setShowHelp(true)}
+              className="flex items-center min-h-[48px] hover:underline active:opacity-70 transition-opacity"
+            >
+              Yardım
             </button>
           </div>
           <p className="font-mono text-[10px] text-muted" style={{ margin: 0 }}>
