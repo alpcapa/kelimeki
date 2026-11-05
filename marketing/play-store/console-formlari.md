@@ -36,7 +36,7 @@ sıralama "kolaydan zora" değil, "sayacı en erken başlatan".
 
 ---
 
-## 0.5 DSA trader beyanı — ⏳ **İNCELEMEDE (5 Kasım 2026)**
+## 0.5 DSA trader beyanı — ✅ **YAYINDA (5 Kasım 2026, 10:13)**
 
 Google Play'in AB/UK için istediği trader beyanı (e-posta: *"Declare your
 trader status to continue distributing apps on Google Play"*, son tarih
@@ -51,11 +51,10 @@ trader status to continue distributing apps on Google Play"*, son tarih
 
 **Durum:** Play Console → Publishing overview → *Submission 26* (kaynak:
 Play Console, gönderim **5 Kasım 2026 09:41**) · tek değişiklik **App content →
-Trader status** · **Status: `In review`**. Yeni sürüm/paket YOK: mağaza sayfasındaki
-yasal bilgiyi değiştirir, kullanıcıya güncelleme gitmez. Managed publishing
-**kapalı** → onaylanınca otomatik yayınlanır. **Onay (Published) bu satıra
-henüz YAZILMADI** — durum alanı `Published`a dönünce buraya işlenecek (kural:
-bir kapının kapandığını söyleyen tek kanıt kendi durum alanıdır).
+Trader status** · **Status: `Published` — 5 Kasım 2026, 10:13** (ekran
+görüntüsünden okundu; inceleme ~32 dk sürdü, tek ölçüm, garanti değil). Yeni
+sürüm/paket YOK: mağaza sayfasındaki yasal bilgiyi değiştirdi, kullanıcıya
+güncelleme gitmedi. Managed publishing **kapalı** idi, onayla otomatik yayınlandı.
 
 **Kural (Apple ile aynı):** iki mağazada AYNI bilgi. Apple tarafı kanonik
 (`marketing/app-store/console-formlari.md` §2: 9 Eyl beyan, 10 Eyl doğrulama).
