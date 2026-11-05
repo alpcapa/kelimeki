@@ -1822,6 +1822,8 @@ yok, yalnızca grup etiketi.
 
 Admin → Büyüme → Kullanıcı, "Tanıtım Turu"nun altında, `PlatformTag kind="web"` ile (uygulamada Hamle Avı henüz YOK). Kullanıcı isteği: *"kaç kişi oynamış, toplam oyun, ortalama oyun sayısı, win ratio vb. kutular"*; seçimler: **üye + misafir ANONİM**, kutular = oynayan kişi + toplam oyun · bulma oranı · süre ve seri · günlük trend.
 
+**Kutu biçimi (5 Kasım 2026, kullanıcı isteği):** sekiz kutu "YZ Dengesi" kutularının AYNI biçimine çekildi — `btn-raised-neutral bg-bg border border-border rounded-md py-3 px-1 text-center`, büyük ortalı değer, altında 8px büyük harfli etiket ve ayrıntı. Izgara Hamle Avı'na özgü kaldı (mobilde 2, ≥580 px 4 sütun; sekiz kutu). İki yerde biçim ayrışırsa biri değişince öteki de değişmeli.
+
 - **Kaynak:** `hamle_avi_events` (anonim: `anon_id`, `is_guest` [sunucu `auth.uid() is null` varsayılanı], `puzzle_id`, `result` found/missed/left, `seconds`, `streak_before`, `source`, `platform`) — **`user_id` YOK**, `tutorial_events`/`game_starts` ile aynı gizlilik kararı (Gizlilik §6 (9)). Yazma `anon`+`authenticated` INSERT (select YOK); okuma yalnızca `admin_hamle_avi_stats(p_days, p_source)` (jsonb, `is_admin()` kapılı).
 - **`source`:** istemci `location.hostname` kelimeki.com ise 'prod', değilse 'preview' yazar; RPC varsayılan 'prod' sayar → preview/yerel denemeler kutulara KARIŞMAZ.
 - **Sayım kuralları:** *Oynayan kişi* = benzersiz cihaz (`anon_id`; depolaması kapalı olan sayılmaz ama adede girer). *Bulma oranı* = found / (found+missed+left). *Ort. seri* = seri BOZULURKEN (missed/left) ulaşılan seri. *Rekorlu üye / üye başına görülen* `hamle_avi_stats`tan, zaman penceresinden BAĞIMSIZ.

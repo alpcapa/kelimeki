@@ -1976,10 +1976,16 @@ function HamleAviCard({
       {infoHint && <div className="self-end">{infoHint}</div>}
       <div className="grid grid-cols-2 min-[580px]:grid-cols-4 gap-2">
         {boxes.map((b) => (
-          <div key={b.label} className="bg-panel border border-border rounded-md p-2 flex flex-col gap-0.5">
-            <span className="text-[10px] font-mono uppercase tracking-[0.5px] text-muted">{b.label}</span>
-            <span className="text-xl font-mono font-bold text-text leading-tight">{b.value}</span>
-            {b.sub && <span className="text-[9px] font-mono text-muted leading-snug">{b.sub}</span>}
+          /* "YZ Dengesi" kutularıyla AYNI biçim (5 Kasım 2026, kullanıcı isteği):
+             `btn-raised-neutral` kabartma, ortalı büyük değer, altında 8px büyük harfli
+             etiket ve ayrıntı. Izgara (2/4 sütun) Hamle Avı'na özgü kaldı: 8 kutu var. */
+          <div
+            key={b.label}
+            className="btn-raised-neutral bg-bg border border-border rounded-md py-3 px-1 text-center"
+          >
+            <div className="font-mono text-xl font-bold text-text">{b.value}</div>
+            <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono mt-0.5">{b.label}</div>
+            {b.sub && <div className="text-[8px] font-mono text-muted mt-0.5">{b.sub}</div>}
           </div>
         ))}
       </div>
