@@ -162,7 +162,7 @@
   - **Port ikizi (`game_header.dart`) ETKİLENMİYOR ama kalınlık hizalandı:** Flutter'da `Border.all` `foregroundDecoration` içinde tanım gereği kutunun İÇİNE çizilir, yani taşma/kırpma sınıfı orada hiç doğmuyor. Kalınlık yine de `active ? 2 : 1` yapıldı — tarayıcılar zaten 1 çizdiğinden bu, iki tarafı gerçekte görünen değere hizalıyor.
   - **Bu bulguya varmadan önce ÜÇ yanlış teşhis yapıldı** (görünmez bir sarmalayıcı kutusu "boyalı kutu" sanıldı; sonra sayfa taşması arandı; sonra alt-piksel fazı suçlandı). Dersleri: `docs/decisions/touch-ux-bugs.md` → "`UserMenu` de `.tap-expand`e geçti".
 
-### `GameHeader` — logonun altında "← Geri"
+### `GameHeader` — logonun altında "← Çıkış" (5 Kasım 2026'a kadar "← Geri"; kullanıcı: "çıkmak için Geri yerine Çıkış daha anlaşılır". Aşağıdaki Ağustos notları TARİHÇEDİR, etiket metni dışında geçerli. ⚠ "Çıkış" hesaptan çıkışla karışabilir — butonun aria-label'ı "Oyundan çık" ve davranışı Setup'a dönüş)
 
 - **`GameHeader` — logonun altında "← Geri" (21 Ağustos 2026, kullanıcı isteği: *"Bazı kullanıcılar oyundan setup'a dönüşü bulamıyor"*):** Logo BAŞTAN BERİ Setup'a dönüyordu (`handleLogoClick`) — eksik olan davranış değil **GÖRÜNÜRLÜKTÜ**. Etiket logoyla AYNI `<button>`ın içinde, yani dokunma alanı ikisini birden kapsıyor (kullanıcı şartı: *"Logo alanı da dahil basıldığında"*).
   - **Prop YOK, koşulsuz çiziliyor.** `GameHeader`ın TEK kullanım yeri iki oyun ekranı (`App.tsx` + `OnlineGameScreen.tsx`) ve ikisi de bunu istiyor; opsiyonel bir bayrak bu kod tabanının en sık hatasını (o iki dosyanın sessizce ayrışması) davet ederdi.

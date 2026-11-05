@@ -72,7 +72,7 @@ export const LOGO_HEIGHT = 'clamp(28px, calc(-5.33px + 8.89vw), 36px)';
 // küçük görünüyordu; 1,2 katı görünen boyu eşitliyor. Port ikizi:
 // `fluidSize(w, 33.6, -6.4, 10.67, 43.2)` (`setup_screen.dart`).
 export const SETUP_LOGO_HEIGHT = 'clamp(33.6px, calc(-6.4px + 10.67vw), 43.2px)';
-// "← Geri" etiketi — İNCE ve KOYU (kullanıcı isteği, 21 Ağustos 2026;
+// "← Çıkış" etiketi (5 Kasım 2026: "← Geri"den adlandırıldı, kullanıcı: "çıkmak için Geri yerine Çıkış daha anlaşılır"; aria-label hâlâ "Oyundan çık") — İNCE ve KOYU (kullanıcı isteği, 21 Ağustos 2026;
 // gri ve siyah varyantlar yan yana render edilip siyah seçildi).
 // Kalın/accent bir ilk deneme reddedildi: bu bir aksiyon düğmesi değil,
 // zaten var olan bir dokunuşun (logo → Setup) sessiz etiketi. 11px, normal
@@ -123,7 +123,7 @@ export function GameHeader({ state, onLogoClick, onPlayerClick, menuHint = false
           className="absolute top-full left-0 whitespace-nowrap font-mono leading-none text-text"
           style={{ fontSize: BACK_FONT_SIZE, marginTop: BACK_GAP }}
         >
-          ← Geri
+          ← Çıkış
         </span>
       </button>
 
