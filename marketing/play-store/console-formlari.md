@@ -36,6 +36,31 @@ sıralama "kolaydan zora" değil, "sayacı en erken başlatan".
 
 ---
 
+## 0.5 DSA trader beyanı — ✅ **YAYINDA (5 Kasım 2026, 10:13)**
+
+Google Play'in AB/UK için istediği trader beyanı (e-posta: *"Declare your
+trader status to continue distributing apps on Google Play"*, son tarih
+**1 Şubat 2027**, yoksa uygulama güncelleme alamaz ve global olarak kaldırılır).
+
+| Alan | Girilen |
+|---|---|
+| Hesap düzeyi | **This is a trader account** |
+| Uygulama düzeyi | **Yes, my trader status applies to this app** |
+| İletişim bilgileri | **App Store Connect'te girilenle AYNI** (e-posta `destek@kelimeki.com`, yedek hat, adres) — kişisel numara DEĞİL; Play'de **herkese görünür**, yayınlanan bilgi geri alınamaz |
+| Terms of Service URL | `https://kelimeki.com/kullanim-kosullari/` (200, herkese açık, HTML) |
+
+**Durum:** Play Console → Publishing overview → *Submission 26* (kaynak:
+Play Console, gönderim **5 Kasım 2026 09:41**) · tek değişiklik **App content →
+Trader status** · **Status: `Published` — 5 Kasım 2026, 10:13** (ekran
+görüntüsünden okundu; inceleme ~32 dk sürdü, tek ölçüm, garanti değil). Yeni
+sürüm/paket YOK: mağaza sayfasındaki yasal bilgiyi değiştirdi, kullanıcıya
+güncelleme gitmedi. Managed publishing **kapalı** idi, onayla otomatik yayınlandı.
+
+**Kural (Apple ile aynı):** iki mağazada AYNI bilgi. Apple tarafı kanonik
+(`marketing/app-store/console-formlari.md` §2: 9 Eyl beyan, 10 Eyl doğrulama).
+
+---
+
 ## 1. Uygulamayı oluştur — "Create app"
 
 Play Console → **All apps** → **Create app**.
