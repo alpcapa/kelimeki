@@ -31,6 +31,25 @@ Türkçe kelime oyunu: kelime kur, bölgeni büyüt. İnternetsiz ya da arkadaş
 ```
 78 karakter (ölçüldü).
 
+**GÖNDERİLDİ — 6 Kasım 2026 ~09:39 (Console ekran görüntüsünden OKUNDU; kullanıcı: "doğruysa düzelt"):** Default store listing · Turkish – tr-TR · *Changes in review — Running quick checks, up to 14 minutes remaining* · Managed publishing KAPALI (onayla kendiliğinden yayınlanır). Submission ID henüz görünmedi (beklenen 27). Yayınlanınca bu blok AS-BUILT'e çevrilir.
+
+```
+İnternetsiz kelime oyunu: kelime kur, bölgeni büyüt. Arkadaşınla online oyna.
+```
+77 karakter (ölçüldü). Kaynak: Console'da gelen ASO yorumu — *"'Kelime oyunu
+internetsiz' için Google Play TR'de arama ilgisi var, rekabet orta; Kelimeki
+ilk on sonuçta yok. 'İnternetsiz kelime oyunu'nu kısa açıklamaya ekle,
+online arkadaş modunu ayrı tut."* ⚠ Arama ilgisi/sıralama iddiası burada
+DOĞRULANAMADI (Play arama verisine erişim yok); doğrulanabilen kısım ürün
+tarafı: gömülü sözlük (`words_tr.txt`) + çevrimdışı YZ rakipler internetsiz
+oynatıyor, online mod (arkadaş) ayrı cümlede. Değişenler: "Türkçe" kelimesi
+kısa açıklamadan çıktı (uygulama adında zaten var: `Kelimeki: Türkçe Kelime
+Oyunu`), "internetsiz" cümlenin başına ve "kelime oyunu"nun yanına geldi.
+Anahtar kelime tekrarı YOK (Play meta veri politikası). Girilince bu blok
+AS-BUILT'e çevrilir, `gonderimler-android.csv`'ye "Store Listing" satırı
+eklenir; sonuç ~3-4 hafta sonra aynı ekranda (Acquire → Traffic source)
+ölçülür. **Başlangıç değerleri (6 Kas ekran görüntüsü, Default listing, son 28 gün 5 Eki–1 Kas):** ziyaretçi 369 (önceki döneme +%38) · benzersiz yükleme tıklaması 187 (+%24) · tıklama oranı %51 (−%10) · listenin dönüşüm oranı %42,9 (25 Eyl'de ölçülen %60,38'in altında — trafik kalitesi değişmiş olabilir, kısa açıklamayla karıştırma). Karşılaştırma: 3-4 hafta sonra aynı ekran.
+
 ## Tam açıklama (≤4000 karakter)
 
 **AS-BUILT — 25 Eylül 2026** (kısa açıklamayla aynı gönderim). 2462

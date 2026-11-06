@@ -297,6 +297,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **1.1.5'e binecek (20 Ekim, taslak PR, kesim 2 Kasım) — Kolay YZ kolaylaştı:** `AI_LEVEL_TOP_N.kolay` 4 → 8 + `AI_LEVEL_SEARCH.kolay.maxWordLen` 7 → 5, üç motor kopyası (`src/` · `kelimeki_core` · Edge `_game/`) + golden'lar (`ai_level.json`, `reducer_ai2_kolay.json`). Saha: Kolay'da YZ %47 kazanıyordu (hedef ~%30); simülasyon Normal'e karşı %34 → %13. ⚠ Merge günü `play-ai-turn` yeniden deploy (`verify_jwt` değerini önce oku). Gerekçe: `docs/decisions/ai-levels.md` §9.
 
+**1.1.6 kesim günü yapılacaklar (6 Kasım 2026, kullanıcı hatırlatma istedi):** (1) iOS App Store anahtar kelimeleri 1.1.6 sayfasında `internetsiz` ile güncellenecek — değer ve yol `marketing/app-store/console-formlari.md` → Keywords. (2) Play kısa açıklaması 6 Kas 09:39'da gönderildi (`metin.md`); yayınlandı mı kontrol et, AS-BUILT'e çevir. (3) #924 gizlilik 'Son güncelleme' tarihi yayın gününe çekilecek.
+
 **Sıradaki treni bekleyen (23 Ekim 2026):** son taslak taş geri alınınca bayat "Oyna tuşuyla kelimeyi onayla." mesajı silinsin (kullanıcı ekran görüntüsüyle bildirdi) — `kelimeki_core` `RecallCellAction` + web `RECALL_CELL` ikizi + `reducer_human2.json` golden'ı. **Taslak PR #889, 2 Kasım 1.1.5 trenine biner** (kullanıcı kararı 23 Ekim: 1.1.4 gönderimi bitmeden `main`'e mobil merge YOK).
 
 **Aynı tren (23 Ekim 2026):** konmuş taşı bir üst hücreye taşımak taşı rafa döndürüyordu (kullanıcı bildirdi) — web + port, hayalet ne gösteriyorsa o olsun (Parça 250). Taslak PR.
