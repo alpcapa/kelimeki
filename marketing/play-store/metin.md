@@ -24,14 +24,14 @@ Kelimeki: Türkçe Kelime Oyunu
 
 ## Kısa açıklama (≤80 karakter)
 
-**AS-BUILT — 25 Eylül 2026'da Console'a girildi, incelemeye gönderildi.**
+**ESKİ (25 Eylül – 6 Kasım 2026 arası yayındaydı; artık GEÇERSİZ, aşağıdaki güncel):**
 
 ```
 Türkçe kelime oyunu: kelime kur, bölgeni büyüt. İnternetsiz ya da arkadaşınla.
 ```
 78 karakter (ölçüldü).
 
-**GÖNDERİLDİ — 6 Kasım 2026 ~09:39 (Console ekran görüntüsünden OKUNDU; kullanıcı: "doğruysa düzelt"):** Default store listing · Turkish – tr-TR · *Changes in review — Running quick checks, up to 14 minutes remaining* · Managed publishing KAPALI (onayla kendiliğinden yayınlanır). Submission ID henüz görünmedi (beklenen 27). Yayınlanınca bu blok AS-BUILT'e çevrilir.
+**AS-BUILT — 6 Kasım 2026: Submission 27 PUBLISHED** (gönderim 09:38 → yayın 10:02 TSİ, 24 dk; Console ekran görüntüsünden OKUNDU; kullanıcı: "Play yayınlandı"). Default store listing · Turkish – tr-TR · tek değişiklik: kısa açıklama. Managed publishing kapalıydı, onayla otomatik yayınlandı.
 
 ```
 İnternetsiz kelime oyunu: kelime kur, bölgeni büyüt. Arkadaşınla online oyna.
@@ -45,10 +45,8 @@ tarafı: gömülü sözlük (`words_tr.txt`) + çevrimdışı YZ rakipler intern
 oynatıyor, online mod (arkadaş) ayrı cümlede. Değişenler: "Türkçe" kelimesi
 kısa açıklamadan çıktı (uygulama adında zaten var: `Kelimeki: Türkçe Kelime
 Oyunu`), "internetsiz" cümlenin başına ve "kelime oyunu"nun yanına geldi.
-Anahtar kelime tekrarı YOK (Play meta veri politikası). Girilince bu blok
-AS-BUILT'e çevrilir, `gonderimler-android.csv`'ye "Store Listing" satırı
-eklenir; sonuç ~3-4 hafta sonra aynı ekranda (Acquire → Traffic source)
-ölçülür. **Başlangıç değerleri (6 Kas ekran görüntüsü, Default listing, son 28 gün 5 Eki–1 Kas):** ziyaretçi 369 (önceki döneme +%38) · benzersiz yükleme tıklaması 187 (+%24) · tıklama oranı %51 (−%10) · listenin dönüşüm oranı %42,9 (25 Eyl'de ölçülen %60,38'in altında — trafik kalitesi değişmiş olabilir, kısa açıklamayla karıştırma). Karşılaştırma: 3-4 hafta sonra aynı ekran.
+Anahtar kelime tekrarı YOK (Play meta veri politikası). Sonuç ~3-4 hafta sonra (~4 Aralık) aynı ekranda (Acquire → Traffic
+source / Store listings) ölçülür. **Başlangıç değerleri (6 Kas ekran görüntüsü, Default listing, son 28 gün 5 Eki–1 Kas):** ziyaretçi 369 (önceki döneme +%38) · benzersiz yükleme tıklaması 187 (+%24) · tıklama oranı %51 (−%10) · listenin dönüşüm oranı %42,9 (25 Eyl'de ölçülen %60,38'in altında — trafik kalitesi değişmiş olabilir, kısa açıklamayla karıştırma). Karşılaştırma: 3-4 hafta sonra aynı ekran.
 
 ## Tam açıklama (≤4000 karakter)
 
