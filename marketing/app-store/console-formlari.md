@@ -589,6 +589,8 @@ kelimeleri kendisi birleştirip ifade üretiyor: `yapay` + `zeka` listede ayrı
 ayrı dururken "yapay zeka" araması zaten karşılanıyor. İfade olarak yazmak
 `zeka`yı ikinci kez ödetiyor, karşılığında hiçbir şey kazandırmıyor.
 
+⚠ **1.1.6'DA GİRİLECEK (6 Kasım 2026, kullanıcı: "9 Kasım treninde düzeltiriz, hatırlat"):** "internetsiz kelime oyunu" araması için Name'de `kelime`·`oyunu` var ama `internetsiz` hiçbir alanda yok (yalnızca eş anlamlısı `çevrimdışı`). Yeni değer (94/100): `sözcük,harf,bulmaca,zeka,strateji,sözlük,arkadaş,internetsiz,yapay,tahta,anlam,tdk,bingo,joker` — `kelime,` çıktı (Name'de zaten indeksli), `çevrimdışı` → `internetsiz`. Subtitle'a DOKUNULMAZ (slogan; "kelime oyunu" Name'de var). Keywords sürüme bağlı: ASC → Apps → Kelimeki → iOS App yanındaki `+` → 1.1.6 → Keywords. Girilince bu paragraf AS-BUILT'e çevrilir. Play karşılığı (kısa açıklama) 6 Kas'ta gönderildi: `marketing/play-store/metin.md`.
+
 ⚠ **Sürüm `Waiting for Review` iken metadata düzenlemek serbesttir** ve
 sürümü incelemeden ÇIKARMAZ (Apple'ın kendi durum referansı). Yine de
 kaydettikten sonra sol üstteki rozetin hâlâ `Waiting for Review` dediği
