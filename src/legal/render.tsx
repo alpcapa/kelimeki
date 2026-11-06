@@ -194,7 +194,7 @@ export const STATIC_PAGES: Sayfa[] = [
     // ıskalardı. Bu yüzden derleme zamanı statik üretim.
     dosya: 'nasil-oynanir/index.html',
     yol: '/nasil-oynanir/',
-    baslik: 'Nasıl Oynanır',
+    baslik: 'Kelime Oyunu Nasıl Oynanır? Kurallar ve Puanlama',
     aciklama:
       'Kelimeki nasıl oynanır: 13×13 tahtada köşe bölgeleriyle oynanan Türkçe kelime oyununun kuralları — bölge genişletme, bölge vergisi, bonus bölgesi, joker ve puanlama.',
     govde: () => <NasilOynanirBody />,

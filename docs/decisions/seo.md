@@ -219,3 +219,10 @@ reklamı kararı 30 Eylül'deki gibi duruyor (şimdilik hayır).
 dış bağlantılar → ancak o zaman 3-4 özgün içerik sayfası (ince içerik
 `Crawled - not indexed`'e düşme riski taşır; `/nasil-oynanir/` bir ay orada
 kaldı).
+
+**6 Kasım 2026 — uygulanan düzeltmeler:** `/nasil-oynanir/` başlığı "Nasıl
+Oynanır" → **"Kelime Oyunu Nasıl Oynanır? Kurallar ve Puanlama"** (h1, `<title>`
+ve OG başlığı aynı kaynaktan; duman testleri alt dize eşleştiriyor, değişmedi);
+ana sayfa meta açıklamasına "Türkçe" eklendi; `sitemap.xml` `lastmod` `/` ve
+`/nasil-oynanir/` için 2026-11-06. Deploy sonrası GSC'de `/nasil-oynanir/` için
+bir kez "Request indexing" gerekir.
