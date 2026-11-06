@@ -195,3 +195,27 @@ karşılama ya da `/nasil-oynanir/` içeriği değişince `lastmod`u da güncell
 Submitted/Last read 30 Eyl · Success · 5 sayfa. Hatalı `nasil-oynanir`
 sitemap kaydı silindi (listede yalnızca `sitemap.xml` var). Açık iş yok;
 sıradaki adım ~14 Ekim okuması.
+
+## GSC okuması — 6 Kasım 2026 (kullanıcının ekran görüntüleri)
+
+**Ölçüm** (Performance, Web, son 3 ay): **59 tık · 98 gösterim · CTR %60,2 ·
+ortalama konum 1,6.** Sorgu tablosunda TEK satır: `kelimeki` (37 tık · 45
+gösterim); kalan 22 tık gizlenen düşük hacimli sorgular. 30 Eylül okumasıyla
+(50 tık / 72 gösterim) aynı tablo: site yalnızca kendi adıyla bulunuyor, tür
+aramalarında ("kelime oyunu") hiç gösterim YOK — kullanıcı da Google'da 10
+sayfa gezip bulamadı.
+
+**İndeks:** Indexed **2** (`/` son tarama 17 Eki, `/nasil-oynanir/` 30 Eyl;
+30 Eylül'deki 1'den bir artış — `/nasil-oynanir/` sonunda girdi). Not indexed
+**6**: *Page with redirect* 3 (http/www varyantları, normal) + *Discovered -
+currently not indexed* 3 (büyük olasılıkla `/gizlilik/`, `/kullanim-kosullari/`,
+`/hesap-silme/` — sitemap'teki 5 URL'in 2+3'ü; URL'ler satıra tıklanıp
+doğrulanmadı) + *Crawled - currently not indexed* 0. Teknik engel yok.
+
+**Karar/sonuç:** reklam sıralamayı etkilemez; asıl eksik (a) tür aramalarına
+hizmet eden içerik sayfası sayısı (1) ve (b) dış bağlantı. Google arama
+reklamı kararı 30 Eylül'deki gibi duruyor (şimdilik hayır).
+**Önerilen sıra:** `/nasil-oynanir/` başlığına "kelime oyunu" eklemek →
+dış bağlantılar → ancak o zaman 3-4 özgün içerik sayfası (ince içerik
+`Crawled - not indexed`'e düşme riski taşır; `/nasil-oynanir/` bir ay orada
+kaldı).
