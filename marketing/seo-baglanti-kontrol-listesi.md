@@ -49,6 +49,9 @@ ama Google'a "bu site gerçek bir marka" sinyali verir ve keşfi kolaylaştırı
 ## D. Yapılmayacaklar
 - Satın alınmış bağlantı, yorum/forum spam'i, aynı metni onlarca yere yapıştırma
   (Google bunları cezalandırır, hesap da kapatılır).
+- **Kelime bulucu / anagram / "kopya" araçlarına link verme** ve bu tür sitelerle karşılıklı link
+  takası yapma (kullanıcı kararı, 7 Kasım 2026; gerekçe `docs/decisions/seo.md`).
+  Gizlenmiş link hiçbir koşulda yok.
 - Aynı gün onlarca bağlantı: doğal görünmesi için yayıl, haftada birkaç tane.
 
 ## E. Ölçüm
