@@ -226,3 +226,26 @@ ve OG başlığı aynı kaynaktan; duman testleri alt dize eşleştiriyor, deği
 ana sayfa meta açıklamasına "Türkçe" eklendi; `sitemap.xml` `lastmod` `/` ve
 `/nasil-oynanir/` için 2026-11-06. Deploy sonrası GSC'de `/nasil-oynanir/` için
 bir kez "Request indexing" gerekir.
+
+## Karar — kelime bulucu / "kopya" araçlarına link verilmez (7 Kasım 2026)
+
+**Vaka:** Kelimelodi.com (bir "Kelime Bulucu" sitesi, çok sayıda indeksli
+sayfası var) 6-7 Kasım'da işbirliği teklif etti: tanıtım yazısı + "2027'nin en
+popüler kelime oyunları" listesi, **karşılığında Kelimeki sitesinden kendisine
+link**. Kullanıcı (Alp) reddetti.
+
+**Karar:** Kelimeki'nin hiçbir yüzeyinden (site, `/nasil-oynanir/`, karşılama,
+altbilgi, uygulama, mağaza metni) kelime bulucu, anagram çözücü ya da benzeri
+"kopya" araçlarına link verilmez. Gerekçe (kullanıcı): Kelimeki puanlı ve
+rekabetçi bir oyun; oyuncuyu kopya araçlarına yönlendirmek adil oyunla
+çelişir. Karşılıklı link şartı olan teklifler bu yüzden otomatik olarak elenir.
+
+**Gizlenmiş link ASLA:** Google gizli bağlantıyı spam sayar (manuel ceza riski;
+indekste zaten güçsüz bir site için ağır), karşı tarafa karşı da dürüst
+değildir. Karşılıklı link gerekiyorsa görünür ve `rel="nofollow"` olmalı —
+ama bu kararla kelime bulucular için hiç gerekmez.
+
+**Karşı teklif (gönderildi):** karşılıksız kısa haber/tanıtım; metin, görsel ve
+mağaza bağlantılarını biz hazırlarız. Kabul edilmezse kapanır, ısrar yok.
+**Not:** bu tür sitelerin "çok indeksli sayfası" çoğu zaman otomatik üretilmiş
+harf kombinasyonu sayfalarıdır; bağlantı değeri göründüğünden düşüktür.
