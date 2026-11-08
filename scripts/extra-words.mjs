@@ -159,6 +159,15 @@ export const EXTRA_WORDS = {
       'Bazı Müslümanların günlük hayatta veya namaz kılarken kafalarına taktığı takke benzeri başlık.',
     ],
   },
+  // `çıtır` GTS'te YOK (ı'lı yazımla ölçüldü, 8 Kasım 2026); komşuları `çıta`,
+  // `çıtırtı`, `çıtırdamak` VAR ve FARKLI maddeler. Argo anlamı (genç, çekici
+  // kadın) bilerek EKLENMEDİ: anlam taşa dokununca oyuncuya gösteriliyor.
+  çıtır: {
+    pos: 'sf.',
+    meanings: [
+      'Çiğnenirken ya da kırılırken ses çıkaracak kadar gevrek, kızarmış veya taze olan (yiyecek).',
+    ],
+  },
   misli: {
     pos: 'a.',
     meanings: [
