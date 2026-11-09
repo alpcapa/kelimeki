@@ -25,6 +25,16 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 253 — iPad: klavye açıkken pencere titriyordu → KModal klavye açıkken ÜSTE yaslanır (3 Kasım 2026, kullanıcı bildirdi)
+
+**Bulgu (uygulama, iPad yatay, takılı klavye):** *"giriş ekranında bilgileri girerken modal aşağı yukarı titreme yapıyor."* Ekran görüntüsünde alt kenarda iPadOS'un kısayol/öneri şeridi ("password for kelimeki.com").
+
+**Kök neden (koddan):** `KModal` Material `Dialog` kullanıyor; `Dialog` `viewInsets`i alt dolgu olarak alıp paneli KALAN alanın ortasına koyuyor. Takılı klavyede ekran klavyesi yok ama kısayol/öneri şeridi var ve yazarken boy değiştiriyor → `viewInsets.bottom` oynuyor → ortalanmış panel her değişimde yarı fark kadar kayıyor. Web ikizi (`Modal.tsx`, `items-center`) yapısal olarak aynı ama bildirim uygulamadan geldi; web'e dokunulmadı.
+
+**Düzeltme:** `KModal` klavye açıkken (`viewInsets.bottom > 0`) `Dialog(alignment: Alignment.topCenter)`; kapalıyken davranış AYNEN (ortada). Üste yaslı panel alt kenardaki değişimden etkilenmez. Klavye ilk açıldığında panel bir kez yukarı geçer (iPhone'da zaten kalan alana sığmak için yukarı kayıyordu).
+
+**Kapı:** `test/modal_keyboard_test.dart` — iPad yatay (1024×768), şerit 55 → 90 pt: panelin üst kenarı değişmez; klavye kapalıyken panel ortada. ⚠ İlk sürüm `Dialog` kutusunu ölçüyordu (ekranı kapladığı için her durumda geçerdi) → panel (Material) ölçülecek şekilde düzeltildi; düzeltme geri alınınca test DÜŞÜYOR. Tam takım 1283/1283. **Sınır:** iPad'de denenmedi — `mobile/docs/testing-ux-turlari.md` §35.
+
 ## Parça 252 — İstatistik okumaları 522'de TEK sessiz yeniden deneme (3 Kasım 2026, günlük hata özeti)
 
 **Bulgu:** 2 Kasım günlük özeti — 11 kaydın 10'u tek Android cihaz (1.1.4, `a84978`), hepsi 522; son 3 haftada 522 kayıtlarının 19/30'u aynı cihaz (1.1.3'ten beri), sunucuda 5xx yok → istek ağ yolunda kopuyor (cihazın bağlantısı). `online_games_repo.load` / `random_listings` Parça 251 ile 1.1.5'te kapandı; açık kalan `stats_repo.my_rank` (4) + `stats_repo.age_gender` (1) — Parça 251'in *"tekrar ederse ayrı karar"*ı tekrar etti. **Kullanıcı kararı (3 Kas):** *"Yap, 9 Kasım trenine koy"* — tek yeniden deneme, ikincisi de koparsa yine raporlanır.
