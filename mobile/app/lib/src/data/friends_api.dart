@@ -267,6 +267,14 @@ class SupabaseFriendsGateway implements FriendsGateway {
 
 class FriendsRepo {
   final FriendsGateway gateway;
+
+  /// Bağlantı durumu (bootstrap bağlar; testte boş = çevrimiçi sayılır).
+  /// Okumalar hata/ağ yokluğunda `null`/boş döndüğünden ekran "veri yok"u
+  /// "internet yok"tan ancak bununla ayırır (3 Kasım 2026, kullanıcı uçak
+  /// modunda bildirdi: Arkadaşlar "Henüz arkadaşın yok"
+  /// diyordu). StatsRepo ile aynı desen (alan, kurucu değil).
+  bool Function()? isOnline;
+  bool get online => isOnline?.call() ?? true;
   FriendsRepo(this.gateway);
 
   FriendCandidate _candidate(Map<String, Object?> r) => FriendCandidate(

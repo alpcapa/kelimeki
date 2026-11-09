@@ -297,7 +297,10 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
     visits: supabase != null
         ? VisitsRepo(SupabaseVisitsGateway(supabase), stamp)
         : null,
-    stats: supabase != null ? StatsRepo(SupabaseStatsGateway(supabase)) : null,
+    stats: supabase != null
+        ? (StatsRepo(SupabaseStatsGateway(supabase))
+          ..isOnline = () => onlineStatus.online)
+        : null,
     leagueRewards: supabase != null
         ? LeagueRewardsRepo(SupabaseLeagueRewardsGateway(supabase))
         : null,
@@ -305,8 +308,10 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
       supabase != null ? SupabaseFeedbackGateway(supabase) : null,
       storage,
     ),
-    friends:
-        supabase != null ? FriendsRepo(SupabaseFriendsGateway(supabase)) : null,
+    friends: supabase != null
+        ? (FriendsRepo(SupabaseFriendsGateway(supabase))
+          ..isOnline = () => onlineStatus.online)
+        : null,
     onlineGames: supabase != null
         ? OnlineGamesRepo(SupabaseOnlineGamesGateway(supabase))
         : null,

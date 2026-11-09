@@ -25,6 +25,18 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 254 — Çevrimdışıyken boş durumlar yalan söylüyordu: "oyun kaydın yok", "arkadaşın yok", "Bir sorun oluştu" (3 Kasım 2026, 1.1.5 TestFlight turu madde 5)
+
+Kullanıcı uçak modunda: Skor Kartı sıfırlar + *"Henüz hiç oyun kaydın yok."*, Arkadaşlar *"Henüz arkadaşın yok"*, Canlı davet *"Bir sorun oluştu"*. Üçü de okumanın `null`/boş dönmesini "veri yok" diye okuyordu.
+
+- `StatsRepo` + `FriendsRepo`: `bool Function()? isOnline` ALANI (kurucu parametresi DEĞİL — #913 `StatsRepo` kurucusuna dokunuyor, çakışmasın) + `online` getter'ı; `bootstrap.dart` `onlineStatus.online`'a bağlıyor. Testlerde verilmezse `true`.
+- Skor kartları (`score_card_modal` · `player_score_card_modal`): çevrimdışıyken `emptyText` = `kOfflineNoConnection`.
+- `friends_modal`: liste `null` döndü VE çevrimdışı → `kOfflineNoConnection` (boş liste + çevrimiçi → eski metin).
+- `live_game_create_form`: aynı bayrak arkadaş yok metnine; gönderim `catch`i ağ hatası ya da çevrimdışıysa `kOfflineAiSuggestion`.
+- Web ikizi (`ScoreCard` · `PlayerScoreCard` · `FriendsModal` · `LiveGameCreateForm`, `useOnlineStatus`) ayrı PR'da hemen yayına girdi.
+- ⚠ `dart format` dosyanın TAMAMINA koşulunca `tap_target_test`in 200 karakterlik pencere taraması düştü — yalnızca değişen satırlar elle biçimlendirildi.
+- Testler: `score_card_test` + `friends_test`e çevrimdışı senaryoları.
+
 ## Parça 253 — iPad: klavye açıkken pencere titriyordu → KModal klavye açıkken ÜSTE yaslanır (3 Kasım 2026, kullanıcı bildirdi)
 
 **Bulgu (uygulama, iPad yatay, takılı klavye):** *"giriş ekranında bilgileri girerken modal aşağı yukarı titreme yapıyor."* Ekran görüntüsünde alt kenarda iPadOS'un kısayol/öneri şeridi ("password for kelimeki.com").

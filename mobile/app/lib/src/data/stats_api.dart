@@ -396,6 +396,15 @@ class StatsRepo {
     }
   }
 
+  /// Bağlantı durumu (bootstrap bağlar; testte boş = çevrimiçi sayılır).
+  /// Okumalar hata/ağ yokluğunda `null`/boş döndüğünden ekran "veri yok"u
+  /// "internet yok"tan ancak bununla ayırır (3 Kasım 2026, kullanıcı uçak
+  /// modunda bildirdi: skor kartı 0'larla "Henüz hiç oyun kaydın yok"
+  /// diyordu). Kurucuya DEĞİL alana konuldu: kurucuyu değiştiren #913 ile
+  /// aynı trende çakışmasın diye.
+  bool Function()? isOnline;
+  bool get online => isOnline?.call() ?? true;
+
   /// null: satır yok (hiç oyun kaydı yok) YA DA ağ hatası — ikisi de UI'da
   /// aynı "veri yok" hâline düşer (web davranışı birebir).
   Future<PlayerStats?> playerStats(String userId, StatsTab tab) async {
