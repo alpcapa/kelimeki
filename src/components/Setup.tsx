@@ -1077,7 +1077,14 @@ export function Setup({
             (320/344 gibi) üç öğe tek satıra sığmıyor; ÖLÇÜLDÜ, `gap-x-2 gap-y-1`
             320'de iki satıra sarıp yatay taşmayı 0'da tutuyor, 356+ genişlikte
             hiçbir şey değişmiyor. */}
-          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] font-mono text-muted">
+          {/* İKİ SATIR (9 Kasım 2026, 1.1.6 turu, kullanıcı: "Footer'daki Yardım çok
+            aşağıda gözüküyor"): dört madde tek `flex-wrap` satırındayken büyük
+            yazıda "Yardım" kendi başına alt satıra düşüyor ve ilk satırın
+            sonunda başıboş bir `·` kalıyordu. Artık BİLİNÇLİ iki satır: hukuki
+            iki bağlantı + Paylaş · Yardım. `flex-wrap` her satırda emniyet ağı
+            olarak duruyor. Port ikizi: `setup_screen.dart`. */}
+          <div className="flex flex-col items-center text-[10px] font-mono text-muted">
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             <button
               onClick={() => setShowTerms(true)}
               className="flex items-center min-h-[48px] hover:underline active:opacity-70 transition-opacity"
@@ -1091,6 +1098,8 @@ export function Setup({
             >
               Gizlilik Politikası
             </button>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             {/* "Paylaş" (18 Ağustos 2026, aynı gün üçüncü/dördüncü tur —
               kullanıcı: "Yanlış anladın, buton istemedim. Tanıtım
               footerındakinin aynısını istedim", sonra: "Daha önce tanıtım
@@ -1102,7 +1111,6 @@ export function Setup({
               olduğundan satırın `text-muted` rengini otomatik miras alıyor.
               `handleShare` girişten bağımsız çalıştığından `user &&` gibi
               bir koşula BAĞLANMADI, misafir/girişli aynı satırı görüyor. */}
-            <span>·</span>
             <button
               onClick={handleShare}
               className="flex items-center min-h-[48px] gap-1 hover:underline active:opacity-70 transition-opacity"
@@ -1119,6 +1127,7 @@ export function Setup({
             >
               Yardım
             </button>
+          </div>
           </div>
           <p className="font-mono text-[10px] text-muted" style={{ margin: 0 }}>
             © Kelimeki
