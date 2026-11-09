@@ -907,7 +907,9 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
           Text(_friendsOffline ? kOfflineNoConnection : kLiveFormNoFriends,
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontFamily: 'SpaceMono', fontSize: 12, color: _muted)),
+                  fontFamily: 'SpaceMono',
+                  fontSize: 12,
+                  color: _friendsOffline ? kRed : _muted)),
           const SizedBox(height: 10),
           Builder(
             builder: (btnCtx) => NeoButton(
