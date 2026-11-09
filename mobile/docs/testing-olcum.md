@@ -175,3 +175,10 @@ Kimliksiz sayaç (`anon_id`/`user_id` YOK). Okuma: Supabase SQL (admin kartı yo
       tabloda kimlik kolonu YOK (`anon_id` 11 Ekim'de kaldırıldı).
 - [ ] ⚠ Aynı ayrılış birden çok satır yazabilir (her arka plana gidiş) — hata
       değil, sayım kişi değil olay sayar.
+
+## 35. İstatistik okumalarında 522 yeniden denemesi (3 Kasım 2026, Parça 252, 9 Kasım treni)
+
+Cihazda üretilemez; sunucu tarafında izlenir.
+
+- [ ] 1.1.6 yayınından ~1 hafta sonra `client_errors`: `stats_repo.my_rank` / `stats_repo.age_gender` / `stats_repo.my_beyin_rank` satırlarında 522 sayısı 1.1.6 sürümünde belirgin azalmış mı (`app_version` ile ayır; 1.1.4/1.1.5 cihazları azalma göstermez).
+
