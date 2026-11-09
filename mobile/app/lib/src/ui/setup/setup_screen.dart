@@ -1704,10 +1704,22 @@ class _SetupScreenState extends State<SetupScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              kOfflineAiSuggestion,
+            // Cümlenin "İnternet bağlantısı yok" kısmı KIRMIZI, devamı normal
+            // (9 Kasım 2026, kullanıcı; web ikizi `Setup.tsx`).
+            Text.rich(
+              TextSpan(children: [
+                if (kOfflineAiSuggestion.startsWith(kOfflineNoConnection)) ...[
+                  const TextSpan(
+                      text: kOfflineNoConnection,
+                      style: TextStyle(color: kRed)),
+                  TextSpan(
+                      text: kOfflineAiSuggestion
+                          .substring(kOfflineNoConnection.length)),
+                ] else
+                  const TextSpan(text: kOfflineAiSuggestion),
+              ]),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                   fontFamily: 'SpaceMono',
                   fontSize: 11,
                   height: 1.6,
