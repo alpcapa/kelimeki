@@ -484,7 +484,7 @@ Yeni: Hamle Avı! 3 dakikada en iyi hamleyi bul, serini büyüt. Türkçe için 
   ⚠ iPad maddesi bilerek yalnızca "pencere üstte duruyor" diyor: e-postadaki titreme 1.1.7'de (#955) ve cihazda doğrulanmadı. **ASC'ye AYNEN girildi (AS-BUILT, kullanıcı doğruladı 9 Kas 2026); Play'e girişi henüz kaydedilmedi.**
 - 🍎 **iOS GÖNDERİLDİ — 9 Kas 2026 16:13 (ASC saati = TSİ):** `iOS App 1.1.6 (1002)` → **Waiting for Review**, Submission ID `6c220305-9901-45c9-bae3-23df08ad5c0b`, Submitted By Alp Reşat Çapa (ASC → Distribution → App Review ekran görüntüsünden OKUNDU). Aynı gün kesim → TestFlight turu → gönderim (tren takvimindeki Perşembe beklenmedi). **Build 1002** = koşu numarası. ASC'ye girilen What's New/Promotional Text yukarıdaki metinle AYNI (kullanıcı doğruladı, 9 Kas 2026) ve build 1002 kesim commit'i `24e0101`den (kullanıcı doğruladı; ben ekran görüntüsünde sha'yı görmedim).
 - ⚠ **Sonuç:** Apple onaylayınca 1.1.6 numarasına yeni build alınmaz (`90186`): `main`'e giren İLK mobil iş (#955, 1.1.7) `appVersion` + `pubspec`i **1.1.7**'ye yükseltmeli — onay gelmeden #955'i merge etme.
-- 🤖 **Play:** `.aab` 1002 henüz yüklenmedi / kaydedilmedi.
+- 🤖 **Play GÖNDERİLDİ — 9 Kas 2026 16:24 (Console, TSİ):** Production · `1.1.6 (1002)` · Start full rollout · **Submission ID 28 · In review** (Console → Submission activity ekran görüntüsünden OKUNDU; *Changes submitted Nov 09, 2026, 4:24 PM*, Source Play Console). `.aab` = `mobile-latest` 10:37 UTC derlemesi; indirilip manifest'i doğrulandı (versionCode **1002**, versionName **1.1.6**, SHA-256 `89a2cdf6701486008663259c7d711216dfdacb56cac3cefea56face13aec3568`, 65.703.244 bayt). Yayın saati/inceleme süresi yayınlanınca eklenecek. İki mağaza AYNI sürüm/kodda (iOS 16:13, Play 16:24).
 
 ## 1.1.5 — KESİM (2 Kasım 2026)
 
