@@ -460,6 +460,32 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
+## 1.1.6 — KESİM (9 Kasım 2026)
+
+**Kesim:** `24e0101` (PR **#952**, squash) — dokuz `[Sonraki sürüm]` taslağın TEK dalda birleşimi: #913 (522 yeniden deneme) · #915 (iPad modal klavye) · #917 (çevrimdışı boş durumlar) · #924 (Hamle Avı portu + Gizlilik/Yardım ikizi) · #932 (Canlı taslak kalıcılığı, şema v5) · #938 (teşhis satırından sözlük sayısı) · #940 (Setup logo + Yardım) · #943 (← Çıkış) · #951 (sözlük "çıtır"). `appVersion`/`pubspec` **1.1.6+1**. Dokuz taslak "#952'ye alındı" notuyla kapatıldı (tek tek merge yerine birleşik PR: çakışmalar bir kez çözüldü). Parça numaraları yeniden numaralandı: 252 (#913) · 253 (#915) · 254 (#917) · 255 (#932) · 256 (#924).
+- **Doğrulama:** Dart core 6920 kontrol 0 hata; tam `flutter test` 1320/1320 (kesim öncesi bir test eşiği düzeltildi: Hamle Avı düğmesi yüksekliği kesir toleransı); PR'ın dokuz CI kontrolü (Android APK, iOS imzasız, Analiz + testler, test, parite…) yeşil.
+- **Merge'in etkisi:** `mobile-latest` ezildi, TestFlight'a yeni build gitti; web'e aynı anda gizlilik metni ("Son güncelleme: 9 Kasım 2026", kullanıcı kararı: *"gizlilik metni bugün çıksın"*) + Detaylı Kurallar'daki Hamle Avı bölümü çıktı (canlı sha `24e0101` doğrulandı).
+- **TestFlight turu (1.1.6, 9 Kasım, kullanıcı): temiz**, dört bulgu — hiçbiri sürümü bekletmedi (*"hiçbiri versiyonu değiştirmek için acil değil"*): (1) iPad Giriş penceresinde **e-posta** yazarken titreme sürüyor, şifrede yok · (2) uçak modunda Skor Kartı 7-8 sn "Yükleniyor…" · (3) Arkadaşlar → Tüm oyuncular çevrimdışıyken "Başka oyuncu yok" · (4) "İnternet bağlantısı yok" kırmızı olmalı. → **1.1.7**: web ikizi #954 (hemen yayına), port taslak **#955** (Parça 257).
+- **Sıradaki (kullanıcıda):** ASC'de 1.1.6 sürümünü aç + build iliştir · keywords `internetsiz` · Support/Marketing URL → `https://www.kelimeki.com` · aşağıdaki What's New/Promotional text · Play'e `.aab` 1002. (iOS gönderimi yapıldı, aşağı bkz.)
+- **Promotional Text (149/170, kullanıcı ONAYLADI 9 Kas 2026; sürüm yayınlamadan da değiştirilebilir):**
+```
+Yeni: Hamle Avı! 3 dakikada en iyi hamleyi bul, serini büyüt. Türkçe için sıfırdan tasarlanmış kelime oyunu. Ücretsiz, reklamsız, çevrimdışı oynanır.
+```
+- **What's New / Play sürüm notu (`tr-TR`, 436/500, iki mağazada AYNI metin, kullanıcı ONAYLADI 9 Kas 2026):**
+```
+• Yeni: Hamle Avı! 3 dakikada tahtadaki en iyi hamleyi bul, serini ve rekorunu büyüt.
+• Canlı oyunda sıra rakipteyken denediğin hamle, rakip oynayınca ya da ekrandan çıkıp girince kaybolmuyor.
+• Çevrimdışıyken Skor Kartı, Arkadaşlar ve Canlı davet artık "İnternet bağlantısı yok" diyor.
+• iPad'de klavye açıkken pencere üstte duruyor.
+• Ana ekranda logo sol üstte, Yardım en altta.
+• Oyun ekranında "← Çıkış".
+• Sözlüğe "çıtır" eklendi.
+```
+  ⚠ iPad maddesi bilerek yalnızca "pencere üstte duruyor" diyor: e-postadaki titreme 1.1.7'de (#955) ve cihazda doğrulanmadı. **ASC'ye AYNEN girildi (AS-BUILT, kullanıcı doğruladı 9 Kas 2026); Play'e girişi henüz kaydedilmedi.**
+- 🍎 **iOS GÖNDERİLDİ — 9 Kas 2026 16:13 (ASC saati = TSİ):** `iOS App 1.1.6 (1002)` → **Waiting for Review**, Submission ID `6c220305-9901-45c9-bae3-23df08ad5c0b`, Submitted By Alp Reşat Çapa (ASC → Distribution → App Review ekran görüntüsünden OKUNDU). Aynı gün kesim → TestFlight turu → gönderim (tren takvimindeki Perşembe beklenmedi). **Build 1002** = koşu numarası. ASC'ye girilen What's New/Promotional Text yukarıdaki metinle AYNI (kullanıcı doğruladı, 9 Kas 2026) ve build 1002 kesim commit'i `24e0101`den (kullanıcı doğruladı; ben ekran görüntüsünde sha'yı görmedim).
+- ⚠ **Sonuç:** Apple onaylayınca 1.1.6 numarasına yeni build alınmaz (`90186`): `main`'e giren İLK mobil iş (#955, 1.1.7) `appVersion` + `pubspec`i **1.1.7**'ye yükseltmeli — onay gelmeden #955'i merge etme.
+- 🤖 **Play:** `.aab` 1002 henüz yüklenmedi / kaydedilmedi.
+
 ## 1.1.5 — KESİM (2 Kasım 2026)
 
 **Merge sırası (kullanıcı: *"Evet, kesimi yap"*):** #905 (doküman) → #903 (sözlük mobil varlıkları) → #898 (522 yeniden deneme) → #907 (kayıt takma isim) → #909 (Rastgele boş durum) → #884 (gölge önbelleği) → #889 (taslak taş geri alma + taş taşıma + uçak modunda profil) → #886 (Kolay YZ) → bu PR (sürüm `1.1.5+1`). Her PR'dan önce `main` dala birleştirildi (merge commit); çakışmalar yalnızca `ROADMAP.md` ve `parca-log.md`de ekleme-ekleme türündeydi, iki taraf da tutuldu.
