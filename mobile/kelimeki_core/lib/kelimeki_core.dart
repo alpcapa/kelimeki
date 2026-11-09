@@ -13,6 +13,7 @@ export 'src/constants.dart';
 export 'src/data/tiles.dart';
 export 'src/dictionary/word_source.dart';
 export 'src/engine/bag.dart';
+export 'src/engine/live_draft.dart';
 export 'src/engine/reducer.dart';
 export 'src/model/game_state.dart';
 export 'src/model/history_entry.dart';

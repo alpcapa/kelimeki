@@ -8,6 +8,7 @@ import 'package:sqflite/sqflite.dart';
 import 'app_database.dart';
 import 'chat_read_store.dart';
 import 'flags_store.dart';
+import 'live_draft_store.dart';
 import 'profile_cache_store.dart';
 import 'cloud_save_mirror_store.dart';
 import 'local_save_store.dart';
@@ -29,6 +30,9 @@ class AppStorage {
   final PendingQueueStore queue;
   final PendingEventStore events;
   final ChatReadStore chatRead;
+
+  /// Canlı oyunda deneme taşları (taslak) — yalnız bu cihaz.
+  final LiveDraftStore liveDrafts;
   final FlagsStore flags;
 
   /// Girişli kullanıcının profilinin yerel kopyası — bağlantısızken hesabın
@@ -44,6 +48,7 @@ class AppStorage {
     required this.queue,
     required this.events,
     required this.chatRead,
+    required this.liveDrafts,
     required this.flags,
     required this.profileCache,
   });
@@ -66,6 +71,7 @@ class AppStorage {
       queue: PendingQueueStore(db, now),
       events: PendingEventStore(db, now),
       chatRead: ChatReadStore(db),
+      liveDrafts: LiveDraftStore(db, now),
       flags: FlagsStore(p),
       profileCache: ProfileCacheStore(p),
     );

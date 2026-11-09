@@ -117,10 +117,17 @@ class SyncOnlineStateAction extends GameAction {
   final OnlineGameStatePublic publicState;
   final List<Tile> myRack;
   final int mySlotIndex;
+
+  /// Yalnızca ekranın İLK senkronunda verilir: bu cihazda kayıtlı taslak
+  /// (`engine/live_draft.dart`). `state.placed` boşken ve kural (çakışma yok
+  /// + raf karşılıyor) izin veriyorsa geri yüklenir. Web'in
+  /// `savedDraft`ının ikizi (5 Kasım 2026).
+  final Map<String, Tile>? savedDraft;
   const SyncOnlineStateAction({
     required this.publicState,
     required this.myRack,
     required this.mySlotIndex,
+    this.savedDraft,
   });
 }
 

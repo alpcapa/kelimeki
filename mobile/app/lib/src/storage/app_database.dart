@@ -18,7 +18,7 @@ import 'web_db.dart';
 
 /// DB şema sürümü — tablo/kolon değişikliklerinde artır ve `_migrations`e
 /// bir adım ekle. Payload sürümünden (kSavePayloadVersion) AYRI bir kavram.
-const int kDbSchemaVersion = 4;
+const int kDbSchemaVersion = 5;
 
 Future<void> _createV1(Database db) async {
   await db.execute('''
@@ -126,12 +126,29 @@ Future<void> _createPendingCloudDeletes(Database db) async {
       'on pending_cloud_deletes(user_id, queued_at)');
 }
 
+/// Canlı oyunda TASLAK (deneme taşları) — web'in `kelimeki:live-draft:<kullanıcı>:<oyun>`
+/// anahtarlarının tablo karşılığı (5 Kasım 2026). Oyun başına dinamik anahtar
+/// prefs'e değil tabloya aittir (bkz. `flags_store.dart` başlığı); kayıt
+/// YALNIZCA bu cihazda tutulur, sunucuya yazılmaz (gizlilik/hile + yazma
+/// maliyeti). Hesap anahtarın PARÇASI: başka hesabın taslağı gelmesin.
+Future<void> _createLiveDrafts(Database db) async {
+  await db.execute('''
+    create table live_drafts(
+      user_id text not null,
+      game_id text not null,
+      payload text not null,
+      updated_at integer not null,
+      primary key(user_id, game_id)
+    )''');
+}
+
 /// Sürüm N-1 → N yükseltme adımları — her yeni sürüm buraya YALNIZCA
 /// ekleyici (yıkıcı olmayan) bir adım koyar.
 final Map<int, Future<void> Function(Database)> _migrations = {
   2: _createPendingCloudSaves,
   3: _createCloudSaveCache,
   4: _createPendingCloudDeletes,
+  5: _createLiveDrafts,
 };
 
 Future<Database> openAppDatabase({
