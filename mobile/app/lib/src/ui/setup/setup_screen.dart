@@ -1486,90 +1486,101 @@ class _SetupScreenState extends State<SetupScreen>
                         // çubuk, release'de kırpma demek — web'in sessizce
                         // kaydırdığı bir taşmadan çok daha görünür bir hata)
                         // yerine ikinci satıra sarsın.
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          // Linkler artık 48px'lik dokunma hedefi
-                          // (`TapTarget`); aradaki `·` `start` hizasında
-                          // kalsaydı satırın ÜST kenarına yapışırdı.
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 8,
-                          runSpacing: 4,
-                          children: [
-                            _LegalLink('Kullanım Koşulları',
-                                onTap: () => showTermsModal(context,
-                                    onFeedback: _openFeedback)),
-                            const Text('·',
-                                style: TextStyle(
-                                    fontFamily: 'SpaceMono',
-                                    fontSize: 10,
-                                    color: _muted)),
-                            _LegalLink('Gizlilik Politikası',
-                                onTap: () => showPrivacyModal(context,
-                                    onFeedback: _openFeedback)),
-                            // 19 Ağustos 2026: "Paylaş" artık GİRİŞTEN
-                            // BAĞIMSIZ — web `Setup.tsx` de onu `user &&`
-                            // gibi bir koşula BAĞLAMIYOR (`handleShare`
-                            // oturumdan bağımsız çalışıyor), yani misafir de
-                            // girişli de aynı üç maddeli satırı görüyor.
-                            // Ad BİLEREK "Arkadaşını Davet Et" DEĞİL — o,
-                            // FriendsModal'daki AYRI bir özelliğin (kalıcı
-                            // davet token'ı) adı; burada web'in mevcut
-                            // `handleShare`'i (aynen çağrılıyor, yeni bir
-                            // paylaşım fonksiyonu YAZILMADI) `?ref=arkadas`
-                            // UTM'li genel bir tahta/site linki paylaşıyor —
-                            // admin panelindeki "Kaynak Hunisi" bu parametreye
-                            // bağlı, korunması şart. Ayraç stili yukarıdaki
-                            // ilk ayraçla birebir aynı — yeni bir stil yazma.
-                            const Text('·',
-                                style: TextStyle(
-                                    fontFamily: 'SpaceMono',
-                                    fontSize: 10,
-                                    color: _muted)),
-                            // ⚠ Bu satır 24 Ağustos 2026'da bir kez ATLANDI:
-                            // taramam "GestureDetector'ın DOĞRUDAN çocuğu
-                            // Text mi" diye baktığından, çocuğu bir `Row`
-                            // (ikon + metin) olan bu link gözden kaçtı ve
-                            // kullanıcı Android'de tekrar bildirdi ("hâlâ
-                            // yukarısına dokunmak gerekiyor"). Ders: hedef
-                            // taraması çocuğun TÜRÜNE değil, kutuya bir
-                            // ölçü veren bir şey olup olmadığına bakmalı.
-                            TapTarget(
-                              key: _shareLinkKey,
-                              onTap: _handleShare,
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.share, size: 12, color: _muted),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Paylaş',
-                                    style: TextStyle(
+                        // İKİ SATIR (9 Kasım 2026, 1.1.6 turu, kullanıcı: "Footer'daki
+                        // Yardım çok aşağıda gözüküyor"): dört madde tek `Wrap`teyken
+                        // büyük yazıda "Yardım" kendi başına alt satıra düşüyor ve ilk
+                        // satırın sonunda başıboş bir `·` kalıyordu. Artık BİLİNÇLİ iki
+                        // satır: hukuki iki bağlantı + Paylaş · Yardım (web `Setup.tsx`
+                        // aynı). Her satırda `Wrap` emniyet ağı olarak duruyor.
+                        Column(children: [
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            // Linkler artık 48px'lik dokunma hedefi
+                            // (`TapTarget`); aradaki `·` `start` hizasında
+                            // kalsaydı satırın ÜST kenarına yapışırdı.
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              _LegalLink('Kullanım Koşulları',
+                                  onTap: () => showTermsModal(context,
+                                      onFeedback: _openFeedback)),
+                              const Text('·',
+                                  style: TextStyle(
                                       fontFamily: 'SpaceMono',
                                       fontSize: 10,
-                                      color: _muted,
+                                      color: _muted)),
+                              _LegalLink('Gizlilik Politikası',
+                                  onTap: () => showPrivacyModal(context,
+                                      onFeedback: _openFeedback)),
+                            ],
+                          ),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              // 19 Ağustos 2026: "Paylaş" artık GİRİŞTEN
+                              // BAĞIMSIZ — web `Setup.tsx` de onu `user &&`
+                              // gibi bir koşula BAĞLAMIYOR (`handleShare`
+                              // oturumdan bağımsız çalışıyor), yani misafir de
+                              // girişli de aynı üç maddeli satırı görüyor.
+                              // Ad BİLEREK "Arkadaşını Davet Et" DEĞİL — o,
+                              // FriendsModal'daki AYRI bir özelliğin (kalıcı
+                              // davet token'ı) adı; burada web'in mevcut
+                              // `handleShare`'i (aynen çağrılıyor, yeni bir
+                              // paylaşım fonksiyonu YAZILMADI) `?ref=arkadas`
+                              // UTM'li genel bir tahta/site linki paylaşıyor —
+                              // admin panelindeki "Kaynak Hunisi" bu parametreye
+                              // bağlı, korunması şart. Ayraç stili yukarıdaki
+                              // ilk ayraçla birebir aynı — yeni bir stil yazma.
+                              // ⚠ Bu satır 24 Ağustos 2026'da bir kez ATLANDI:
+                              // taramam "GestureDetector'ın DOĞRUDAN çocuğu
+                              // Text mi" diye baktığından, çocuğu bir `Row`
+                              // (ikon + metin) olan bu link gözden kaçtı ve
+                              // kullanıcı Android'de tekrar bildirdi ("hâlâ
+                              // yukarısına dokunmak gerekiyor"). Ders: hedef
+                              // taraması çocuğun TÜRÜNE değil, kutuya bir
+                              // ölçü veren bir şey olup olmadığına bakmalı.
+                              TapTarget(
+                                key: _shareLinkKey,
+                                onTap: _handleShare,
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.share, size: 12, color: _muted),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Paylaş',
+                                      style: TextStyle(
+                                        fontFamily: 'SpaceMono',
+                                        fontSize: 10,
+                                        color: _muted,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            const Text('·',
-                                style: TextStyle(
-                                    fontFamily: 'SpaceMono',
-                                    fontSize: 10,
-                                    color: _muted)),
-                            // "Yardım" (5 Kasım 2026): eski "Nasıl oynanır?"
-                            // bağlantısının yeni yeri — web `Setup.tsx` footer'ıyla
-                            // AYNI sıra (… · Paylaş · Yardım: EN SONDA).
-                            _LegalLink('Yardım',
-                                onTap: () => showHelpModal(
-                                      context,
-                                      onReplayTutorial: () {
-                                        Navigator.of(context).pop();
-                                        unawaited(_replayTutorial());
-                                      },
-                                    )),
-                          ],
-                        ),
+                              const Text('·',
+                                  style: TextStyle(
+                                      fontFamily: 'SpaceMono',
+                                      fontSize: 10,
+                                      color: _muted)),
+                              // "Yardım" (5 Kasım 2026): eski "Nasıl oynanır?"
+                              // bağlantısının yeni yeri — web `Setup.tsx` footer'ıyla
+                              // AYNI sıra (… · Paylaş · Yardım: EN SONDA).
+                              _LegalLink('Yardım',
+                                  onTap: () => showHelpModal(
+                                        context,
+                                        onReplayTutorial: () {
+                                          Navigator.of(context).pop();
+                                          unawaited(_replayTutorial());
+                                        },
+                                      )),
+                            ],
+                          ),
+                        ]),
                         // Web'in "Son çağrı" footer'ıyla aynı telif satırı
                         // (`font-mono text-[10px] text-muted`). Hukuki
                         // satırla arası web'de `gap-3` = 12px (ÖLÇÜLDÜ) —
@@ -2129,7 +2140,9 @@ class _HamleAviButonu extends StatelessWidget {
                   radius: 6,
                   shadows: const [
                     CssShadow(
-                        color: Color(0x80A3B1C6), offset: Offset(2, 2), blur: 6),
+                        color: Color(0x80A3B1C6),
+                        offset: Offset(2, 2),
+                        blur: 6),
                     CssShadow(
                         color: Color(0xD9FFFFFF),
                         offset: Offset(-2, -2),
