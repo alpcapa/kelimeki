@@ -212,9 +212,7 @@ void main() {
     // BİREBİR aynı tek satırlık kadro özeti.
     expect(find.text('OYUNCULAR'), findsNothing);
     expect(find.text('Yapay Zeka 2'), findsNothing);
-    expect(
-        find.text(
-            '2 kişilik oyunda yapay zekaya karşı oynarsın.'),
+    expect(find.text('2 kişilik oyunda yapay zekaya karşı oynarsın.'),
         findsOneWidget);
 
     await tester.tap(find.text('4 KİŞİ'));
@@ -738,8 +736,13 @@ void main() {
     // 17 Ağustos 2026: kullanıcı Blok 6 görsel turunda 4'ü de kaldırdı
     // (*"az boşluk bize alt kısımda daha fazla yer kazandırır"*). İKİ taraf
     // birlikte indi — web `-mt-5` → `-mt-6`, portta `SizedBox` silindi.
-    expect(logo.top - giris.bottom, 0,
-        reason: 'GİRİŞ ile logo arası web py-6 (24) + -mt-6 (−24) = 0');
+    // 5 Kasım 2026 (kullanıcı isteği): logo GİRİŞ ile AYNI satırda, solda —
+    // web `App.tsx` kurulum dalının `justify-between` satırı. Boy oyun
+    // başlığındaki logonun 1,2 katı (1000 px'te üst sınır 43.2).
+    expect(logo.height, moreOrLessEquals(43.2, epsilon: 0.5));
+    expect(logo.left, lessThan(giris.left), reason: 'logo solda, GİRİŞ sağda');
+    expect(logo.center.dy, moreOrLessEquals(giris.center.dy, epsilon: 1),
+        reason: 'ikisi aynı satırda, dikeyde ortalı');
   });
 
   testWidgets(
@@ -823,36 +826,32 @@ void main() {
     expect(find.byType(LiveGamesTab), findsOneWidget);
   });
 
-  // 1 Ekim 2026 (1.1.2 cihaz turu, kullanıcı): "Tanıtım" linki KALKTI —
-  // açılış tek sayfa, tekrar göstermeye gerek yok.
-  testWidgets('misafirde "Tanıtım" linki YOK', (tester) async {
-    await setPhoneViewSize(tester, const Size(420, 900));
-    await pumpSetup(tester, services());
-    expect(find.text('Nasıl oynanır?'), findsOneWidget);
-    expect(find.text('Tanıtım'), findsNothing);
-    expect(find.text(' · '), findsNothing);
-  });
-
-  testWidgets('"Nasıl oynanır?" satırı ORTALI (web text-center paritesi)',
+  // 1 Ekim 2026: "Tanıtım" linki KALKTI. 5 Kasım 2026: "Nasıl oynanır?"
+  // bağlantısı da logo altından kalktı → footer'daki "Yardım" (herkes için).
+  testWidgets(
+      'logo altında link satırı YOK; "Yardım" footer\'da ve yardımı açar',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
-    await tester.pumpWidget(MaterialApp(
-      theme: kelimekiTheme(),
-      home: SetupScreen(services: services()),
-    ));
-    await tester.pumpAndSettle();
+    await pumpSetup(tester, services());
+    expect(find.text('Nasıl oynanır?'), findsNothing);
+    expect(find.text('Tanıtım'), findsNothing);
+    expect(find.text(' · '), findsNothing);
 
-    // Tanıtım paragrafı 1 Ekim 2026'da kalktı (ROADMAP #41 karar 2); ölçü
-    // artık logonun merkezi — link satırı (mainAxisSize.min bir Row) onunla
-    // AYNI x'te olmalı, sola yaslıyken bu fark ~90px'e çıkıyordu.
-    final links = find
-        .ancestor(of: find.text('Nasıl oynanır?'), matching: find.byType(Row))
-        .first;
-    expect(
-      tester.getCenter(links).dx,
-      moreOrLessEquals(tester.getCenter(find.byType(LogoMark).first).dx,
-          epsilon: 1),
-    );
+    await tester.scrollUntilVisible(find.text('Yardım'), 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.text('Yardım'));
+    await tester.pumpAndSettle();
+    expect(find.text('HIZLI BAŞLANGIÇ'), findsOneWidget);
+  });
+
+  testWidgets('footer: "Yardım" girişli kullanıcıda da var (herkes için)',
+      (tester) async {
+    await setPhoneViewSize(tester, const Size(420, 900));
+    await pumpSetup(
+        tester, services(auth: AuthService.fake(user: fakeUser('me'))));
+    await tester.scrollUntilVisible(find.text('Yardım'), 200,
+        scrollable: find.byType(Scrollable).first);
+    expect(find.text('Yardım'), findsOneWidget);
   });
 
   testWidgets(
@@ -912,85 +911,16 @@ void main() {
     // ⚠ 1 EKİM 2026 — tanıtım paragrafı KALKTI (ROADMAP #41 karar 2, web
     // 27 Eylül): logo → link metni = ayırıcı 8 (web `gap-1` + `mt-1`) +
     // 32px'lik dokunma hedefinin üst yarısı (8) = 16.
-    final logo = tester.getRect(find.byType(LogoMark).first);
-    final link = tester.getRect(find.text('Nasıl oynanır?'));
+    // 5 Kasım 2026: logo→link ölçümleri kalktı — "Nasıl oynanır?" logo altından
+    // footer'a ("Yardım") taşındı; logo artık GİRİŞ satırında (yukarıdaki test).
     expect(find.textContaining('Kelimeler kurarak'), findsNothing);
-    expect(link.top - logo.bottom, closeTo(16, 1.5));
-    // 7 EYLÜL 2026, ikinci tur (kullanıcı: "Oyun tipi ile nasıl oynanır
-    // arasındaki fazla boşluğu da al, metinle nasıl oynanır arası kadar
-    // olsun"): link ALTI da 16 — web `-mb-3`, port `SizedBox(8)` (ikisi de
-    // yalnızca misafir dalında; girişlide logo→"OYUN TİPİ" hâlâ 20, aşağıdaki
-    // ayrı test onu kilitliyor). Üstteki ile AYNI sayı olması testin konusu.
-    // 3 KASIM 2026 (ROADMAP #48): link ile "KİME KARŞI" arasına Hamle Avı
-    // girişi + "Ya da bir oyun kur" ayırıcısı girdi (web `Setup.tsx`: ayırıcı
-    // `HamleAviButton`ın içinde, hepsi kabın `gap-5`i). 16 px artık link →
-    // DÜĞME aralığı; düğmeden sonrası ayrı test (aşağıda) kilitliyor.
-    final hamleAvi = tester.getRect(find.byKey(const ValueKey('hamle-avi-buton')));
-    expect(hamleAvi.top - link.bottom, closeTo(16, 1.5));
+    expect(find.text('Nasıl oynanır?'), findsNothing);
 
     // Web Setup'ın en altındaki hukuki linkler — port hiç taşımamıştı.
     await tester.scrollUntilVisible(find.text('Kullanım Koşulları'), 200,
         scrollable: find.byType(Scrollable).first);
     expect(find.text('Kullanım Koşulları'), findsOneWidget);
     expect(find.text('Gizlilik Politikası'), findsOneWidget);
-  });
-
-  testWidgets('logo altındaki link satırı web ile aynı: tracking YOK',
-      (tester) async {
-    // 1 Ekim 2026: tanıtım paragrafı kalktı (ROADMAP #41 karar 2); testin
-    // paragraf yarısı (4 satır × 16px) onunla gitti, link yarısı duruyor.
-    // 13 Ağustos 2026, kullanıcı iki ekran görüntüsünü yan yana koyup
-    // bildirdi: app'te paragraf 5 satıra düşüyor, web'de 4.
-    //
-    // Kök sebep Material 3'ün `bodyMedium` varsayılanı: `letterSpacing:
-    // 0.25`, ve `letterSpacing` YAZMAYAN her metne miras kalıyor (widget'ın
-    // kendi style'ı `null` bıraktığında `Text` DefaultTextStyle ile MERGE
-    // ediyor). Web'de bu metinlerde tracking yok. 0.25 × ~57 karakter =
-    // ~14px → "Ama" alt satıra düşüyor.
-    //
-    // Ölçüm iki tarafta da GERÇEK fontlarla yapıldı (web: derlenmiş CSS +
-    // Space Mono woff2, HTTP üzerinden — `file://`de tarayıcı fontu CORS
-    // ile engelleyip sessizce yedeğe düşüyor ve ölçüm YANILTICI oluyor;
-    // ayrıca 400 ağırlığını yükleyip 700'ü unutmak linkleri yedek fontla
-    // ölçtürüyordu). Sonuç, 428px içerik genişliğinde:
-    //   paragraf 64px (4 satır) · "Nasıl oynanır?" 94.25 — port
-    //   düzeltmeden sonra ikisini de birebir veriyor. (İkinci link
-    //   19 Ağustos 2026'da "Arkadaşınla paylaş"tan "Tanıtım"a döndü.)
-    //
-    // Bu test SONUCU ölçüyor (satır sayısı), yalnızca girdiyi (fontSize/
-    // height) değil — Parça 72'nin dersi: bir kısıtın VARLIĞINI doğrulayan
-    // test, o kısıtın SONUCUNU doğrulamaz. Mevcut başlık bloğu testi
-    // fontSize/height'ı kontrol ettiği hâlde bu sapmayı göremiyordu.
-    await setPhoneViewSize(tester, const Size(1000, 900));
-    await pumpSetup(tester, services());
-
-    // Efektif stil (DefaultTextStyle ile birleşmiş hâli) — asıl değişmez.
-    double? trackingOf(Finder f) =>
-        tester.renderObject<RenderParagraph>(f).text.style?.letterSpacing;
-    expect(trackingOf(find.text('Nasıl oynanır?')), 0);
-  });
-
-  // 17 Ağustos 2026 — girişli/misafir Setup ekranı ikiye ayrıldı: logonun
-  // altındaki tanıtım paragrafı + "Nasıl oynanır? · Tanıtım"
-  // satırı yalnızca MİSAFİRDE görünüyor; girişli kullanıcı doğrudan "OYUN
-  // TİPİ" başlığını görüyor ve logo→"OYUN TİPİ" arası TAM 20px (web'de
-  // Chromium'da ölçüldü — kapsayıcının kendi `gap-5`i, telafi edici marj
-  // eklenmedi).
-  testWidgets(
-      'girişli kullanıcıda logo altındaki paragraf/link satırı YOK, '
-      'logo→"OYUN TİPİ" arası tam 20px', (tester) async {
-    await setPhoneViewSize(tester, const Size(420, 900));
-    await pumpSetup(
-        tester, services(auth: AuthService.fake(user: fakeUser('me'))));
-
-    expect(find.textContaining('Kelimeler kurarak'), findsNothing);
-    expect(find.text('Nasıl oynanır?'), findsNothing);
-    expect(find.text('Tanıtım'), findsNothing);
-
-    // logo → ilk öğe (3 Kasım 2026'dan beri Hamle Avı girişi) TAM 20 px.
-    final logo = tester.getRect(find.byType(LogoMark).first);
-    final hamleAvi = tester.getRect(find.byKey(const ValueKey('hamle-avi-buton')));
-    expect(hamleAvi.top - logo.bottom, closeTo(20, 1.5));
   });
 
   // Web `HamleAviButton` (3 Kasım 2026): düğme → ayırıcı kabın `gap-5`iyle
@@ -1019,19 +949,27 @@ void main() {
     });
   }
 
-  // Negatif eş: misafirde bu blok KOŞULSUZ gösterilseydi yukarıdaki test de
-  // geçerdi — misafirin görünümü BİREBİR eskisi gibi kalmalı (mevcut
-  // "logo altındaki yazı bloğu"/"tanıtım paragrafı … ORTALI" testleri zaten
-  // bunu doğruluyor, burada yalnızca "OYUN TİPİ" doğrudan logonun altına
-  // sızmadığını ekliyoruz).
-  testWidgets('misafirde link satırı HÂLÂ görünür, tanıtım paragrafı YOK',
+  // 6 Kasım 2026 (#940 + #924): logo satırı → İLK öğe (Hamle Avı girişi) arası
+  // web `py-6` = 24, girişli ve misafir aynı ("Nasıl oynanır?" satırı kalktı).
+  testWidgets(
+      'logo satırı → Hamle Avı girişi arası web py-6 = 24 (girişli ve misafir aynı)',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
-    await pumpSetup(tester, services());
+    for (final svc in [
+      services(),
+      services(auth: AuthService.fake(user: fakeUser('me'))),
+    ]) {
+      await pumpSetup(tester, svc);
+      expect(find.textContaining('Kelimeler kurarak'), findsNothing);
+      expect(find.text('Nasıl oynanır?'), findsNothing);
 
-    // Paragraf 1 Ekim 2026'da kalktı (ROADMAP #41 karar 2, web 27 Eylül).
-    expect(find.textContaining('Kelimeler kurarak'), findsNothing);
-    expect(find.text('Nasıl oynanır?'), findsOneWidget);
+      final satir = tester.getRect(find
+          .ancestor(of: find.byType(LogoMark).first, matching: find.byType(Row))
+          .first);
+      final hamleAvi =
+          tester.getRect(find.byKey(const ValueKey('hamle-avi-buton')));
+      expect(hamleAvi.top - satir.bottom, closeTo(24, 1.5));
+    }
   });
 
   // 19 Ağustos 2026 (kullanıcı isteği): "Paylaş" artık GİRİŞTEN BAĞIMSIZ —
@@ -1056,7 +994,7 @@ void main() {
     // test birden yeşil kalmıştı. Üç maddede tam İKİ ayraç var.
     // Not: logo altındaki misafir link satırı BOŞLUKLU ' · ' kullanıyor,
     // yani bu finder'a takılmıyor (ölçüldü).
-    expect(find.text('·'), findsNWidgets(2));
+    expect(find.text('·'), findsNWidgets(3));
 
     // Telif satırı hukuki satırın ALTINDA (web'in "Son çağrı" footer'ı).
     final legal = tester.getRect(find.text('Kullanım Koşulları'));
@@ -1113,7 +1051,7 @@ void main() {
     expect(find.text('Paylaş'), findsOneWidget);
 
     // Üç madde → İKİ ayraç (Koşullar · Gizlilik · Paylaş).
-    expect(find.text('·'), findsNWidgets(2));
+    expect(find.text('·'), findsNWidgets(3));
     expect(find.text('© Kelimeki'), findsOneWidget);
 
     await tester.tap(find.text('Paylaş'));

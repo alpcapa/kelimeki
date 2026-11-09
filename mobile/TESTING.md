@@ -441,7 +441,7 @@ buradakiler ekranın gerçek bir oyundaki hâli.
       çiziliyor); balon dururken altındaki düğme çalışıyor.
 - [ ] **iPad / dar telefon:** torba ve menü balonları ekranın kenarından
       taşmıyor (sağa yaslı açılıyorlar).
-- [ ] **Tekrar oynama:** Setup → "Nasıl oynanır?" → pencerenin EN BAŞINDA
+- [ ] **Tekrar oynama:** Setup → alttaki **"Yardım"** (footer'ın en sonu; eski "Nasıl oynanır?" linki 5 Kasım'da buraya taşındı) → pencerenin EN BAŞINDA
       **"Tanıtım turunu oyna (1 dk)"**. Bas → tanıtım açılıyor; bitir →
       kapanış butonu **"KAPAT"** ve gerçek oyun BAŞLAMIYOR, Setup'a dönüyor.
 - [ ] **Buton yalnızca Setup'ta:** Oyun içindeki "Yardım" ve hesap
