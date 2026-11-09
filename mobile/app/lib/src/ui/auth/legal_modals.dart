@@ -305,7 +305,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 18 Ekim 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 9 Kasım 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -333,6 +333,12 @@ class PrivacyModal extends StatelessWidget {
                 'uyarısı gibi işlemsel e-posta bildirimlerini alma tercihi',
             'Oyun istatistikleri (oynanan oyunlar, kazanma/kaybetme, puan '
                 'geçmişi)',
+            'Hamle Avı bulmacalarında ulaştığınız en yüksek seri (rekor) ve '
+                'daha önce karşınıza çıkan bulmacaların numaraları — aynı '
+                'bulmacayı size tekrar göstermemek ve rekorunuzu cihazlarınız '
+                "arasında taşımak için. Bu bilgi yalnızca size görünür; k-lig'e "
+                'ya da lider tablosuna yansımaz. Üye değilseniz yalnızca '
+                'cihazınızda tutulur, sunucuya gönderilmez',
             'Arkadaşlık bağlantıları (kiminle arkadaş olduğunuz, '
                 'gönderdiğiniz/aldığınız arkadaşlık istekleri, davet '
                 'linkinizin kullanım verisi)',
@@ -438,7 +444,8 @@ class PrivacyModal extends StatelessWidget {
               'kendiniz silebilirsiniz; bu işlem onayladığınız anda '
               'uygulanır, geri alınamaz ve hesabınıza bağlı tüm kişisel '
               'verilerinizi (profiliniz, oyun kayıtlarınız ve '
-              'istatistikleriniz, k-lig puanınız, arkadaşlık bağlarınız, '
+              'istatistikleriniz, k-lig puanınız, Hamle Avı rekorunuz ve görülen '
+              'bulmaca listeniz, arkadaşlık bağlarınız, '
               'gönderdiğiniz oyun içi mesajlar, davetleriniz, '
               'geri bildirimleriniz ve profil fotoğrafınız) kapsar. Tek '
               'istisna, birlikte oynadığınız diğer oyuncuların bitmiş oyun '
@@ -471,7 +478,7 @@ class PrivacyModal extends StatelessWidget {
               'hangi cihaz/işletim sistemlerinden geldiğimizi ve kaç '
               'kişinin oyuna başladığını anlayabilmek için cihazınızda '
               'rastgele, kimliğinizle hiçbir şekilde ilişkilendirilmeyen '
-              'anonim bir kod üretilir. Bu kod sekiz durumda sunucuya '
+              'anonim bir kod üretilir. Bu kod dokuz durumda sunucuya '
               'iletilir: '
               '(1) HER ziyarette — oturum açık olsun olmasın — işletim '
               'sistemi tipiyle (iOS/Android/masaüstü) ve, tarayıcınızdan '
@@ -519,7 +526,14 @@ class PrivacyModal extends StatelessWidget {
               'böylece ziyaretçilerin hangi noktada ayrıldığını ve '
               'reklamdan gelenlerin kaçının mağazaya gittiğini kişileri '
               'tanımadan sayabiliyoruz. '
-              'Bu sekiz kaydın hiçbirinde anonim kod ile hesap '
+              "(9) Hamle Avı'nda bir bulmacayı bulduğunuzda, süre "
+              'dolduğunda ya da bulmaca sürerken çıktığınızda: bulmacanın '
+              'numarası, sonucu (buldu / bulamadı / çıktı), geçen süre, o '
+              'ana kadarki seriniz, girişli olup olmadığınız, platform '
+              '(web/iOS/Android) ve uygulamadan geliyorsa uygulama sürümü '
+              'anonim kodla birlikte kaydedilir; böylece bulmacaların ne '
+              'kadar zor olduğunu kişileri tanımadan ölçebiliyoruz. '
+              'Bu dokuz kaydın hiçbirinde anonim kod ile hesap '
               'kimliğiniz BİR ARADA YER ALMAZ: girişli olsanız bile bu '
               'veriler hiçbir üçüncü tarafla paylaşılmaz ve hesabınızla asla '
               'eşleştirilmez. Yazı '

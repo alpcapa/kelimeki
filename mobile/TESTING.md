@@ -1627,6 +1627,21 @@ geçici olarak öne çekme; aşağıdaki maddeler ayrılış saatini seçerek ko
 - [ ] **Ölçüm satırları (11 Ekim 2026):** kart/izin/kurma/izinsiz-düşme olayları
       `reminder_events`e düşer — maddeler `mobile/docs/testing-olcum.md` §34.
 
+## 35. Hamle Avı (3 Kasım 2026, ROADMAP #48 — `[Sonraki sürüm]` taslak PR, Parça 256)
+
+Otomatik kapsam: `hamle_avi_parity_test` + `hamle_avi_screen_test`. Cihazda elle (web ikizi: kök `TESTING.md` §9):
+
+- [ ] Setup'ta (misafir formu, girişli liste, Arkadaşınla sekmesi) en üstte "🎯 HAMLE AVI · 3 dk · en iyi hamleyi bul" satırı + kırmızı "YENİ" balonu + altında "YA DA BİR OYUN KUR" ayırıcısı. **375 pt iPhone (SE / Display Zoom):** `OYUNU BAŞLAT` kaydırmayla ulaşılıyor mu? (bilinçli takas, Parça 256)
+- [ ] Giriş → tanıtım penceresi (3 madde + "Bir daha gösterme"); süre 3:00'da DURUR, "BAŞLA" ile akar; "VAZGEÇ" bulmacayı yakmaz.
+- [ ] **Süre biterken parmak taşın üzerindeyken** (savunma amaçlı; hata webde görüldü, portta GÖZLENMEDİ — Parça 256): hayalet taş/rafta boşluk KALMAMALI, sonraki bulmacada da. **Sürükleme gerçek parmakla:** raftan tahtaya, konmuş taşı taşıma/rafa bırakma, ıskalama kurtarma, çift dokunuş zoom + pan; joker (harf penceresi). Sürüklerken sayfa kaymaz.
+- [ ] Doğru hamle → "Tebrikler! 🎯", Seri +1; daha düşük geçerli hamle → "N puan aldın — daha iyisi var", pozisyon başa döner, süre SÜRER.
+- [ ] Süre bitince "Üzgünüz" → KAPAT → doğru hamle tahtada; ⚠ **donma süresini ölç** (Dart çözücüsü ana izolatta senkron; kabul ≤ ~1 sn, fazlaysa `compute` ile izolata alınmalı — ROADMAP #48). Kelimelere dokununca anlam açılır.
+- [ ] Seri > 0 iken ÇIK/logo/geri tuşu → "Serin sıfırlanır" uyarısı; ÇIK → seri 0, rekor korunur.
+- [ ] Üye: rekor/görülenler başka cihazda da gelir; çevrimdışı oynayıp bağlanınca eşitlenir. Misafir: yalnızca cihazda.
+- [ ] **Ölçüm:** her bulmaca için TEK satır `hamle_avi_events` (`platform=ios|android`, `app_version` dolu, `source='prod'` yalnızca release derlemede, `user_id` kolonu YOK); admin "Hamle Avı" kartında uygulama oyuncusu görünür.
+- [ ] **Gizlilik/Yardım:** Gizlilik Politikası §2/§5/§6'da Hamle Avı cümleleri + "dokuz durum"; "Nasıl oynanır › Detaylı Kurallar"da "Hamle Avı" bölümü.
+- [ ] Hesap silme (test hesabıyla, kullanıcı yapacak): hesapta Hamle Avı rekoru varken sil → `hamle_avi_stats` satırı gitti mi (FK cascade).
+
 ## Test ortamları ve derleme dağıtımı → `mobile/docs/test-ortamlari.md`
 
 Web derlemesi (tarayıcı test ortamı), **FAZ B — cihaza özel tur (iOS +

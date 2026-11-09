@@ -47,9 +47,13 @@ import '../../data/friends_api.dart'
     show inviteAcceptErrorText, inviteAcceptKaliciRet;
 import '../friends/friends_modal.dart' show showFriendInfoDialog;
 import '../../game/game_controller.dart';
+import '../../storage/app_storage.dart' show AppStorage;
 import '../../storage/flags_store.dart';
 import '../../util/onboarding.dart';
 import '../tutorial/tutorial_game.dart';
+import '../hamle_avi/hamle_avi_screen.dart';
+import '../../data/hamle_avi_api.dart';
+import '../../storage/hamle_avi_store.dart';
 import '../../game/local_game_repo.dart';
 import '../../game/game_session_host.dart';
 import '../../storage/local_save_store.dart' show abandonTimeout;
@@ -1110,6 +1114,40 @@ class _SetupScreenState extends State<SetupScreen>
     ));
   }
 
+  /// Hamle Avı'nı kendi rotasında açar (web `App.tsx` `hamleAviOpen`).
+  /// Tanıtımla aynı yalıtım: kayıt/k-lig/istatistik ÇALIŞMAZ. Depo
+  /// açılamazsa (testler, Supabase'siz özel durumlar) ekran açılmaz.
+  Future<void> _openHamleAvi() async {
+    final storage = widget.services.storage;
+    if (storage == null) return;
+    final AppStorage st;
+    try {
+      st = await storage;
+    } catch (_) {
+      return;
+    }
+    if (!mounted) return;
+    final sb = widget.services.supabase;
+    await Navigator.of(context).push(MaterialPageRoute(
+      settings: const RouteSettings(name: 'hamle-avi'),
+      builder: (ctx) => HamleAviScreen(
+        playerName: widget.services.auth.accountName ?? guestPlayerName,
+        words: widget.services.dictionary,
+        store: HamleAviStore(st.flags.prefs),
+        gateway: sb == null ? null : SupabaseHamleAviGateway(sb),
+        anonId: () => st.flags.anonId(),
+        meanings: widget.services.meanings,
+        auth: widget.services.auth,
+        stats: widget.services.stats,
+        games: widget.services.games,
+        feedback: widget.services.feedback,
+        friends: widget.services.friends,
+        chat: widget.services.chat,
+        onExit: () => Navigator.of(ctx).pop(),
+      ),
+    ));
+  }
+
   /// "Nasıl oynanır?" penceresindeki "Tanıtım turunu oyna" (Onboarding
   /// Faz 3). Kadro YOK: rota kapanınca hiçbir oyun başlamaz, bu ekrana
   /// dönülür. "Görüldü" işareti burada da konur (`_runTutorial`) — yardımı
@@ -1387,6 +1425,15 @@ class _SetupScreenState extends State<SetupScreen>
                         // idi. 8 + 8 = 16 ile ikisi eşitlendi. Web ikizi aynı
                         // farkı `-mb-3` ile veriyor (yalnızca misafir dalında).
                         SizedBox(height: auth.user == null ? 8 : 20),
+                        // Hamle Avı HER görünümde en üstte (web `Setup.tsx`,
+                        // kullanıcı 3 Kasım 2026) — bkz. `_HamleAviButonu`.
+                        _HamleAviButonu(onOpen: _openHamleAvi),
+                        // 8, 20 DEĞİL (5 Kasım 2026, kullanıcı: "ekstra boşluğu
+                        // kaldır"): "Ya da bir oyun kur" ayırıcısı altındaki
+                        // "KİME KARŞI" başlığının önsözü gibi okunduğundan ona
+                        // yapışık durur. Web ikizi `HamleAviButton.tsx`in `-mb-3`ü
+                        // (20 → 8, ölçüldü).
+                        const SizedBox(height: 8),
                         const _SectionLabel('KİME KARŞI'),
                         const SizedBox(height: 8),
                         Row(
@@ -2079,6 +2126,114 @@ class _SetupScreenState extends State<SetupScreen>
         // (`auth.user == null`); girişli çağrıda sessizce gizli kalır.
         MembershipPerksBox(
             auth: widget.services.auth, feedback: widget.services.feedback),
+      ],
+    );
+  }
+}
+
+/// Setup'taki "Hamle Avı" girişi — web `HamleAviButton.tsx` ikizi (3 Kasım
+/// 2026). Kendi geniş satırı: Zorluk seçicisinin yanında dururken Kolay/
+/// Normal/Zor'a bağlıymış gibi okunuyordu (Hamle Avı'nda rakip yok). "YENİ"
+/// balonu HEP görünür (kullanıcı, 3 Kasım 2026: "Şimdi hep kalsın"). Altındaki
+/// "Ya da bir oyun kur" ayırıcısı oyun kurma bölümünden ayırır.
+class _HamleAviButonu extends StatelessWidget {
+  final VoidCallback onOpen;
+  const _HamleAviButonu({required this.onOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            TapTarget(
+              key: const ValueKey('hamle-avi-buton'),
+              minHeight: 56,
+              onTap: onOpen,
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 56),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: ShapeDecorationWithCssShadows(
+                  color: kPanel,
+                  radius: 6,
+                  shadows: const [
+                    CssShadow(
+                        color: Color(0x80A3B1C6), offset: Offset(2, 2), blur: 6),
+                    CssShadow(
+                        color: Color(0xD9FFFFFF),
+                        offset: Offset(-2, -2),
+                        blur: 5),
+                  ],
+                ),
+                foregroundDecoration: BoxDecoration(
+                  border: Border.all(color: kBorder),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  children: [
+                    Text('🎯', style: TextStyle(fontSize: 20)),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('HAMLE AVI',
+                              style: TextStyle(
+                                  fontFamily: 'SpaceGrotesk',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  letterSpacing: 0.5,
+                                  color: kText)),
+                          Text('3 dakikada en iyi hamleyi bul!',
+                              style: TextStyle(
+                                  fontFamily: 'SpaceMono',
+                                  fontSize: 10,
+                                  color: kMuted)),
+                        ],
+                      ),
+                    ),
+                    Text('›', style: TextStyle(color: kMuted, fontSize: 18)),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: -8,
+              right: -4,
+              child: IgnorePointer(
+                child: Container(
+                  key: const ValueKey('hamle-avi-yeni'),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                      color: kRed, borderRadius: BorderRadius.circular(99)),
+                  child: const Text('YENİ',
+                      style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 9,
+                          letterSpacing: 0.5,
+                          color: Colors.white)),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        const Row(
+          children: [
+            Expanded(child: Divider(height: 1, color: kBorder)),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Text('YA DA BİR OYUN KUR',
+                  style: TextStyle(
+                      fontFamily: 'SpaceMono', fontSize: 10, color: kMuted)),
+            ),
+            Expanded(child: Divider(height: 1, color: kBorder)),
+          ],
+        ),
       ],
     );
   }

@@ -1820,7 +1820,7 @@ yok, yalnızca grup etiketi.
 
 ## Hamle Avı kartı (3 Kasım 2026, ROADMAP #48)
 
-Admin → Büyüme → Kullanıcı, "Tanıtım Turu"nun altında, `PlatformTag kind="web"` ile (uygulamada Hamle Avı henüz YOK). Kullanıcı isteği: *"kaç kişi oynamış, toplam oyun, ortalama oyun sayısı, win ratio vb. kutular"*; seçimler: **üye + misafir ANONİM**, kutular = oynayan kişi + toplam oyun · bulma oranı · süre ve seri · günlük trend.
+Admin → Büyüme → Kullanıcı, "Tanıtım Turu"nun altında, `PlatformTag kind="web"` ile (uygulama portu 3 Kasım 2026'da yazıldı, 1.1.6 ile gelir — `platform=ios/android` olayları o zaman düşer; kart etiketi o PR/sürümde gözden geçirilmeli). Kullanıcı isteği: *"kaç kişi oynamış, toplam oyun, ortalama oyun sayısı, win ratio vb. kutular"*; seçimler: **üye + misafir ANONİM**, kutular = oynayan kişi + toplam oyun · bulma oranı · süre ve seri · günlük trend.
 
 **Kutu biçimi (5 Kasım 2026, kullanıcı isteği):** sekiz kutu "YZ Dengesi" kutularının AYNI biçimine çekildi — `btn-raised-neutral bg-bg border border-border rounded-md py-3 px-1 text-center`, büyük ortalı değer, altında 8px büyük harfli etiket ve ayrıntı. Izgara Hamle Avı'na özgü kaldı (mobilde 2, ≥580 px 4 sütun; sekiz kutu). İki yerde biçim ayrışırsa biri değişince öteki de değişmeli.
 

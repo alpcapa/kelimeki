@@ -39,7 +39,7 @@ void main() {
 
     // Regex'in kendisi bir varsayım — web JSX'i yeniden düzenlenirse sessizce
     // 0 başlık bulup test "geçebilir". Alt sınır bunu engelliyor.
-    expect(titles.length, greaterThanOrEqualTo(11),
+    expect(titles.length, greaterThanOrEqualTo(12),
         reason: 'web HelpModal.tsx\'te <Section title="…"> bulunamadı ya da '
             'beklenenden az — JSX yeniden düzenlendiyse bu testin regex\'i '
             'güncellenmeli (sessizce "geçmesin" diye alt sınır var).');
