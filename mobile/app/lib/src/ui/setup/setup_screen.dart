@@ -47,9 +47,13 @@ import '../../data/friends_api.dart'
     show inviteAcceptErrorText, inviteAcceptKaliciRet;
 import '../friends/friends_modal.dart' show showFriendInfoDialog;
 import '../../game/game_controller.dart';
+import '../../storage/app_storage.dart' show AppStorage;
 import '../../storage/flags_store.dart';
 import '../../util/onboarding.dart';
 import '../tutorial/tutorial_game.dart';
+import '../hamle_avi/hamle_avi_screen.dart';
+import '../../data/hamle_avi_api.dart';
+import '../../storage/hamle_avi_store.dart';
 import '../../game/local_game_repo.dart';
 import '../../game/game_session_host.dart';
 import '../../storage/local_save_store.dart' show abandonTimeout;
@@ -58,6 +62,7 @@ import '../../util/share_board.dart';
 import '../game/count_badge.dart';
 import '../game/game_screen.dart';
 import '../game/help_modal.dart';
+import '../game/fluid.dart';
 import '../game/logo_mark.dart';
 import '../game/neo_button.dart';
 import '../game/player_avatar_row.dart';
@@ -94,7 +99,7 @@ class SetupScreen extends StatefulWidget {
   /// desen. Verilmezse gerçek `shareBoard` (sistem paylaş sayfası) kullanılır.
   final ShareBoardFn? share;
 
-  /// Alttaki teşhis satırı (`Derleme … · Sürüm … · Sözlük … · depo …`)
+  /// Alttaki teşhis satırı (`Derleme … · Sürüm … · depo …`)
   /// çizilsin mi. **Üretimde HER ZAMAN true** — satır bilinçli olarak
   /// kalıcı (bkz. `mobile/CLAUDE.md` → "Derleme kimliği": bir düzeltmenin
   /// cihazda gerçekten çalıştığını kanıtlayan tek yer orası).
@@ -1110,6 +1115,40 @@ class _SetupScreenState extends State<SetupScreen>
     ));
   }
 
+  /// Hamle Avı'nı kendi rotasında açar (web `App.tsx` `hamleAviOpen`).
+  /// Tanıtımla aynı yalıtım: kayıt/k-lig/istatistik ÇALIŞMAZ. Depo
+  /// açılamazsa (testler, Supabase'siz özel durumlar) ekran açılmaz.
+  Future<void> _openHamleAvi() async {
+    final storage = widget.services.storage;
+    if (storage == null) return;
+    final AppStorage st;
+    try {
+      st = await storage;
+    } catch (_) {
+      return;
+    }
+    if (!mounted) return;
+    final sb = widget.services.supabase;
+    await Navigator.of(context).push(MaterialPageRoute(
+      settings: const RouteSettings(name: 'hamle-avi'),
+      builder: (ctx) => HamleAviScreen(
+        playerName: widget.services.auth.accountName ?? guestPlayerName,
+        words: widget.services.dictionary,
+        store: HamleAviStore(st.flags.prefs),
+        gateway: sb == null ? null : SupabaseHamleAviGateway(sb),
+        anonId: () => st.flags.anonId(),
+        meanings: widget.services.meanings,
+        auth: widget.services.auth,
+        stats: widget.services.stats,
+        games: widget.services.games,
+        feedback: widget.services.feedback,
+        friends: widget.services.friends,
+        chat: widget.services.chat,
+        onExit: () => Navigator.of(ctx).pop(),
+      ),
+    ));
+  }
+
   /// "Nasıl oynanır?" penceresindeki "Tanıtım turunu oyna" (Onboarding
   /// Faz 3). Kadro YOK: rota kapanınca hiçbir oyun başlamaz, bu ekrana
   /// dönülür. "Görüldü" işareti burada da konur (`_runTutorial`) — yardımı
@@ -1293,100 +1332,49 @@ class _SetupScreenState extends State<SetupScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Web: Setup'ın üstünde sağa yaslı UserMenu (App.tsx,
-                        // kurulum dalı) — GİRİŞ / avatar burada da sağ üstte.
-                        if (auth.configured)
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: AccountButton(
-                                feedback: widget.services.feedback,
-                                friends: widget.services.friends,
-                                chat: widget.services.chat,
-                                auth: auth,
-                                stats: widget.services.stats,
-                                games: widget.services.games),
-                          ),
-                        // GİRİŞ/avatar satırı ile logo arası: 0 (17 Ağustos 2026).
-                        // Kullanıcı isteği: *"az boşluk bize alt kısımda
-                        // daha fazla yer kazandırır"*. 13 Ağustos'ta 4'e
-                        // çekilmişti; İKİ taraf birlikte 0'a indi — yalnız
-                        // biri indirilse kodda eşit olan iki sayı gerçekten
-                        // ayrışırdı. Web karşılığı: logo bloğunun `-mt-6`sı.
-                        //
-                        // Web'de bu sayı Setup kutusunun `py-6`sı (24) ile
-                        // logo bloğunun negatif üst margin'inin farkı — o
-                        // margin gözden kaçarsa hesap 24 çıkar. 13 Ağustos
-                        // 2026'da margin `-mt-3` (−12, arası 12) iken
-                        // `-mt-5`e (−20, arası 4) çekildi: kullanıcı portun
-                        // 4'ünü tercih etti ("web'de ekstra boşluk var"),
-                        // yani bu sefer WEB porta uyduruldu. İki taraf da
-                        // 4; biri değişirse öteki de değişmeli.
-                        //
-                        // KOŞULSUZ: `auth.configured` false iken web'de de
-                        // GİRİŞ satırı boş bir kutu olarak render edilir
-                        // (yalnızca `pt-3`ü kalır), yani logonun üstü yine
-                        // 12 + 4 = 16.
-                        const Center(child: LogoMark(height: 52)),
-                        // 17 Ağustos 2026 — GİRİŞLİ kullanıcıda bu blok
-                        // (tanıtım paragrafı + "Nasıl oynanır? · Arkadaşınla
-                        // paylaş" satırı) HİÇ gösterilmiyor: web'in aynı
-                        // gün verdiği kararla birebir (kök CLAUDE.md, Setup
-                        // notu — kullanıcı: "Girişli kullanıcılarda Kelimeki
-                        // logosunun altındaki tanıtım yazısı ve linkler
-                        // kalksın"). Bu SizedBox (ve içindeki paragraf/link
-                        // satırı) yalnızca MİSAFİRDE render edilir — web'de
-                        // `gap-1` (4px) + paragrafın `mt-4`ü (16px) üst üste
-                        // binerek 20px veriyor (Chromium'da ölçüldü).
-                        if (auth.user == null) ...[
-                          // 1 Ekim 2026 (ROADMAP #41 karar 2, web 27 Eylül):
-                          // tanıtım paragrafı ("Kelimeler kurarak bölgeni
-                          // genişlet…") KALKTI — oyunun fikrini karşılama ve
-                          // tanıtım anlatıyor; Setup hızlıca oyuna götürmeli.
-                          // Link satırı duruyor. Web: logo ile link arası
-                          // `gap-1` (4px) + `mt-1` (4px) = 8.
-                          const SizedBox(height: 8),
-                          // Web Setup'taki "Nasıl oynanır?" · <ikinci link>
-                          // satırı — ikisi de font-mono/11px/kalın/accent
-                          // linkler.
-                          Align(
-                            alignment: Alignment.center,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _InlineLink(
-                                  'Nasıl oynanır?',
-                                  onTap: () => showHelpModal(
-                                    context,
-                                    onReplayTutorial: () {
-                                      Navigator.of(context).pop();
-                                      unawaited(_replayTutorial());
-                                    },
-                                  ),
-                                ),
-                                // 1 Ekim 2026 (1.1.2 cihaz turu, kullanıcı):
-                                // yanındaki "Tanıtım" linki KALKTI — açılış
-                                // artık tek sayfa (ROADMAP #41 karar 14),
-                                // tekrar göstermeye gerek yok. Web de
-                                // yalnız "Nasıl oynanır?" taşıyor.
-                              ],
-                            ),
-                          ),
-                        ],
-                        // Girişli kullanıcıda yukarıdaki blok tamamen
-                        // KALKTIĞINDAN, logo ile "KİME KARŞI" arasında kalan
-                        // TEK boşluk bu SizedBox — Chromium'da ÖLÇÜLDÜ: web'de
-                        // paragraf/link satırı kalkınca logo→"KİME KARŞI" arası
-                        // TAM 20.00px (kapsayıcının kendi `gap-5`i). Buraya
-                        // TELAFİ EDİCİ bir marj EKLEMEDİK — çocukları kaldırmak
-                        // otomatik olarak bu değeri veriyor, elle ayarlanmadı.
-                        //
-                        // MİSAFİRDE 8 (7 Eylül 2026, kullanıcı: "Oyun tipi ile
-                        // nasıl oynanır arasındaki fazla boşluğu da al"): link
-                        // satırı 32px'lik bir dokunma hedefi, metnin altında
-                        // ~8px daha var; 20 + 8 = 28 iken üstteki ayırıcı 16
-                        // idi. 8 + 8 = 16 ile ikisi eşitlendi. Web ikizi aynı
-                        // farkı `-mb-3` ile veriyor (yalnızca misafir dalında).
-                        SizedBox(height: auth.user == null ? 8 : 20),
+                        // 5 Kasım 2026 (kullanıcı isteği): logo SOL ÜSTE, GİRİŞ /
+                        // avatar ile AYNI satırda — web `App.tsx` kurulum dalının
+                        // üst satırı (`justify-between`). Boy oyun başlığındaki
+                        // logonun 1,2 katı: `SETUP_LOGO_HEIGHT` ↔
+                        // `fluidSize(w, 33.6, -6.4, 10.67, 43.2)` (kutu zaten
+                        // Giriş düğmesiyle aynıydı ama yazı gövdesi kutuyu
+                        // doldurmadığından küçük görünüyordu). `auth.configured`
+                        // false iken (web'de de GİRİŞ yok) logo yine solda.
+                        // "Nasıl oynanır?" bağlantısı kalktı → footer'daki
+                        // "Yardım" (herkes için; eskiden yalnız misafire).
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            LogoMark(
+                                height: fluidSize(
+                                    MediaQuery.sizeOf(context).width,
+                                    33.6,
+                                    -6.4,
+                                    10.67,
+                                    43.2)),
+                            if (auth.configured)
+                              AccountButton(
+                                  feedback: widget.services.feedback,
+                                  friends: widget.services.friends,
+                                  chat: widget.services.chat,
+                                  auth: auth,
+                                  stats: widget.services.stats,
+                                  games: widget.services.games),
+                          ],
+                        ),
+                        // Web: Setup kabının `py-6`sı (24) — logo satırı ile ilk
+                        // öğe arası (artık görünmez `<h1>` akışa girmiyor).
+                        const SizedBox(height: 24),
+                        // Hamle Avı HER görünümde en üstte (web `Setup.tsx`,
+                        // kullanıcı 3 Kasım 2026) — bkz. `_HamleAviButonu`.
+                        _HamleAviButonu(onOpen: _openHamleAvi),
+                        // 8, 20 DEĞİL (5 Kasım 2026, kullanıcı: "ekstra boşluğu
+                        // kaldır"): "Ya da bir oyun kur" ayırıcısı altındaki
+                        // "KİME KARŞI" başlığının önsözü gibi okunduğundan ona
+                        // yapışık durur. Web ikizi `HamleAviButton.tsx`in `-mb-3`ü
+                        // (20 → 8, ölçüldü).
+                        const SizedBox(height: 8),
                         const _SectionLabel('KİME KARŞI'),
                         const SizedBox(height: 8),
                         Row(
@@ -1564,6 +1552,22 @@ class _SetupScreenState extends State<SetupScreen>
                                 ],
                               ),
                             ),
+                            const Text('·',
+                                style: TextStyle(
+                                    fontFamily: 'SpaceMono',
+                                    fontSize: 10,
+                                    color: _muted)),
+                            // "Yardım" (5 Kasım 2026): eski "Nasıl oynanır?"
+                            // bağlantısının yeni yeri — web `Setup.tsx` footer'ıyla
+                            // AYNI sıra (… · Paylaş · Yardım: EN SONDA).
+                            _LegalLink('Yardım',
+                                onTap: () => showHelpModal(
+                                      context,
+                                      onReplayTutorial: () {
+                                        Navigator.of(context).pop();
+                                        unawaited(_replayTutorial());
+                                      },
+                                    )),
                           ],
                         ),
                         // Web'in "Son çağrı" footer'ıyla aynı telif satırı
@@ -1594,39 +1598,33 @@ class _SetupScreenState extends State<SetupScreen>
                           // Teşhis alt satırı (iskelet HomeScreen'in durum
                           // panelinden kalan tek iz — cihazda ilk açılış doğrulaması
                           // için faydalı, göze batmayan tek satır).
-                          FutureBuilder<SetWordSource>(
-                            future: widget.services.dictionary,
-                            builder: (context, snap) => Text(
-                              [
-                                // Derleme kimliği SÜRÜMDEN ÖNCE geliyor:
-                                // ekran görüntüsünde ilk okunan şey "hangi
-                                // kod çalışıyor" olmalı (bkz. env.dart,
-                                // `buildSha`'nın varlık gerekçesi).
-                                'Derleme $buildLabel',
-                                'Sürüm $appVersion',
-                                snap.hasData
-                                    ? 'Sözlük: ${snap.data!.length} kelime'
-                                    : 'Sözlük: yükleniyor…',
-                                widget.services.supabase != null
-                                    ? 'sunucu bağlı'
-                                    : 'offline mod',
-                                _diagStorage,
-                                // -1 = sayaç OKUNAMADI (depo erişilemedi).
-                                // "bekleyen 0" ile karıştırılmamalı: ilk
-                                // sürümde ikisi de 0 görünüyordu ve cihazda
-                                // "ayna gerçekten boş mu?" sorusu
-                                // yanıtlanamıyordu (16 Ağustos 2026).
-                                if (_diagPendingMirrors < 0) 'bekleyen ?',
-                                if (_diagPendingMirrors > 0)
-                                  'bekleyen $_diagPendingMirrors',
-                                if (_diagHatirlatma != null) _diagHatirlatma!,
-                              ].join(' · '),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontFamily: 'SpaceMono',
-                                fontSize: 9,
-                                color: Color(0xFF8A93A2),
-                              ),
+                          Text(
+                            [
+                              // Derleme kimliği SÜRÜMDEN ÖNCE geliyor:
+                              // ekran görüntüsünde ilk okunan şey "hangi
+                              // kod çalışıyor" olmalı (bkz. env.dart,
+                              // `buildSha`'nın varlık gerekçesi).
+                              'Derleme $buildLabel',
+                              'Sürüm $appVersion',
+                              widget.services.supabase != null
+                                  ? 'sunucu bağlı'
+                                  : 'offline mod',
+                              _diagStorage,
+                              // -1 = sayaç OKUNAMADI (depo erişilemedi).
+                              // "bekleyen 0" ile karıştırılmamalı: ilk
+                              // sürümde ikisi de 0 görünüyordu ve cihazda
+                              // "ayna gerçekten boş mu?" sorusu
+                              // yanıtlanamıyordu (16 Ağustos 2026).
+                              if (_diagPendingMirrors < 0) 'bekleyen ?',
+                              if (_diagPendingMirrors > 0)
+                                'bekleyen $_diagPendingMirrors',
+                              if (_diagHatirlatma != null) _diagHatirlatma!,
+                            ].join(' · '),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontFamily: 'SpaceMono',
+                              fontSize: 9,
+                              color: Color(0xFF8A93A2),
                             ),
                           ),
                         ],
@@ -2090,6 +2088,114 @@ class _SetupScreenState extends State<SetupScreen>
   }
 }
 
+/// Setup'taki "Hamle Avı" girişi — web `HamleAviButton.tsx` ikizi (3 Kasım
+/// 2026). Kendi geniş satırı: Zorluk seçicisinin yanında dururken Kolay/
+/// Normal/Zor'a bağlıymış gibi okunuyordu (Hamle Avı'nda rakip yok). "YENİ"
+/// balonu HEP görünür (kullanıcı, 3 Kasım 2026: "Şimdi hep kalsın"). Altındaki
+/// "Ya da bir oyun kur" ayırıcısı oyun kurma bölümünden ayırır.
+class _HamleAviButonu extends StatelessWidget {
+  final VoidCallback onOpen;
+  const _HamleAviButonu({required this.onOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            TapTarget(
+              key: const ValueKey('hamle-avi-buton'),
+              minHeight: 56,
+              onTap: onOpen,
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 56),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: ShapeDecorationWithCssShadows(
+                  color: kPanel,
+                  radius: 6,
+                  shadows: const [
+                    CssShadow(
+                        color: Color(0x80A3B1C6), offset: Offset(2, 2), blur: 6),
+                    CssShadow(
+                        color: Color(0xD9FFFFFF),
+                        offset: Offset(-2, -2),
+                        blur: 5),
+                  ],
+                ),
+                foregroundDecoration: BoxDecoration(
+                  border: Border.all(color: kBorder),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  children: [
+                    Text('🎯', style: TextStyle(fontSize: 20)),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('HAMLE AVI',
+                              style: TextStyle(
+                                  fontFamily: 'SpaceGrotesk',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  letterSpacing: 0.5,
+                                  color: kText)),
+                          Text('3 dakikada en iyi hamleyi bul!',
+                              style: TextStyle(
+                                  fontFamily: 'SpaceMono',
+                                  fontSize: 10,
+                                  color: kMuted)),
+                        ],
+                      ),
+                    ),
+                    Text('›', style: TextStyle(color: kMuted, fontSize: 18)),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: -8,
+              right: -4,
+              child: IgnorePointer(
+                child: Container(
+                  key: const ValueKey('hamle-avi-yeni'),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                      color: kRed, borderRadius: BorderRadius.circular(99)),
+                  child: const Text('YENİ',
+                      style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 9,
+                          letterSpacing: 0.5,
+                          color: Colors.white)),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        const Row(
+          children: [
+            Expanded(child: Divider(height: 1, color: kBorder)),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Text('YA DA BİR OYUN KUR',
+                  style: TextStyle(
+                      fontFamily: 'SpaceMono', fontSize: 10, color: kMuted)),
+            ),
+            Expanded(child: Divider(height: 1, color: kBorder)),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 class _SectionLabel extends StatelessWidget {
   final String text;
   const _SectionLabel(this.text);
@@ -2168,34 +2274,6 @@ class _LegalLink extends StatelessWidget {
             style: const TextStyle(
                 fontFamily: 'SpaceMono', fontSize: 10, color: _muted)),
       );
-}
-
-class _InlineLink extends StatelessWidget {
-  final String text;
-  final VoidCallback onTap;
-  const _InlineLink(this.text, {required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return TapTarget(
-      onTap: onTap,
-      // Web `min-h-[32px]` (7 Eylül 2026) — 48 paragraf ile "KİME KARŞI"
-      // arasına iki boş bant açıyordu.
-      minHeight: 32,
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontFamily: 'SpaceMono',
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          // Web'de bu linklerde de tracking yok — bkz. paragrafın notu (M3
-          // `bodyMedium` varsayılanı 0.25'i sessizce miras bırakıyor).
-          letterSpacing: 0,
-          color: kAccent,
-        ),
-      ),
-    );
-  }
 }
 
 /// Web SavedGameRow portu: solda katılımcı avatarları (misafir "?" + robot),

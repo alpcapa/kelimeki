@@ -26,7 +26,6 @@ void main() {
     expect(find.text('KİME KARŞI'), findsOneWidget);
     await tester.pump(); // FutureBuilder'lar çözülsün
     expect(find.textContaining('offline mod'), findsOneWidget);
-    expect(find.textContaining('Sözlük: 3 kelime'), findsOneWidget);
     expect(find.text('OYUNU BAŞLAT'), findsOneWidget);
   });
 

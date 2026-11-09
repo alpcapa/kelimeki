@@ -105,7 +105,7 @@ void main() {
   // 48px) logo aşağı kayıp etiketin ÜSTÜNE biniyordu; (2) `find.text('YZ 2')`
   // kutuyu değil kutunun üst satırındaki ETİKETİ buluyor, yani hiza
   // karşılaştırması yanlış referansa bakıyordu. İkisi de burada kilitli.
-  testWidgets('"← Geri" logonun altında, tahtanın sol kenarına hizalı',
+  testWidgets('"← Çıkış" logonun altında, tahtanın sol kenarına hizalı',
       (tester) async {
     // Girişli hesap (avatar/GİRİŞ) Row'u logodan UZUN yapıyor — çakışmayı
     // ancak bu durumda görebiliyoruz, o yüzden auth ŞART.
@@ -124,7 +124,7 @@ void main() {
       await tester.pump();
       expect(tester.takeException(), isNull, reason: '$w px taşma vermemeli');
 
-      final etiket = find.text('← Geri');
+      final etiket = find.text('← Çıkış');
       expect(etiket, findsOneWidget);
 
       final logo = tester.getRect(find.byType(LogoMark));
@@ -145,7 +145,7 @@ void main() {
       expect(tiklandi, 1, reason: '$w px: logoya dokunmak Setup\'a dönmeli');
       await tester.tap(etiket);
       expect(tiklandi, 2,
-          reason: '$w px: "← Geri" etiketine dokunmak da Setup\'a dönmeli — '
+          reason: '$w px: "← Çıkış" etiketine dokunmak da Setup\'a dönmeli — '
               'kullanıcının 24 Ağustos 2026\'da bildirdiği hata tam buydu');
 
       // Etiketin ÜST yarısı ve logonun ÜSTÜ de aynı hedef: logo öğesi

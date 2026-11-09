@@ -655,6 +655,23 @@ class _DetailedRules extends StatelessWidget {
         ],
       ),
       const _Section(
+        title: 'Hamle Avı',
+        children: [
+          _P('Ana ekrandaki **Hamle Avı**\'nda hazır bir tahta ve 7 harflik '
+              'raf verilir; **3 dakika** içinde elindeki harflerle '
+              'oynanabilecek **en yüksek puanlı hamleyi** bulursun. Bölge '
+              'vergisi puana dahildir.'),
+          _P('**Seri:** Doğru hamleyi bulunca sıradaki bulmacaya geçersin ve '
+              'serin bir artar; süre dolarsa ya da çıkarsan serin '
+              'sıfırlanır. En yüksek serin rekor olarak saklanır. Daha düşük '
+              'puanlı geçerli bir hamle yaparsan pozisyon başa döner, süre '
+              'akmaya devam eder.'),
+          _P('**Süre bitince:** Doğru hamle tahtada gösterilir; kelimelere '
+              'dokunarak anlamlarına bakabilirsin. Hamle Avı k-lig puanını '
+              'etkilemez.'),
+        ],
+      ),
+      const _Section(
         title: 'Skor Kartı ve Puanlama',
         children: [
           _P('Oyun oynamak için giriş yapman gerekmez. Sadece arkadaşınla '

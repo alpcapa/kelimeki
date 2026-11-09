@@ -458,6 +458,19 @@
       LİSTESİ" butonu çıkmalı; skor kartı/k-lig puanları web ile
       tutmalı (`games` satırı her insan katılımcı için ayrı yazılır).
 
+- [ ] **TASLAK rakip oynayınca / çıkıp girince KALIR (5 Kasım 2026, Parça 255 — web ikizi `TESTING.md` §2).**
+      İki hesap, 2 kişilik Canlı oyun. **Sıra rakipteyken** raftan iki taş koy.
+      (a) Rakip **çakışmayan** bir hamle yaparsa taşlar YERİNDE kalmalı
+      (geçersiz olsa da; mesaj satırı nedeni söyler); (b) rakip taslağın
+      **bir hücresine** oynarsa taşlar rafa dönmeli + "Rakibin hamlesi
+      taslağınla çakıştı, taşların rafa döndü."; (c) oyundan **çıkıp tekrar
+      girince** taslak geri gelmeli (rakip arada çakışmayan hamle yapsa da),
+      çakışan yaparsa gelmemeli; (d) kendi hamleni oynayınca eskisi geri
+      gelmemeli; (e) taş sayısı hep 7 (raf + taslak), joker harfi korunmalı.
+      ⚠ **Şema v5:** uygulamayı **eski sürümün (1.1.5) ÜSTÜNE** kur (yükseltme
+      yolu — testler yalnız taze veritabanını sınıyor): açılış çökmemeli,
+      mevcut devam eden oyunlar/ayarlar yerinde olmalı.
+
 ### Mesajlaşma (Faz 1 sohbet + Faz 2 sessize alma/raporlama)
 
 - [ ] **Sohbet Kuralları onayı (25 Eylül 2026, Parça 215).** Kuralları hiç

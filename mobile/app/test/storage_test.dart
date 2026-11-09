@@ -166,6 +166,78 @@ void main() {
     });
   });
 
+  group('LiveDraftStore', () {
+    Placed draft() => {
+          '4,4': const Tile(letter: 'K', pts: 5, owner: 0),
+          '4,5': const Tile(
+              letter: '?', pts: 0, wild: true, wildLetter: 'Ş', owner: 0),
+        };
+
+    test('kaydet → yükle gidiş-dönüş (joker harfi dahil)', () async {
+      await storage.liveDrafts.save('u1', 'g1', draft());
+      final geri = await storage.liveDrafts.load('u1', 'g1');
+      expect(geri, isNotNull);
+      expect({for (final e in geri!.entries) e.key: e.value.toJson()},
+          {for (final e in draft().entries) e.key: e.value.toJson()});
+    });
+
+    test('hesap ve oyun anahtarın PARÇASI: başkasının taslağı gelmez',
+        () async {
+      await storage.liveDrafts.save('u1', 'g1', draft());
+      expect(await storage.liveDrafts.load('u2', 'g1'), isNull);
+      expect(await storage.liveDrafts.load('u1', 'g2'), isNull);
+    });
+
+    test('aynı oyuna ikinci kayıt ÜSTÜNE yazar (tek satır)', () async {
+      await storage.liveDrafts.save('u1', 'g1', draft());
+      await storage.liveDrafts.save(
+          'u1', 'g1', {'1,1': const Tile(letter: 'A', pts: 1, owner: 0)});
+      final geri = await storage.liveDrafts.load('u1', 'g1');
+      expect(geri!.keys, ['1,1']);
+      expect(await storage.db.query('live_drafts'), hasLength(1));
+    });
+
+    test('boş taslak kaydı SİLER; clear de siler', () async {
+      await storage.liveDrafts.save('u1', 'g1', draft());
+      await storage.liveDrafts.save('u1', 'g1', <String, Tile>{});
+      expect(await storage.liveDrafts.load('u1', 'g1'), isNull);
+
+      await storage.liveDrafts.save('u1', 'g1', draft());
+      await storage.liveDrafts.clear('u1', 'g1');
+      expect(await storage.liveDrafts.load('u1', 'g1'), isNull);
+    });
+
+    test('BOZUK kayıt asla uygulanmaz ve silinir (her açılışta denenmesin)',
+        () async {
+      for (final bozuk in [
+        '{bozuk',
+        jsonEncode({'v': 99, 'cells': {'1,1': const Tile(letter: 'A', pts: 1).toJson()}}),
+        jsonEncode({'v': 1, 'cells': <String, Object?>{}}),
+        jsonEncode({'v': 1, 'cells': {'x,y': const Tile(letter: 'A', pts: 1).toJson()}}),
+      ]) {
+        await storage.db.insert(
+          'live_drafts',
+          {'user_id': 'u1', 'game_id': 'gb', 'payload': bozuk, 'updated_at': 0},
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+        expect(await storage.liveDrafts.load('u1', 'gb'), isNull,
+            reason: 'bozuk kayıt uygulandı: $bozuk');
+        expect(await storage.db.query('live_drafts', where: "game_id = 'gb'"),
+            isEmpty,
+            reason: 'bozuk kayıt silinmedi: $bozuk');
+      }
+    });
+
+    test('taze depoda tablo var ve komşu tabloları etkilemez', () async {
+      // ⚠ Bu bir 4 → 5 YÜKSELTME testi DEĞİL (taze depo açıyor): migrasyon
+      // `_migrations[5]`, ekleyici bir `create table`; gerçek yükseltme yolu
+      // `mobile/TESTING.md`'de cihazda (eski sürümün üstüne kurulum) doğrulanır.
+      await storage.chatRead.markRead('g9', 123);
+      expect(await storage.chatRead.lastReadAt('g9'), 123);
+      expect(await storage.db.query('live_drafts'), isEmpty);
+    });
+  });
+
   group('FlagsStore', () {
     test('anonId bir kez üretilir; utm first-touch üzerine yazılmaz', () async {
       final id1 = await storage.flags.anonId();

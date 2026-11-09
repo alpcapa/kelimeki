@@ -557,3 +557,9 @@ yok sayıp saymadığı (ölçülmedi, hedef SDK'ya bağlı).
 - [ ] Aynısını bir oyun ekranındayken dene (tahta hücreleri, raf, butonlar).
 - [ ] Uygulamayı birkaç dakika arkada bekletip öne getir — aynı kontrol.
 
+## 35. iPad: klavye açıkken pencere titremiyor (3 Kasım 2026, Parça 253, 9 Kasım treni)
+
+- [ ] iPad + takılı klavye: Giriş penceresinde e-posta ve şifre yazarken pencere aşağı yukarı OYNAMIYOR (alttaki öneri şeridi değişse de).
+- [ ] Aynı iPad'de ekran klavyesiyle (klavye ayrıkken) giriş: pencere klavyenin üstünde, alanlar görünür.
+- [ ] iPhone: Giriş/Kayıt ve sohbet penceresinde klavye açılınca pencere üstte, yazılan alan klavyenin altında kalmıyor.
+

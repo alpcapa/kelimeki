@@ -372,7 +372,38 @@ class SupabaseStatsGateway implements StatsGateway {
 
 class StatsRepo {
   final StatsGateway gateway;
-  StatsRepo(this.gateway);
+  final Future<void> Function(Duration) _delay;
+  StatsRepo(this.gateway, {Future<void> Function(Duration)? delay})
+      : _delay = delay ?? ((d) => Future<void>.delayed(d));
+
+  /// Raporlanan okumaların TEK yeniden denemesi (3 Kasım 2026). `client_errors`:
+  /// `stats_repo.my_rank` / `age_gender` `PostgrestException(code: 522)` ile
+  /// düşüyordu (2 Kas: 24 saatte 5 kayıt, tek Android cihaz; sunucuda 5xx yok,
+  /// istek ağ yolunda kopuyor). `OnlineGamesRepo._retrying`in dar kuralı:
+  /// yalnızca CEVABIN GELMEDİĞİ durumlar (ağ hatası + geçici ağ geçidi kodu,
+  /// `isTransientServerError`) tekrar denenir; sunucunun kendi reddi denenmez.
+  /// İkinci deneme de düşerse istisna çağırana gider ve eskisi gibi raporlanır
+  /// (kullanıcı kararı: *"ikincisi de koparsa yine kaydedilir"*).
+  static const Duration retryDelay = Duration(milliseconds: 800);
+
+  Future<T> _birKezDaha<T>(Future<T> Function() istek) async {
+    try {
+      return await istek();
+    } catch (e) {
+      if (!isNetworkError(e) && !isTransientServerError(e)) rethrow;
+      await _delay(retryDelay);
+      return istek();
+    }
+  }
+
+  /// Bağlantı durumu (bootstrap bağlar; testte boş = çevrimiçi sayılır).
+  /// Okumalar hata/ağ yokluğunda `null`/boş döndüğünden ekran "veri yok"u
+  /// "internet yok"tan ancak bununla ayırır (3 Kasım 2026, kullanıcı uçak
+  /// modunda bildirdi: skor kartı 0'larla "Henüz hiç oyun kaydın yok"
+  /// diyordu). Kurucuya DEĞİL alana konuldu: kurucuyu değiştiren #913 ile
+  /// aynı trende çakışmasın diye.
+  bool Function()? isOnline;
+  bool get online => isOnline?.call() ?? true;
 
   /// null: satır yok (hiç oyun kaydı yok) YA DA ağ hatası — ikisi de UI'da
   /// aynı "veri yok" hâline düşer (web davranışı birebir).
@@ -430,7 +461,7 @@ class StatsRepo {
   /// Oturum açanın Beyin Ligi durumu; satır yoksa ya da hata varsa null.
   Future<MyBeyinLigiRank?> myBeyinRank(String userId) async {
     try {
-      final row = await gateway.myBeyinLigiRank(userId);
+      final row = await _birKezDaha(() => gateway.myBeyinLigiRank(userId));
       if (row == null) return null;
       return MyBeyinLigiRank(
         rank: (row['rank'] as num?)?.toInt(),
@@ -440,8 +471,7 @@ class StatsRepo {
     } catch (e, st) {
       debugPrint('[Kelimeki] myBeyinLigiRank hatası: $e');
       if (!isNetworkError(e)) {
-        errorReporter.report(e,
-            stack: st, context: 'stats_repo.my_beyin_rank');
+        errorReporter.report(e, stack: st, context: 'stats_repo.my_beyin_rank');
       }
       return null;
     }
@@ -475,7 +505,7 @@ class StatsRepo {
 
   Future<MyLeaderboardRank?> myRank(String userId) async {
     try {
-      final row = await gateway.myLeaderboardRank(userId);
+      final row = await _birKezDaha(() => gateway.myLeaderboardRank(userId));
       if (row == null) return null;
       return MyLeaderboardRank(
         rank: (row['rank'] as num).toInt(),
@@ -501,7 +531,7 @@ class StatsRepo {
   /// öyle: `formatAgeGender` boş dönünce blok render edilmiyor).
   Future<String> ageGenderLabel(String userId) async {
     try {
-      final row = await gateway.profileAgeGender(userId);
+      final row = await _birKezDaha(() => gateway.profileAgeGender(userId));
       if (row == null) return '';
       return formatAgeGender(
         (row['age'] as num?)?.toInt(),

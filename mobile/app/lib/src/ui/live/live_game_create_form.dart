@@ -52,6 +52,8 @@ import '../tap_target.dart';
 import '../tokens.dart';
 import '../loading_note.dart';
 import '../form_input.dart';
+import '../../util/offline_notice.dart'
+    show isNetworkError, kOfflineAiSuggestion, kOfflineNoConnection;
 
 const Color _text = kText;
 const Color _muted = kMuted;
@@ -130,6 +132,9 @@ class LiveGameCreateForm extends StatefulWidget {
 class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
   late int _playerCount = widget.initialPlayerCount == 4 ? 4 : 2;
   List<FriendRow>? _friends;
+
+  /// Liste okunamadı + çevrimdışı (bkz. `FriendsModal._friendsOffline`).
+  bool _friendsOffline = false;
   late final List<String> _selected = [
     if (widget.initialFriendId != null)
       widget.initialFriendId!
@@ -206,6 +211,7 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
     widget.friends.friends().then((f) {
       if (!mounted) return;
       setState(() {
+        _friendsOffline = f == null && !widget.friends.online;
         if (f != null) {
           _friends = f;
         } else {
@@ -316,7 +322,12 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
       setState(
           () => _sentTo = (names: names, withAi: withAiLastSlot, random: null));
     } catch (e) {
-      if (mounted) setState(() => _error = friendErrorText(e));
+      // Çevrimdışıyken genel "Bir sorun oluştu" yerine çıkış yolu gösteren
+      // metin (3 Kasım 2026, uçak modunda bildirildi).
+      final metin = isNetworkError(e) || !widget.friends.online
+          ? kOfflineAiSuggestion
+          : friendErrorText(e);
+      if (mounted) setState(() => _error = metin);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -893,7 +904,7 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
   Widget _noFriends() => Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Column(children: [
-          const Text(kLiveFormNoFriends,
+          Text(_friendsOffline ? kOfflineNoConnection : kLiveFormNoFriends,
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontFamily: 'SpaceMono', fontSize: 12, color: _muted)),

@@ -19,7 +19,7 @@ import 'package:kelimeki/src/data/stats_api.dart';
 import 'package:kelimeki/src/ui/rank/rank_seal.dart';
 import 'package:kelimeki/src/storage/app_storage.dart';
 import 'package:kelimeki/src/storage/pending_event_store.dart';
-import 'package:kelimeki/src/util/offline_notice.dart' show isNetworkError;
+import 'package:kelimeki/src/util/offline_notice.dart' show isNetworkError, kOfflineNoConnection;
 import 'package:kelimeki/src/ui/auth/account_button.dart';
 import 'package:kelimeki/src/ui/auth/k_avatar.dart';
 import 'package:kelimeki/src/ui/friends/block_confirm_sheet.dart';
@@ -289,6 +289,7 @@ void main() {
       bool withStats = false,
       FakeChatGateway? chat,
       Size size = const Size(420, 900),
+      bool online = true,
     }) async {
       await setPhoneViewSize(tester, size);
       final gw = gateway ?? FakeFriendsGateway();
@@ -300,7 +301,7 @@ void main() {
               child: TextButton(
                 onPressed: () => showFriendsModal(
                   ctx,
-                  friends: FriendsRepo(gw),
+                  friends: FriendsRepo(gw)..isOnline = () => online,
                   auth: AuthService.fake(user: fakeUser()),
                   // stats yoksa isim/avatara dokunuş pasif (offline dalı).
                   stats: withStats ? StatsRepo(_NullStatsGateway()) : null,
@@ -454,6 +455,18 @@ void main() {
       expect(find.text(kFriendsEmptyTitle), findsOneWidget);
       expect(find.text(kFriendsEmptyBody), findsOneWidget);
       expect(find.text('ARKADAŞLARIN'), findsOneWidget); // sayı yok
+    });
+
+    // 3 Kasım 2026 (uçak modu): liste OKUNAMAYINCA "Henüz arkadaşın yok"
+    // diyordu. Çevrimdışıyken "İnternet bağlantısı yok".
+    testWidgets('ÇEVRİMDIŞI + liste okunamadı: "arkadaşın yok" DEĞİL',
+        (tester) async {
+      await pumpModal(tester,
+          gateway: FakeFriendsGateway()
+            ..failWith = Exception('SocketException'),
+          online: false);
+      expect(find.text(kOfflineNoConnection), findsOneWidget);
+      expect(find.text(kFriendsEmptyTitle), findsNothing);
     });
 
     testWidgets(

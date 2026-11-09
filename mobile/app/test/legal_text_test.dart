@@ -108,14 +108,21 @@ void main() {
           'açıktır',
       'oyuncuların birbiriyle arkadaş olması gerekmez',
       'Dilediğiniz kişiyi sessize alabilir ya da şikayet edebilirsiniz',
-      // Gizlilik: anonim kod SEKİZ durumda gider (18 Ekim 2026, ROADMAP #47 —
-      // web oturum kaydı `web_sessions.anon_id`). Sayı ve (8) cümlesi iki
-      // tarafta da bulunmalı; yedi → sekiz tek tarafta kalırsa metin yalan olur.
-      'Bu kod sekiz durumda sunucuya iletilir',
+      // Gizlilik: anonim kod DOKUZ durumda gider (3 Kasım 2026, ROADMAP #48 —
+      // Hamle Avı sonuç olayı `hamle_avi_events`; öncesinde sekiz: 18 Ekim,
+      // ROADMAP #47). Sayı ve (8)/(9) cümleleri iki tarafta da bulunmalı;
+      // sekiz → dokuz tek tarafta kalırsa metin yalan olur.
+      'Bu kod dokuz durumda sunucuya iletilir',
+      "(9) Hamle Avı'nda bir bulmacayı bulduğunuzda, süre dolduğunda ya da "
+          'bulmaca sürerken çıktığınızda',
+      // Gizlilik §2 + §5: Hamle Avı rekoru / görülen bulmacalar
+      'Hamle Avı bulmacalarında ulaştığınız en yüksek seri (rekor)',
+      'Üye değilseniz yalnızca cihazınızda tutulur, sunucuya gönderilmez',
+      'Hamle Avı rekorunuz ve görülen bulmaca listeniz',
       '(8) Siteyi (web) girişsiz (misafir) ziyaret ederken',
       'reklamdan gelenlerin kaçının mağazaya gittiğini kişileri tanımadan '
           'sayabiliyoruz',
-      'Bu sekiz kaydın hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA '
+      'Bu dokuz kaydın hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA '
           'YER ALMAZ',
       // Gizlilik §2 etiket maddesi (#46-1, 13 Ekim 2026)
       'Android\'de bu etiket, siteden Google Play\'e geçtiğinizde Play\'in '

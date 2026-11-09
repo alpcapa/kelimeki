@@ -189,7 +189,8 @@ mobile/
       storage/               # SQLite + prefs katmanı (bkz. "Depolama Katmanı"):
                              # app_database (şema), app_storage (giriş kapısı),
                              # local_save_store (karantinalı kayıt), pending_queue_store,
-                             # pending_event_store, chat_read_store, flags_store
+                             # pending_event_store, chat_read_store, flags_store,
+                             # live_draft_store (Canlı oyun taslağı, şema v5)
       ui/                    # app.dart, update_required_screen.dart,
                              # theme.dart (ÜRÜNÜN TEK teması — testler de
                              # `kelimekiTheme()` kullanır; M3'ün varsayılan
@@ -263,6 +264,18 @@ mobile/
                              # sabitleri, web dragFeel.ts ikizi), pulse_ring
                              # (Tailwind tile-pulse eşleniği — tanıtımın
                              # hedef kareleri/vurgulu raf taşları)
+      ui/hamle_avi/          # "Hamle Avı" (ROADMAP #48, 3 Kasım 2026): hamle_avi_screen
+                             # — web HamleAvi.tsx portu; tanıtımla AYNI yalıtım
+                             # (kendi GameController'ı, kayıt/k-lig ÇALIŞMAZ, motora
+                             # action eklenmedi). Sürükleme/joker/zoom game_screen
+                             # ile aynı jest (drag_feel ortak). Açan yer setup_screen
+                             # (`_HamleAviButonu`, en üstte).
+      util/hamle_avi.dart    # saf mantık + Dart çözücüsü (web hamleAvi.ts +
+                             # hamleAviSolve.ts ikizi); banka `assets/hamle_avi/
+                             # bank.json` web dosyasının BAYT-EŞİT kopyası
+      storage/hamle_avi_store.dart # cihaz deposu (rekor/görülenler/tanıtım tercihi)
+      data/hamle_avi_api.dart # RPC (hamle_avi_get/report) + hamle_avi_events
+                             # ölçümü; `kHamleAviServerEnabled` web bayrağıyla AYNI
       ui/tutorial/           # ilk OYUNDA açılan "oynayarak öğren" tanıtımı
                              # (Onboarding Faz 4, 7 Eylül 2026): tutorial_script
                              # (senaryo — web tutorialScript.ts ikizi, parite
@@ -574,6 +587,7 @@ mobile/
       actions.dart           # sealed GameAction sınıfları (Action union'ı)
       engine/reducer.dart    # GameEngine.reduce (gameReducer.ts) + createInitialState
       engine/bag.dart        # buildBag/drawTiles/remainingTiles (bag.ts)
+      engine/live_draft.dart # Canlı oyunda TASLAK kararı: shouldKeepDraft/discardedByOpponent (web utils/liveDraft.ts; 5 Kas 2026)
       rules/board.dart       # kelime çıkarımı (board.ts)
       rules/validator.dart   # doğrulama+bölge+vergi+puanlama (validator.ts)
       rules/ranking.dart     # rankPlayers (ranking.ts)
