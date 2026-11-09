@@ -38,6 +38,7 @@ import 'support/real_io.dart';
 import 'support/test_fonts.dart';
 import 'support/test_view.dart';
 import 'package:kelimeki/src/util/offline_notice.dart';
+import 'package:kelimeki/src/ui/tokens.dart' show kRed;
 import 'package:kelimeki/src/util/online_status.dart';
 
 class MemGateway implements CloudSaveGateway {
@@ -597,6 +598,23 @@ void main() {
     expect(find.text('Yükleniyor…'), findsNothing,
         reason: 'liste elde (burada: boş) — spinner bekleyecek ağ yok');
     expect(find.textContaining(kOfflineAiSuggestion), findsOneWidget);
+    // 9 Kasım 2026 (kullanıcı): yalnızca "İnternet bağlantısı yok" KIRMIZI,
+    // cümlenin devamı normal (muted) kalır.
+    final rich = tester.widget<RichText>(find
+        .descendant(
+            of: find.textContaining(kOfflineAiSuggestion),
+            matching: find.byType(RichText))
+        .first);
+    final span = rich.text as TextSpan;
+    // `Text.rich` kökü bir sarmalayıcı TextSpan ekler; asıl parçalar onun içinde.
+    final parcalar =
+        (span.children!.first as TextSpan).children!.cast<TextSpan>();
+    expect(parcalar.first.text, kOfflineNoConnection);
+    expect(parcalar.first.style?.color, kRed);
+    expect(parcalar.last.text,
+        kOfflineAiSuggestion.substring(kOfflineNoConnection.length));
+    expect(parcalar.last.style?.color, isNull,
+        reason: 'cümlenin devamı kırmızı OLMAMALI');
 
     status.debugSetOnline(true);
     await tester.pump(const Duration(milliseconds: 400)); // debounce

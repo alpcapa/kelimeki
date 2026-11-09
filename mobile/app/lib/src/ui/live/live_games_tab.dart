@@ -742,7 +742,9 @@ class _LiveGamesTabState extends State<LiveGamesTab>
           // Canlı oyunun HER parçası (liste, davet, geçmiş) sunucudan
           // geliyor — çevrimdışıyken üç alt sekme de aynı şeyi söyler.
           // Yapay Zeka sekmesi BİLİNÇLİ olarak farklı konuşur (setup_screen).
-          _empty(kOfflineNoConnection)
+          // KIRMIZI (9 Kasım 2026, 1.1.6 turu): bağlantı yokluğu bir hata
+          // durumu — soluk gri "boş liste" gibi okunuyordu. Web ikizi: text-red.
+          _empty(kOfflineNoConnection, color: _red)
         else if (_loadFailed && snap == null)
           // Elde gösterilecek HİÇBİR liste yok: tek dürüst cümle "yüklenemedi"
           // — "hiç oyunun yok" da "internet yok" da yanlış olurdu.
@@ -1010,12 +1012,12 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     );
   }
 
-  Widget _empty(String s) => Padding(
+  Widget _empty(String s, {Color color = _muted}) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Text(s,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontFamily: 'SpaceMono', fontSize: 11, color: _muted)),
+            style: TextStyle(
+                fontFamily: 'SpaceMono', fontSize: 11, color: color)),
       );
 
   Widget _section(String title, List<Widget> children) => Column(

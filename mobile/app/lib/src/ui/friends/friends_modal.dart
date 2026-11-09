@@ -599,13 +599,21 @@ class _FriendsModalState extends State<FriendsModal> {
       return [
         _listBox([
           for (final u in all) _userRow(u),
+          // Çevrimdışıyken sayfa boş döner — "Başka oyuncu yok" yalan olurdu
+          // (9 Kasım 2026, 1.1.6 turu: Arkadaşlar sekmesi "İnternet bağlantısı
+          // yok" derken "Tüm oyuncular" böyle diyordu). Web ikizi: FriendsModal.
           if (all.isEmpty && !_dir.hasMore)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Text(kFriendsNoMorePlayers,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontFamily: 'SpaceMono', fontSize: 12, color: _muted)),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: widget.friends.online
+                  ? const Text(kFriendsNoMorePlayers,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontFamily: 'SpaceMono', fontSize: 12, color: _muted))
+                  : const Text(kOfflineNoConnection,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontFamily: 'SpaceMono', fontSize: 12, color: kRed)),
             ),
           if (_dir.hasMore && _dir.loadingMore) const KLoadingNote(vertical: 8),
         ]),
@@ -619,7 +627,7 @@ class _FriendsModalState extends State<FriendsModal> {
           padding: EdgeInsets.symmetric(vertical: 16),
           child: Text(kOfflineNoConnection,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, height: 1.6, color: _muted)),
+              style: TextStyle(fontSize: 14, height: 1.6, color: kRed)),
         ),
       ];
     }

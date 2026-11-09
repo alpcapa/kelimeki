@@ -995,10 +995,11 @@ void main() {
     // Ayraç SAYISI da ölçülüyor: metnin VARLIĞINI doğrulayan bir test,
     // aradaki tutkalın (ayraç/boşluk) web'den sapmasını göremez — nitekim
     // 17 Ağustos'taki ilk sürümde girişli footer'da ayraç EKSİKTİ ve dört
-    // test birden yeşil kalmıştı. Üç maddede tam İKİ ayraç var.
+    // test birden yeşil kalmıştı. 9 Kasım 2026'dan beri İKİ satır × birer ayraç
+    // (Koşullar · Gizlilik / Paylaş · Yardım) = 2 ayraç.
     // Not: logo altındaki misafir link satırı BOŞLUKLU ' · ' kullanıyor,
     // yani bu finder'a takılmıyor (ölçüldü).
-    expect(find.text('·'), findsNWidgets(3));
+    expect(find.text('·'), findsNWidgets(2));
 
     // Telif satırı hukuki satırın ALTINDA (web'in "Son çağrı" footer'ı).
     final legal = tester.getRect(find.text('Kullanım Koşulları'));
@@ -1054,8 +1055,8 @@ void main() {
         scrollable: find.byType(Scrollable).first);
     expect(find.text('Paylaş'), findsOneWidget);
 
-    // Üç madde → İKİ ayraç (Koşullar · Gizlilik · Paylaş).
-    expect(find.text('·'), findsNWidgets(3));
+    // İki satır → İKİ ayraç (Koşullar · Gizlilik / Paylaş · Yardım).
+    expect(find.text('·'), findsNWidgets(2));
     expect(find.text('© Kelimeki'), findsOneWidget);
 
     await tester.tap(find.text('Paylaş'));
@@ -1066,6 +1067,34 @@ void main() {
     expect(fakeAnalytics.names, ['invite_link_shared']);
     expect(fakeAnalytics.events.single.$2, {'source': 'setup_footer'});
   });
+
+  // 9 Kasım 2026 (1.1.6 turu, kullanıcı: "Footer'daki Yardım çok aşağıda
+  // gözüküyor"): dört madde tek Wrap'teyken büyük yazıda "Yardım" kendi
+  // başına alt satıra düşüyordu. Artık BİLİNÇLİ iki satır; yazı ölçeğinden
+  // bağımsız: hukuki iki bağlantı üstte, Paylaş · Yardım altta AYNI satırda.
+  for (final olcek in [1.0, kMaxTextScale]) {
+    testWidgets('footer İKİ satır: Paylaş ile Yardım AYNI satırda (ölçek $olcek)',
+        (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = olcek;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await setPhoneViewSize(tester, const Size(420, 900));
+      await pumpSetup(tester, services());
+      await tester.scrollUntilVisible(find.text('Yardım'), 200,
+          scrollable: find.byType(Scrollable).first);
+
+      final koselar = tester.getRect(find.text('Kullanım Koşulları'));
+      final gizlilik = tester.getRect(find.text('Gizlilik Politikası'));
+      final paylas = tester.getRect(find.text('Paylaş'));
+      final yardim = tester.getRect(find.text('Yardım'));
+      expect((koselar.center.dy - gizlilik.center.dy).abs(), lessThan(1.5),
+          reason: 'hukuki iki bağlantı aynı satırda olmalı');
+      expect((paylas.center.dy - yardim.center.dy).abs(), lessThan(1.5),
+          reason: 'Yardım Paylaş ile AYNI satırda olmalı (alt satıra tek '
+              'başına düşmemeli)');
+      expect(paylas.top, greaterThan(koselar.bottom),
+          reason: 'Paylaş · Yardım satırı hukuki satırın ALTINDA');
+    });
+  }
 
   testWidgets(
       'teşhis satırı DERLEME kimliğini gösterir (bayat derlemeyi ekran '

@@ -77,7 +77,9 @@ class KModal extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => _KararliKlavye(builder: _modalPaneli);
+
+  Widget _modalPaneli(BuildContext context) {
     // ⚠ Klavye AÇIKKEN pencere ÜSTE yaslanır (3 Kasım 2026, kullanıcı iPad'de
     // bildirdi: *"giriş ekranında bilgileri girerken modal aşağı yukarı
     // titreme yapıyor"*). `Dialog` klavye yüksekliğini (`viewInsets`) alt
@@ -198,5 +200,54 @@ class KModal extends StatelessWidget {
     // (olması gereken 32, web'de 34). Web'in `shrink-0`'ının doğru
     // karşılığı hiç flex vermemektir.
     return headerCenter == null ? Expanded(child: label) : label;
+  }
+}
+
+
+/// Klavye yüksekliğini (`viewInsets.bottom`) küçük oynamalara karşı SABİTLER
+/// (9 Kasım 2026, 1.1.6 TestFlight turu: *"giriş ekranında email yazarken
+/// hala titreme var, password yazarken yok"*).
+///
+/// Neden e-posta, şifre değil: iPad'in QuickType öneri şeridi e-posta
+/// alanında yazarken açılıp kapanıyor (~35 pt), şifre alanında hiç
+/// değişmiyor. Şerit her değiştiğinde `viewInsets.bottom` oynuyor ve
+/// pencere gövdesi — klavyenin üstünde kalan alana sığmak için — her seferinde
+/// 35 pt kısalıp uzuyor; içindeki alanlar kayıyor (ölçüldü:
+/// `modal_keyboard_stabil_test.dart`, panel 386 → 351 pt). Üste yaslama
+/// (Parça 253) pencerenin ÜST kenarını sabitledi ama BOYUNU değil.
+///
+/// Kural: klavye BÜYÜRSE hemen izlenir (açılış animasyonu böyle ilerler);
+/// küçülme ise yalnızca [_gercekKucuklukEsigi]nı aşarsa izlenir (şerit
+/// oynaması ~35 pt, gerçek kapanış/yer değiştirme yüzlerce pt); 0'a inince
+/// sıfırlanır. Bedel: şerit küçüldükten sonra panel ~35 pt daha kısa kalır
+/// (üste yaslı olduğundan alt kenarı klavyenin biraz üstünde durur) — bir
+/// kez uzamak, her tuşta oynamaktan iyi.
+class _KararliKlavye extends StatefulWidget {
+  final Widget Function(BuildContext) builder;
+  const _KararliKlavye({required this.builder});
+
+  @override
+  State<_KararliKlavye> createState() => _KararliKlavyeState();
+}
+
+const double _gercekKucuklukEsigi = 150;
+
+class _KararliKlavyeState extends State<_KararliKlavye> {
+  double _deger = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final ham = mq.viewInsets.bottom;
+    if (ham <= 0) {
+      _deger = 0;
+    } else if (ham > _deger || _deger - ham >= _gercekKucuklukEsigi) {
+      _deger = ham;
+    }
+    if (_deger == ham) return widget.builder(context);
+    return MediaQuery(
+      data: mq.copyWith(viewInsets: mq.viewInsets.copyWith(bottom: _deger)),
+      child: Builder(builder: widget.builder),
+    );
   }
 }

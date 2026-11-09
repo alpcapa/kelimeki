@@ -7,6 +7,7 @@ import 'package:kelimeki_core/kelimeki_core.dart' show trUpper;
 
 import '../../data/stats_api.dart';
 import '../tokens.dart';
+import '../../util/offline_notice.dart' show kOfflineNoConnection;
 import '../loading_note.dart';
 import '../game/neo_box.dart';
 
@@ -195,8 +196,12 @@ class ScoreStatsSection extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(emptyText,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontFamily: 'SpaceMono', fontSize: 10, color: _muted)),
+                style: TextStyle(
+                    fontFamily: 'SpaceMono',
+                    fontSize: 10,
+                    // Çevrimdışı metni KIRMIZI (web ikizi: emptyText ===
+                    // OFFLINE_NO_CONNECTION), boş-liste metinleri soluk kalır.
+                    color: emptyText == kOfflineNoConnection ? _red : _muted)),
           ),
         const _SectionLabel('OYUNCU İSTATİSTİKLERİ'),
         const SizedBox(height: 6),

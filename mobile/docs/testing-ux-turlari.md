@@ -563,3 +563,10 @@ yok sayıp saymadığı (ölçülmedi, hedef SDK'ya bağlı).
 - [ ] Aynı iPad'de ekran klavyesiyle (klavye ayrıkken) giriş: pencere klavyenin üstünde, alanlar görünür.
 - [ ] iPhone: Giriş/Kayıt ve sohbet penceresinde klavye açılınca pencere üstte, yazılan alan klavyenin altında kalmıyor.
 
+## 36. iPad: e-posta yazarken klavye titremesi + çevrimdışı durumlar (9 Kasım 2026, Parça 257, 16 Kasım treni)
+
+- [ ] iPad + takılı klavye: Giriş penceresinde **e-posta** yazarken (öneri şeridi açılıp kapanırken) pencere/alanlar OYNAMIYOR; şifre alanında da öyle. İlk harflerde BİR kez hafif uzama olabilir (bilinçli: şerit ilk kez büyüyünce izlenir).
+- [ ] Klavyeyi kapatınca pencere ortaya geri dönüyor; yeniden açınca yer tutuyor.
+- [ ] Uçak modu: Skor Kartı "Yükleniyor…" ÇIKMADAN anında KIRMIZI "İnternet bağlantısı yok".
+- [ ] Uçak modu: Arkadaşlar, **Tüm oyuncular**, Canlı sekmesi ve Canlı oyun kur formunda arkadaş listesi: hepsi KIRMIZI "İnternet bağlantısı yok" (Tüm oyuncular "Başka oyuncu yok" DEMEMELİ).
+

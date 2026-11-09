@@ -457,6 +457,21 @@ void main() {
       expect(find.text('ARKADAŞLARIN'), findsOneWidget); // sayı yok
     });
 
+    // 9 Kasım 2026 (1.1.6 turu, kullanıcı): Arkadaşlar sekmesi "İnternet
+    // bağlantısı yok" derken "Tüm oyuncular" "Başka oyuncu yok" diyordu —
+    // çevrimdışıyken boş sayfa yalan söyler. Ve metin KIRMIZI.
+    testWidgets('ÇEVRİMDIŞI: "Tüm oyuncular" da "internet yok" der (kırmızı)',
+        (tester) async {
+      await pumpModal(tester, gateway: FakeFriendsGateway(), online: false);
+      await tester.tap(find.text('TÜM OYUNCULAR →'));
+      await tester.pumpAndSettle();
+      expect(find.text(kFriendsNoMorePlayers), findsNothing);
+      expect(find.text(kOfflineNoConnection), findsOneWidget);
+      expect(
+          tester.widget<Text>(find.text(kOfflineNoConnection)).style?.color,
+          kRed);
+    });
+
     // 3 Kasım 2026 (uçak modu): liste OKUNAMAYINCA "Henüz arkadaşın yok"
     // diyordu. Çevrimdışıyken "İnternet bağlantısı yok".
     testWidgets('ÇEVRİMDIŞI + liste okunamadı: "arkadaşın yok" DEĞİL',

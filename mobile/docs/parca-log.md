@@ -25,6 +25,24 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 257 — 1.1.6 TestFlight turu bulguları: çevrimdışı metin KIRMIZI, çevrimdışıyken ağa çıkma, "Tüm oyuncular", e-postada klavye titremesi (9 Kasım 2026, kullanıcı)
+
+**Bulgu (1.1.6 TestFlight, cihaz turu — kullanıcı hepsini "acil değil, sonraki sürüme" dedi):** (1) iPad Giriş penceresinde **e-posta** yazarken titreme sürüyor, şifrede yok (Parça 253 pencerenin ÜST kenarını sabitlemişti). (2) Uçak modunda Skor Kartı 7-8 sn "Yükleniyor…" gösterip sonra "İnternet bağlantısı yok" diyor. (3) Arkadaşlar "İnternet bağlantısı yok" derken **Tüm oyuncular** "Başka oyuncu yok." diyor. (4) "İnternet bağlantısı yok" her yerde KIRMIZI olmalı.
+
+**Kök nedenler (koddan + ölçümle):**
+1. **Titreme:** iPad'in QuickType öneri şeridi e-posta alanında yazarken açılıp kapanıyor (~35 pt), şifrede sabit. Her değişimde `viewInsets.bottom` oynuyor ve `Dialog`'un içindeki panel kalan alana sığmak için 35 pt kısalıp uzuyor (`modal_keyboard_stabil_test`: panel 386 → 351 pt) — içindeki alanlar kayıyor. Parça 253 üste yasladı ama BOYU sabitlemedi. Bu açıklama cihazda DOĞRULANMADI; ölçüm yalnızca mekanizmayı gösteriyor (e-posta/şifre farkıyla uyumlu).
+2. **7-8 sn:** `StatsRepo` okumaları çevrimdışıyken de sunucuya gidip zaman aşımını bekliyordu; ekran ancak sonra `online`a bakıp metni seçiyordu.
+3. **Tüm oyuncular:** dizin boş döndüğünde çevrimdışıyı ayırmıyordu (arkadaş sekmesi ayırıyordu). **Web'de de AYNIYDI** (`FriendsModal.tsx`).
+4. Çevrimdışı metin her yerde `text-muted`/`_muted` idi.
+
+**Değişiklik:** `ui/game/modal_shell.dart` `_KararliKlavye` (klavye BÜYÜRSE hemen izlenir, küçülme yalnızca ≥150 pt ise; 0'da sıfırlanır — bedel: şerit küçüldükten sonra panel ~35 pt kısa kalır, bir kez uzamak her tuşta oynamaktan iyi). `StatsRepo`: `playerStats`/`myRank`/`myBeyinRank`/`ageGenderLabel` çevrimdışıyken ağa HİÇ çıkmaz. `friends_modal.dart`: Tüm oyuncular çevrimdışı dalı. Kırmızı (`kRed`): `friends_modal` (arkadaş sekmesi + Tüm oyuncular), `live_games_tab`, `live_game_create_form`, `score_stats_section` (`emptyText == kOfflineNoConnection`). **Web ikizi PR #954** (aynı yüzeyler + Tüm oyuncular). `kOfflineAiSuggestion` ("İnternet bağlantısı yok ama sorun değil, yapay zeka ile…") Setup'ta YALNIZCA "İnternet bağlantısı yok" kısmı kırmızı, devamı normal (kullanıcı kararı, aynı gün; `Text.rich`, web `OFFLINE_AI_SUGGESTION_RED/REST`); Canlı oyun kur formundaki hata satırında aynı cümle hata stiliyle tamamen kırmızı kalır.
+
+**Setup footer İKİ satır (aynı gün, kullanıcı: *"Footer'daki Yardım çok aşağıda gözüküyor"*):** dört madde tek `Wrap`teyken büyük yazıda "Yardım" alt satıra tek başına düşüyor, ilk satırın sonunda başıboş bir `·` kalıyordu. Artık BİLİNÇLİ iki satır: Kullanım Koşulları · Gizlilik Politikası / Paylaş · Yardım (`setup_screen.dart` `Column` + iki `Wrap`; web ikizi `Setup.tsx`, PR #958). Ayraç sayısı 3 → 2 (`setup_screen_test` iki yerde). Yeni test: *"footer İKİ satır"* (ölçek 1,0 ve `kMaxTextScale`; Paylaş ile Yardım AYNI satırda; değişiklik geri alınınca düşüyor). ⚠ "Yardım'ı sayfanın üstüne taşıma" (GİRİŞ yanında "?" ikonu) ayrı bir seçenek olarak önerildi, YAPILMADI — kullanıcı yalnızca görünümü kastetti.
+
+**Kapılar:** `modal_keyboard_stabil_test` (3 test: şerit 350↔385 oynamaz, kapanınca sıfırlanır, gerçek küçülme izlenir), `score_card_test` ("ağa HİÇ çıkmaz" + kırmızı), `friends_test` ("Tüm oyuncular" çevrimdışı + kırmızı). Düzeltmeler geri alınınca dördü de düşüyor (ölçüldü).
+
+**Doğrulama SINIRI:** titreme cihazda GÖZLENMEDİ (iPad'de `mobile/docs/testing-ux-turlari.md` §36). Çevrimdışı canlı listeler/davet formu kırmızısı widget testiyle değil kaynak okumayla doğrulandı.
+
 ## Parça 256 — Hamle Avı mobil portu + gizlilik/yardım ikizi (3 Kasım 2026, ROADMAP #48, taslak PR — 9 Kasım treni)
 
 **Ne:** Web yarısı (PR #923, `f48712a`) yayında; bu parça port ikizi. `ui/hamle_avi/hamle_avi_screen.dart` (web `HamleAvi.tsx`: faz makinesi loading→intro→play→found/missed→review/exhausted, 3 dk geri sayım, seri/rekor, "daha düşük geçerli hamle → pozisyon başa döner, süre SÜRER", süre bitince doğru hamle tahtada, anlam penceresi), `util/hamle_avi.dart` (saf mantık + `findAIMoves` ile Dart çözücüsü), `storage/hamle_avi_store.dart`, `data/hamle_avi_api.dart`, Setup'ta `_HamleAviButonu` (en üstte, her görünümde, "YENİ" balonu HEP görünür), `assets/hamle_avi/bank.json`. **Aynı PR'da:** Gizlilik metni (§2 rekor maddesi, §5 silme listesi, §6 "sekiz → DOKUZ durum" + (9), "Son güncelleme: 3 Kasım 2026" — web `LegalContent.tsx` + `legal_modals.dart` + `legal_text_test`) ve "Detaylı Kurallar › Hamle Avı" bölümü (web `HelpModal.tsx` + `help_modal.dart`, parite alt sınırı 11 → 12).
