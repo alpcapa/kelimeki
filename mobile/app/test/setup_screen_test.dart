@@ -943,7 +943,11 @@ void main() {
       expect(find.text('HAMLE AVI'), findsOneWidget);
       expect(find.text('3 dakikada en iyi hamleyi bul!'), findsOneWidget);
       expect(find.byKey(const ValueKey('hamle-avi-yeni')), findsOneWidget);
-      expect(dugme.height, greaterThanOrEqualTo(56));
+      // 56 = dokunma hedefi tabanı. `- 0.01` payı: logo satırı #940'tan beri
+      // AKIŞKAN (kesirli) yükseklikte olduğundan düğmenin üst/alt koordinatları
+      // kesirli çıkıyor ve fark ~1e-14 oynuyor (ölçüldü: 55.99999999999999);
+      // düğme boyu değişmedi.
+      expect(dugme.height, greaterThanOrEqualTo(56 - 0.01));
       expect(ayirici.top - dugme.bottom, closeTo(20, 2));
       expect(oyunTipi.top - ayirici.bottom, closeTo(8, 2));
     });
