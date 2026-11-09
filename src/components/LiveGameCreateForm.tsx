@@ -600,7 +600,7 @@ export function LiveGameCreateForm({
           <div className="flex flex-col gap-1.5">
             {randomRow}
             <div className="flex flex-col items-center gap-2.5 py-4">
-            <p className="text-muted text-xs font-mono text-center">
+            <p className={`${online ? 'text-muted' : 'text-red'} text-xs font-mono text-center`}>
               {online ? 'Henüz hiç arkadaşın yok.' : OFFLINE_NO_CONNECTION}
             </p>
             <button
