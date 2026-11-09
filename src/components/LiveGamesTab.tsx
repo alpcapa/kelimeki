@@ -1448,7 +1448,7 @@ export function LiveGamesTab({
           BİLİNÇLİ olarak farklı konuşur — orada çevrimdışı oynanabilir bir
           şey var (bkz. Setup.tsx). */}
       {!online ? (
-        <p className="text-center text-xs text-muted font-mono py-8">{OFFLINE_NO_CONNECTION}</p>
+        <p className="text-center text-xs text-red font-mono py-8">{OFFLINE_NO_CONNECTION}</p>
       ) : games === null ? (
         // Elde HİÇ liste yok. `loadFailed` ile "henüz gelmedi"yi ayırmak
         // şart: ikisi de "Yükleniyor…" gösterseydi ekran sonsuza dek asılı

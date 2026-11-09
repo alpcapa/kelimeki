@@ -6,6 +6,7 @@
 // taşıyordu — kod incelemesiyle (Orta bulgu) tek kaynağa çıkarıldı.
 import type { PlayerStats } from '../lib/database.types';
 import { LoadingNote } from './LoadingNote';
+import { OFFLINE_NO_CONNECTION } from '../utils/offlineNotice';
 
 export type TabKey = 'all' | 2 | 4;
 
@@ -172,7 +173,11 @@ export function ScoreStatsSection({
   const { playerCells, gameCells } = buildScoreCells(stats);
   return (
     <>
-      {!stats && <p className="text-muted text-[10px] font-mono text-center pb-2">{emptyText}</p>}
+      {!stats && (
+        <p className={`${emptyText === OFFLINE_NO_CONNECTION ? 'text-red' : 'text-muted'} text-[10px] font-mono text-center pb-2`}>
+          {emptyText}
+        </p>
+      )}
       <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold mb-1.5">
         Oyuncu İstatistikleri
       </div>

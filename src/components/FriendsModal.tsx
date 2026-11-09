@@ -562,8 +562,13 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
               <div className={listCls}>
                 <ScrollArea scrollRef={allUsersScrollRef} className="max-h-[55vh]">
                   {allUsers.map(userRow)}
+                  {/* Çevrimdışıyken sayfa boş döner — "Başka oyuncu yok" yalan olurdu
+                      (9 Kasım 2026, 1.1.6 TestFlight turu: Arkadaşlar sekmesi "İnternet
+                      bağlantısı yok" derken "Tüm oyuncular" böyle diyordu). */}
                   {allUsers.length === 0 && !allUsersHasMore && (
-                    <p className="text-muted text-xs font-mono py-4 text-center">Başka oyuncu yok.</p>
+                    <p className={`${online ? 'text-muted' : 'text-red'} text-xs font-mono py-4 text-center`}>
+                      {online ? 'Başka oyuncu yok.' : OFFLINE_NO_CONNECTION}
+                    </p>
                   )}
                   {allUsersHasMore && (
                     <div ref={allUsersSentinelRef} className="py-2 text-center">
@@ -578,7 +583,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
           ) : friends === null ? (
             <LoadingNote py="py-4" />
           ) : friends.length === 0 && !online ? (
-            <p className="text-sm text-muted leading-relaxed py-4 text-center" style={{ margin: 0 }}>
+            <p className="text-sm text-red leading-relaxed py-4 text-center" style={{ margin: 0 }}>
               {OFFLINE_NO_CONNECTION}
             </p>
           ) : friends.length === 0 ? (
