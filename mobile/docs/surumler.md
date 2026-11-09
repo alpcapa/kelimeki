@@ -466,7 +466,7 @@ notu). Daha eskisi burada görünmez.
 - **Doğrulama:** Dart core 6920 kontrol 0 hata; tam `flutter test` 1320/1320 (kesim öncesi bir test eşiği düzeltildi: Hamle Avı düğmesi yüksekliği kesir toleransı); PR'ın dokuz CI kontrolü (Android APK, iOS imzasız, Analiz + testler, test, parite…) yeşil.
 - **Merge'in etkisi:** `mobile-latest` ezildi, TestFlight'a yeni build gitti; web'e aynı anda gizlilik metni ("Son güncelleme: 9 Kasım 2026", kullanıcı kararı: *"gizlilik metni bugün çıksın"*) + Detaylı Kurallar'daki Hamle Avı bölümü çıktı (canlı sha `24e0101` doğrulandı).
 - **TestFlight turu (1.1.6, 9 Kasım, kullanıcı): temiz**, dört bulgu — hiçbiri sürümü bekletmedi (*"hiçbiri versiyonu değiştirmek için acil değil"*): (1) iPad Giriş penceresinde **e-posta** yazarken titreme sürüyor, şifrede yok · (2) uçak modunda Skor Kartı 7-8 sn "Yükleniyor…" · (3) Arkadaşlar → Tüm oyuncular çevrimdışıyken "Başka oyuncu yok" · (4) "İnternet bağlantısı yok" kırmızı olmalı. → **1.1.7**: web ikizi #954 (hemen yayına), port taslak **#955** (Parça 257).
-- **Sıradaki (kullanıcıda):** ASC'de 1.1.6 sürümünü aç + build iliştir · keywords `internetsiz` · Support/Marketing URL → `https://www.kelimeki.com` · aşağıdaki What's New/Promotional text · Perşembe gönderimi (veya daha erken); Play'e `.aab`.
+- **Sıradaki (kullanıcıda):** ASC'de 1.1.6 sürümünü aç + build iliştir · keywords `internetsiz` · Support/Marketing URL → `https://www.kelimeki.com` · aşağıdaki What's New/Promotional text · Play'e `.aab` 1002. (iOS gönderimi yapıldı, aşağı bkz.)
 - **Promotional Text (149/170, kullanıcı ONAYLADI 9 Kas 2026; sürüm yayınlamadan da değiştirilebilir):**
 ```
 Yeni: Hamle Avı! 3 dakikada en iyi hamleyi bul, serini büyüt. Türkçe için sıfırdan tasarlanmış kelime oyunu. Ücretsiz, reklamsız, çevrimdışı oynanır.
@@ -482,7 +482,9 @@ Yeni: Hamle Avı! 3 dakikada en iyi hamleyi bul, serini büyüt. Türkçe için 
 • Sözlüğe "çıtır" eklendi.
 ```
   ⚠ iPad maddesi bilerek yalnızca "pencere üstte duruyor" diyor: e-postadaki titreme 1.1.7'de (#955) ve cihazda doğrulanmadı. Metnin ASC'ye/Play'e GİRİLDİĞİ henüz kaydedilmedi (girilince burası AS-BUILT'e çevrilir).
-- **Build numarası / koşu no / gönderim saatleri:** henüz kaydedilmedi (TestFlight'taki build numarası kullanıcıdan alınacak; kütük tablosuna satır eklenecek).
+- 🍎 **iOS GÖNDERİLDİ — 9 Kas 2026 16:13 (ASC saati = TSİ):** `iOS App 1.1.6 (1002)` → **Waiting for Review**, Submission ID `6c220305-9901-45c9-bae3-23df08ad5c0b`, Submitted By Alp Reşat Çapa (ASC → Distribution → App Review ekran görüntüsünden OKUNDU). Aynı gün kesim → TestFlight turu → gönderim (tren takvimindeki Perşembe beklenmedi). **Build 1002** = koşu numarası. ASC'ye girilen What's New/Promotional Text'in yukarıdaki metinle AYNI olduğu doğrulanmadı.
+- ⚠ **Sonuç:** Apple onaylayınca 1.1.6 numarasına yeni build alınmaz (`90186`): `main`'e giren İLK mobil iş (#955, 1.1.7) `appVersion` + `pubspec`i **1.1.7**'ye yükseltmeli — onay gelmeden #955'i merge etme.
+- 🤖 **Play:** `.aab` 1002 henüz yüklenmedi / kaydedilmedi.
 
 ## 1.1.5 — KESİM (2 Kasım 2026)
 
