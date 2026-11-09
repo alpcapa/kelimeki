@@ -98,7 +98,6 @@ ve platform başına tek seferlik ön koşullar var).
 
 - [ ] Sağ üstte **GİRİŞ** butonu ve altbilgide **"sunucu bağlı"** — ikisi
       de varsa Supabase sırları derlemeye gömülmüş demektir.
-- [ ] Altbilgide **"Sözlük: 63890 kelime"** (yükleniyor'da takılı kalmamalı).
 - [ ] **OYUNU BAŞLAT** çalışıyor ve tahta çiziliyor — depolama katmanı
       (IndexedDB) kurulmuş demektir. "KAYITLAR KONTROL EDİLİYOR…" takılı
       kalırsa web depolama arka ucu bozulmuştur.
