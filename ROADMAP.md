@@ -301,6 +301,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **1.1.6'ya binecek (5 Kasım 2026, taslak PR, kesim 9 Kasım):** Setup'ın alt teşhis satırından `Sözlük: N kelime` çıkarıldı (kullanıcı: kimseye faydası yok); `Derleme · Sürüm · sunucu · depo` kalıyor. `widget_smoke_test` + `test-ortamlari.md` maddesi güncellendi.
 
+**1.1.6'ya binecek (5 Kasım 2026, taslak PR, kesim 9 Kasım):** Oyun başlığındaki "← Geri" etiketi "← Çıkış" oldu (web #942 canlıya gidince port ikizi; `game_header.dart` + `game_header_test`/`tap_target_test`). ⚠ Çıkış ↔ hesaptan çıkış karışıklığı riski biliniyor, kullanıcı seçti.
+
 **Sıradaki treni bekleyen (23 Ekim 2026):** son taslak taş geri alınınca bayat "Oyna tuşuyla kelimeyi onayla." mesajı silinsin (kullanıcı ekran görüntüsüyle bildirdi) — `kelimeki_core` `RecallCellAction` + web `RECALL_CELL` ikizi + `reducer_human2.json` golden'ı. **Taslak PR #889, 2 Kasım 1.1.5 trenine biner** (kullanıcı kararı 23 Ekim: 1.1.4 gönderimi bitmeden `main`'e mobil merge YOK).
 
 **9 Kasım treni (3 Kasım 2026):** çevrimdışıyken Skor Kartı / Arkadaşlar / Canlı davet "kaydın yok · arkadaşın yok · Bir sorun oluştu" yerine "İnternet bağlantısı yok" diyor (1.1.5 TestFlight turu madde 5; Parça 254). Taslak PR; web yarısı ayrıca yayında.
