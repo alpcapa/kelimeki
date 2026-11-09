@@ -29,7 +29,7 @@ import { StoreBadges } from './StoreBadges';
 import { shareKelimekiLink } from "../utils/shareLink";
 import { createAwayTracker } from "../utils/awayReturn";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
-import { OFFLINE_AI_SUGGESTION, OFFLINE_AI_CTA } from "../utils/offlineNotice";
+import { OFFLINE_AI_SUGGESTION_RED, OFFLINE_AI_SUGGESTION_REST, OFFLINE_AI_CTA } from "../utils/offlineNotice";
 import { TermsModal } from "./TermsModal";
 import { PrivacyModal } from "./PrivacyModal";
 import type { LocalGameSave, OnlineGame } from "../lib/database.types";
@@ -703,7 +703,8 @@ export function Setup({
   const offlineAiNotice = (
     <div className="flex flex-col items-center gap-4 py-8">
       <p className="text-center text-xs text-muted font-mono leading-relaxed">
-        {OFFLINE_AI_SUGGESTION}
+        {OFFLINE_AI_SUGGESTION_RED && <span className="text-red">{OFFLINE_AI_SUGGESTION_RED}</span>}
+        {OFFLINE_AI_SUGGESTION_REST}
       </p>
       {/* Metin-içi link DEĞİL gerçek buton (kullanıcı isteği, 14 Ağustos
           2026) — dokunma hedefi tam boy ve "+ Yeni Yapay Zeka Oyunu"yla

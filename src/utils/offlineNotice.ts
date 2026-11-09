@@ -58,6 +58,14 @@ export const OFFLINE_NO_CONNECTION = 'İnternet bağlantısı yok';
  */
 export const OFFLINE_AI_SUGGESTION =
   'İnternet bağlantısı yok ama sorun değil, yapay zeka ile çevrimdışı da oynayabilirsin.';
+// Cümlenin "İnternet bağlantısı yok" kısmı KIRMIZI, devamı normal yazılır
+// (9 Kasım 2026, kullanıcı: *"İnternet bağlantısı yok kısmını sadece kırmızı
+// yap, devamı normal kalsın"*). Bölme noktası tek yerde: cümle bu öneklerle
+// başlamak ZORUNDA — başlamazsa `Setup` cümleyi tek parça, kırmızısız yazar.
+export const OFFLINE_AI_SUGGESTION_RED = OFFLINE_AI_SUGGESTION.startsWith(OFFLINE_NO_CONNECTION)
+  ? OFFLINE_NO_CONNECTION
+  : '';
+export const OFFLINE_AI_SUGGESTION_REST = OFFLINE_AI_SUGGESTION.slice(OFFLINE_AI_SUGGESTION_RED.length);
 export const OFFLINE_AI_CTA = 'Hemen oyun aç.';
 
 // ── "Çevrimdışı" DEĞİL, "yükleyemedik" ─────────────────────────────────────
