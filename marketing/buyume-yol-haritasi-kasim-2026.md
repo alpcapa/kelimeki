@@ -75,6 +75,26 @@ CPI/retention için aranacak: Appodeal "Mobile Casual Benchmarks Report 2025", L
   (9 Ekim'den beri karşılama kodunda yalnızca bir toplu commit + bir bağlantı eki var; ayrıntısına bakılmadı) →
   sayfa tek başına açıklamıyor; fark gelen trafikte/kreatifte olabilir. Hüküm değil, hipotez.
 
+## 3c. Hamle Avı kullanımı (10 Kasım 2026, ajan; canlı `hamle_avi_events`, yalnızca `source='prod'`)
+
+- **Kişi = benzersiz CİHAZ** (`anon_id`), insan değil (`admin_hamle_avi_stats`: `count(distinct anon_id)`;
+  hesaba bağlanmıyor, Gizlilik §6). Aynı kişi iki cihazdan ya da yeniden kurulumdan sonra birden fazla sayılır;
+  kendi test cihazlarımız ayrıştırılamaz (tasarım gereği kimlik bağı yok).
+- **Veri:** 10 cihaz (5 Android — biri misafir · 3 iOS · 2 web), **221 oyun**; önizleme (2 cihaz, 3 oyun) admin
+  kartında sayılmıyor. Kullanım 9 Kas'ta mobil 1.1.6 yayınlanınca Android'de arttı (3–9 Kas yalnız web, ≈ 12 oyun).
+- **Dengesiz yoğunluk:** tek Android cihaz 139 oyun (%63, bulma %53); ilk üç Android cihaz %89. İki Android cihaz
+  9 Kas 21:00 ve 22:00 saatlerinde AYNI saatte oynamış → büyük olasılıkla ayrı kişiler (kanıt değil).
+- **Hesap bazlı ölçü** (`hamle_avi_stats`): 7 üye kaydı, **5'inde rekor var** — cihazdan insana daha yakın bir
+  ölçü, ama bunlar da kendi test hesaplarımızı içerebilir.
+- **Geri bildirim (kullanıcı, 10 Kas):** bazı kişilerden olumlu dönüş geldi; gerçek insanlar oynuyor, henüz yaygın
+  değil. *"2 gün için fena değil rakamlar."*
+- **Henüz söylenemeyen:** elde tutma. 10 cihazdan yalnızca biri ertesi gün de oynamış; pencere 2 gün olduğu için
+  bu "dönüş yok" demek DEĞİL, ölçülemeyecek kadar erken.
+- **KARAR NOKTASI: 13–14 Kas civarı** Hamle Avı oynayan cihazların 2. ve 3. gün dönüşü okunacak (ajan, tek SQL:
+  cihaz başına oynanan farklı günler). Tutuyorsa Hamle Avı reklam kancası olarak denenir (yol haritası §4 Faz 3,
+  vergi sorunu `§3b`: bulmacaların %41'i vergi tuzağı → ana sayfa üzerinden, doğrudan değil); tutmuyorsa kancaya
+  harcamadan önce elde tutma sorunu çözülür.
+
 ## 4. Önerilen yol haritası
 
 Bütçe çerçevesi: mevcut ≈ ₺6.000/ay (Apple Ads 16 Kasım'da bitiyor). **Onay bekleyen öneri** — rakamlar kesin değil.
