@@ -1,6 +1,6 @@
 # Google Ads — arama testi (Faz 3 taslağı, 6 Ekim 2026)
 
-**Durum: PLAN, kurulmadı.** Karar (kullanıcı, 6 Ekim 2026): rakip marka kelimelerine (Kelimelik vb.) bid
+**Durum: PLAN, kurulmadı (10 Kasım 2026 teyit: `google-arama` etiketli HİÇ oturum yok; 14 Ekim'deki yeniden bakma kararı kayıtta yok).** Karar (kullanıcı, 6 Ekim 2026): rakip marka kelimelerine (Kelimelik vb.) bid
 EDİLMEZ; genel kelimelerle küçük bir test yapılır. Meta kampanyası 7 Ekim 11:54'te bitiyor, kapanış okuması
 8-9 Ekim; bu test o okumadan SONRA (Faz 3) kurulur. Hedef ölçü: **ayda 2+ oyun oynayan 100 yeni MAU**
 (`kampanya-ekim-2026.md`, 5 Ekim kararı).

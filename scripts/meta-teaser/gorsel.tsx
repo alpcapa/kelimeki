@@ -82,6 +82,60 @@ export function renderGorselHtml(duzen: Duzen, kanca: Kanca, cssHref: string, ta
 </head><body>${renderToStaticMarkup(<Gorsel duzen={duzen} kanca={kanca} tahta={tahta} />)}</body></html>`;
 }
 
+
+// ─── "Ana ekran" reklamı (10 Kasım 2026, kullanıcı fikri) ────────────────────
+// Karşılamanın İLK EKRANI reklama dönüşür: başlık + tahta kesiti (`BolgeKesiti`,
+// "Vergi: puanın 1/3'ü rakibe" rozetiyle) + düğme. Amaç mesaj uyumu — reklamı
+// tıklayan, sayfada AYNI başlığı ve tahtayı görür (bkz. marketing/buyume-yol-haritasi-kasim-2026.md).
+// Kullanıcı isteği: başlık aynen; "Hemen Oyna" ile tahta arasına "Yepyeni bir kelime
+// oyunu"; "Nasıl oynanır" YOK. Reklama sığmadığı için ELENENLER: GİRİŞ düğmesi, üst
+// etiket (TÜRKÇE KELİME OYUNU), alt yazı, mağaza rozetleri (kullanıcıya bildirildi).
+// Düğme TIKLANMAZ (görsel); gerçek bağlantı/CTA Ads Manager'dan gelir.
+function AnaEkran({ duzen }: { duzen: Duzen }) {
+  const { w, h } = OLCULER[duzen];
+  const story = duzen === 'story';
+  // Story'de içerik TÜM kadrajda ortalanır (üst/alt boşluk eşit — kullanıcı isteği, 10 Kas);
+  // Instagram'ın üst %14 / alt %20 bandına girmediği build'de ölçülerek doğrulanır.
+  const ust = 0;
+  const alt = 0;
+  const sutun = story ? 440 : 460;
+  const kesitZoom = story ? 1.04 : 1.15;
+  return (
+    <div style={{ width: w, height: h, position: 'relative', overflow: 'hidden', background: '#FFFFFF', fontFamily: SANS, color: '#1B2430' }}>
+      <LandingLogoDefs />
+      <div style={{ position: 'absolute', left: 0, right: 0, top: ust, bottom: alt, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div data-guvenli-kutu="" style={{ width: sutun, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: story ? 14 : 14 }}>
+          <div style={{ alignSelf: 'flex-start' }}><LandingLogo height={story ? 38 : 36} /></div>
+          <p style={{ margin: 0, alignSelf: 'stretch', fontSize: story ? 30 : 31, lineHeight: 1.14, fontWeight: 700, letterSpacing: -0.6, whiteSpace: 'nowrap' }}>
+            Kelimeyi bilmek yetmez.<br />Nereye koyduğun kazandırır.
+          </p>
+          <div data-kesit="" style={{ width: 340, zoom: kesitZoom, marginTop: 8 }}>
+            <BolgeKesiti />
+          </div>
+          <p style={{ margin: 0, fontSize: story ? 26 : 24, fontWeight: 700, color: '#1B2430', letterSpacing: -0.3 }}>
+            Yepyeni bir kelime oyunu
+          </p>
+          <div style={{ alignSelf: 'stretch', height: 54, borderRadius: 6, background: ACCENT, color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', boxShadow: '0 6px 16px rgba(37,99,235,0.28)' }}>
+            Hemen Oyna
+          </div>
+          <span style={{ fontFamily: '"Space Mono", monospace', fontSize: 13, color: '#667085', textAlign: 'center' }}>
+            Ücretsiz · Reklam yok · Üyelik gerekmez
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function renderAnaHtml(duzen: Duzen, cssHref: string): string {
+  return `<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>Kelimeki ana ekran reklamı ${duzen}</title>
+<link rel="stylesheet" href="${cssHref}">
+<style>html,body{margin:0;padding:0;background:#fff}</style>
+</head><body>${renderToStaticMarkup(<AnaEkran duzen={duzen} />)}</body></html>`;
+}
+
 // ─── Aşama 2 · teaser KARUSEL (kart 1 = h3 kancası, kalan kartlar kuralı kanıtlar) ───
 // 1:1, 4 kart. Metinler Aşama 1'in onaylı reklam metniyle AYNI iddialar (rakip adı yok,
 // üstünlük iddiası yok). Tahta/kesit üretimdeki bileşenlerden gelir (kural değişince
