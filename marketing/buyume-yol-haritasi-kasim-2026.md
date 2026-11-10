@@ -56,6 +56,25 @@ CPI/retention için aranacak: Appodeal "Mobile Casual Benchmarks Report 2025", L
    kötü: oyun uzun** (13×13, 100 taş). Bitirme yerine 5. hamle ya da 2. gün dönüşü gibi bir ara ölçüt düşünülmeli.
 4. **Sayılabilir bir hedef şart.** Her şey "aktif oyuncu başına maliyet"e (2+ oyun oynayan yeni cihaz) çevrilmeli.
 
+## 3b. Ölçümler (10 Kasım 2026, ajan; kod DEĞİŞMEDİ)
+
+**Hamle Avı bankası (1000 pozisyonun TAMAMI, üretimdekiyle aynı çözücü, `listN` 300; çözücü anahtarla 1000/1000 uyumlu):**
+- En iyi hamle vergili (net < ham): **237 (%23,7)**.
+- **Vergi tuzağı: 412 (%41,2)** — tahtada en yüksek HAM puanlı hamle (tahtadaki "+N" etiketi ham puanı yazıyor) doğru
+  cevap DEĞİL. Vergiyi bilmeyen yeni oyuncu bu pozisyonların ≈ %41'inde "en yüksek puanı" seçip yanılır.
+- Tuzaksız 588 pozisyonda en yüksek ham puanlı hamle = doğru cevap → vergi bilgisi gerekmeden çözülebilir.
+  (Bunların kaçının en iyi hamlesi yine de vergili, ayrıca ölçülmedi.) Bu alt küme "giriş seviyesi" havuzu olabilir.
+- Pozisyon başına çözücü süresi ≈ 0,12 sn (1000 pozisyon 119 sn).
+
+**Karşılama ilk ekranı (canlı, build `18667d3`, soğuk ziyaretçi, `?ref=meta-k4`; Pixel 7 + iPhone 13):**
+- Başlık "Kelimeyi bilmek yetmez. Nereye koyduğun kazandırır.", alt yazı bölge/vergi anlatıyor, 7×5 tahta kesitinde
+  **"Vergi: puanın 1/3'ü rakibe"** rozeti var → karşılama vergi kavramını ilk ekranda zaten tanıtıyor.
+- Birincil buton "HEMEN OYNA"; "Ücretsiz · Reklam yok · Üyelik gerekmez"; App Store + Google Play rozetleri; "Nasıl oynanır".
+  Küçük ekranda (iPhone 13) buton alta yapışık, "Ücretsiz" satırı katlanma altında kalıyor.
+- Açık bir kırık/okunmazlık görmedim. **Aynı sayfa** Aşama 1 h3'te ≤3 sn çıkış %16–25, Kare2/Kare3/K'da %57–66 verdi
+  (9 Ekim'den beri karşılama kodunda yalnızca bir toplu commit + bir bağlantı eki var; ayrıntısına bakılmadı) →
+  sayfa tek başına açıklamıyor; fark gelen trafikte/kreatifte olabilir. Hüküm değil, hipotez.
+
 ## 4. Önerilen yol haritası
 
 Bütçe çerçevesi: mevcut ≈ ₺6.000/ay (Apple Ads 16 Kasım'da bitiyor). **Onay bekleyen öneri** — rakamlar kesin değil.
