@@ -46,10 +46,14 @@ CPI/retention için aranacak: Appodeal "Mobile Casual Benchmarks Report 2025", L
 2. **Meta'nın bulduğu kitle (65+) bu türün doğal kitlesiyle örtüşüyor** (K'da 65+ en yüksek erişim). Bu bir
    başarısızlık değil olabilir; asıl sorun bu kitlenin web karşılama → mağaza yolunda kopması olabilir.
    *Hipotez, doğrulanmadı.* Karşılaştırılacak: aynı kitleye doğrudan mağaza bağlantısı.
-3. **Ürün tarafında viral mekanik zaten kısmen var:** tahta görüntüsü paylaşımı (`shareBoardImage.ts`), davet
-   bağlantısı, paylaşılan oyun sayfası (`SharedGamePage`), Hamle Avı (seri/rekor). Wordle benzeri
-   **spoiler'sız, tek satırlık paylaşım sonucu** ve **günlük ortak bulmaca** kodda yok/belirsiz — *Hamle Avı'nın
-   paylaşılabilir günlük sürümü mümkün mü* sorusu koda bakılarak ayrıca cevaplanmalı.
+3. **Paylaşım döngüsü bu ürüne uymuyor (kullanıcı, 10 Kas):** skor/tahta paylaşımı alıcıya anlam taşımıyor. Wordle
+   dersi "herkes aynı bulmacayı oynuyor" idi, "paylaş düğmesi koy" değil. Bizdeki karşılığı olabilecek tek şey
+   **Hamle Avı** (herkese aynı pozisyon), ama bu bir *edinme kancası* olarak denenecek, paylaşım olarak değil.
+4. **Asıl kayıp aktivasyonda (10 Kas, admin + canlı veri):** 1 Ekim'den beri hesap açan 61 cihazın 50'si oyun başlatmış
+   ama yalnızca 28'i bitirmiş. Meta'dan gelen 23 üyenin 22'si oyun başlatmış, 10'u bitirmiş. 4 Kas'tan beri hesap
+   açan 12 kişiden 5'i oyun bitirmiş, 4'ünün kayıtlı devam eden oyunu var (oynuyor, henüz bitirmemiş), 3'ünde ikisi de
+   yok (7'sinin hepsi son 3 günde kaydolmuş → "bırakmış" demek için erken). ⚠ **"Oyun bitirme" aktivasyon ölçütü olarak
+   kötü: oyun uzun** (13×13, 100 taş). Bitirme yerine 5. hamle ya da 2. gün dönüşü gibi bir ara ölçüt düşünülmeli.
 4. **Sayılabilir bir hedef şart.** Her şey "aktif oyuncu başına maliyet"e (2+ oyun oynayan yeni cihaz) çevrilmeli.
 
 ## 4. Önerilen yol haritası
@@ -66,8 +70,15 @@ Bütçe çerçevesi: mevcut ≈ ₺6.000/ay (Apple Ads 16 Kasım'da bitiyor). **
 ### Faz 1 — Kasım sonu–Aralık: döngü ve mağaza (maliyet ≈ 0)
 - **Mağaza dönüşümü:** Play "Store Listing Experiments" ile ekran görüntüsü/açıklama testi; ~4 Aralık Play kısa
   açıklaması okuması buna taban olur. Apple'da Özel Ürün Sayfaları bağlam için (A/B değil).
-- **Paylaşım döngüsü:** sonuç paylaşım kartı (tek satır, spoiler'sız) + günlük/seri mekaniği için *kod keşfi*
-  (Hamle Avı üzerinden). Karar ürün tarafında; sürüm trenine uyar.
+- ~~Paylaşım döngüsü (sonuç kartı + günlük bulmaca)~~ **DÜŞTÜ (10 Kas, kullanıcı):** *"İnsanların oyun sonunda
+  skor veya tahta paylaşmasını beklemiyorum, kimseye bir anlam ifade etmiyor."* Wordle'da işe yarayan şey herkesin
+  AYNI bulmacayı oynamasıydı; YZ'ye karşı oynanan oyunun skoru kimseye bir şey anlatmaz.
+- **Hamle Avı reklamı (kullanıcı fikri, 10 Kas):** *"En yüksek puanlı hamleyi bul"* kancası, hedef = web'de
+  anında oynanan Hamle Avı → ardından YZ oyunu. Kurulum/üyelik/mağaza adımı YOK: uzun yolu (reklam → karşılama →
+  mağaza → kurulum) kısaltır. Ölçüt: reklam başına Hamle Avı oynayan kişi ve oradan oyun başlatan. Açık: Hamle Avı
+  bugün uygulama İÇİNDE (Setup düğmesi); reklamdan doğrudan açılacak bir bağlantı/karşılama girişi YOK → küçük kod işi.
+  ⚠ Aynı kanca organik Reel olarak zaten denendi (Video 1, 273 izlenme, ilk saniyede kayıp %55–91): fikir değil
+  İLK SANİYE kreatifi test edilmedi/başarısız.
 - **Karşılama→mağaza adımı:** web karşılamadan mağazaya geçiş oranını artırma (≈ %4–12): ilk ekranda
   mağaza rozeti zaten var, 55+ için okunabilirlik/öncelik denenir. Yalnızca hipotez.
 
@@ -84,8 +95,10 @@ Bütçe çerçevesi: mevcut ≈ ₺6.000/ay (Apple Ads 16 Kasım'da bitiyor). **
 
 ## 5. Karar noktaları (kullanıcıya)
 
-1. Tek ölçüt = "2+ oyun oynayan yeni cihaz": evet/hayır?
-2. Paylaşım/günlük bulmaca için ürün keşfine izin var mı (yeni özellik, sürüm trenine girer)?
+1. Tek ölçüt: "2+ oyun oynayan yeni cihaz" yerine **"5. hamleyi yapan yeni cihaz"** (oyun uzun olduğu için bitirme
+   kötü ölçüt; `web_sessions` `move_5` adımı var, port için ayrı kontrol gerekir) — evet/hayır?
+2. ~~Paylaşım/günlük bulmaca keşfi~~ → **yerine:** Hamle Avı'nı reklam kancası olarak denemek (karşılamadan/bağlantıdan
+   doğrudan açılan giriş + kreatif). Evet/hayır?
 3. Üretici denemesi: bütçe ve ücretli/ücretsiz tercihi?
 4. Meta tek değişkenli testi: Faz 3'te mi, hemen mi? (Masaüstü Ads Manager erişimi gerekir.)
 5. Bütçenin ücretli kısmı Faz 1–2 boyunca bekletilsin mi?
