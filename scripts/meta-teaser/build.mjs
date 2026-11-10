@@ -20,8 +20,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const DIST = path.join(ROOT, 'dist');
 const OUT_DIR = path.join(ROOT, 'marketing', 'meta-reklam', 'teaser');
 const TAHTA = process.argv.includes('--tahta');
-const KANCALAR = process.argv.includes('--h1') ? ['h1'] : ['h1', 'h2', 'h3'];
+const KANCALAR = process.argv.includes('--ana') ? ['ana'] : process.argv.includes('--h1') ? ['h1'] : ['h1', 'h2', 'h3'];
 const KARUSEL = process.argv.includes('--karusel');
+const ANA = process.argv.includes('--ana'); // 10 Kas 2026: karşılama ilk ekranı reklamı
 const DOSYA = { feed: 'feed-1080x1350', story: 'story-1080x1920' };
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript',
@@ -39,7 +40,7 @@ async function main() {
     external: ['react', 'react-dom', 'react-dom/server'],
     loader: { '.css': 'empty' }, outfile: outMjs, logLevel: 'error',
   });
-  const { renderGorselHtml, renderKarusel, KARUSEL_KART_SAYISI, KARUSEL_OLCU, OLCULER } = await import(`file://${outMjs}?t=${Date.now()}`);
+  const { renderGorselHtml, renderAnaHtml, renderKarusel, KARUSEL_KART_SAYISI, KARUSEL_OLCU, OLCULER } = await import(`file://${outMjs}?t=${Date.now()}`);
 
   const server = createServer(async (req, res) => {
     const f = path.join(DIST, decodeURIComponent((req.url ?? '/').split('?')[0]));
@@ -89,7 +90,7 @@ async function main() {
     for (const duzen of Object.keys(DOSYA)) {
       const { w, h } = OLCULER[duzen];
       const htmlAd = `meta-teaser-${kanca}-${duzen}${TAHTA ? '-tahta' : ''}.html`;
-      writeFileSync(path.join(DIST, htmlAd), renderGorselHtml(duzen, kanca, `/assets/${cssFile}`, TAHTA), 'utf8');
+      writeFileSync(path.join(DIST, htmlAd), ANA ? renderAnaHtml(duzen, `/assets/${cssFile}`) : renderGorselHtml(duzen, kanca, `/assets/${cssFile}`, TAHTA), 'utf8');
       const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2 });
       await page.goto(`http://127.0.0.1:${server.address().port}/${htmlAd}`, { waitUntil: 'networkidle' });
       await page.evaluate(() => document.fonts.ready);
