@@ -1,3 +1,8 @@
+> **Yayın durumu (10 Kasım 2026, ajan kontrolü): KAYITTA YOK.** Videoların hangi platformda
+> ne zaman yayınlandığı repoya hiç yazılmadı. Canlı veride `tiktok`/`yt`/`short` kaynaklı oturum
+> YOK (yalnızca `ig-bio`: 24 oturum, 29 Eyl – 1 Kas), ama bio linkinde etiket yoksa iz de
+> düşmezdi → "yayınlanmadı" DEĞİL, "bilinmiyor". Kullanıcı söyleyince buraya tarihli satır yaz.
+
 # Kısa videolar — paylaşım metinleri (5 Ekim 2026)
 
 Instagram ve TikTok AYRI hesaplar. Link: Instagram'da profil bio'su, TikTok'ta profil bio'su
