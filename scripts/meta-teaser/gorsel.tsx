@@ -94,8 +94,10 @@ export function renderGorselHtml(duzen: Duzen, kanca: Kanca, cssHref: string, ta
 function AnaEkran({ duzen }: { duzen: Duzen }) {
   const { w, h } = OLCULER[duzen];
   const story = duzen === 'story';
-  const ust = story ? h * 0.14 : 0;
-  const alt = story ? h * 0.2 : 0;
+  // Story'de içerik TÜM kadrajda ortalanır (üst/alt boşluk eşit — kullanıcı isteği, 10 Kas);
+  // Instagram'ın üst %14 / alt %20 bandına girmediği build'de ölçülerek doğrulanır.
+  const ust = 0;
+  const alt = 0;
   const sutun = story ? 440 : 460;
   const kesitZoom = story ? 1.04 : 1.15;
   return (
@@ -103,14 +105,14 @@ function AnaEkran({ duzen }: { duzen: Duzen }) {
       <LandingLogoDefs />
       <div style={{ position: 'absolute', left: 0, right: 0, top: ust, bottom: alt, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div data-guvenli-kutu="" style={{ width: sutun, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: story ? 14 : 14 }}>
-          <LandingLogo height={story ? 38 : 36} />
-          <p style={{ margin: 0, alignSelf: 'stretch', fontSize: story ? 36 : 38, lineHeight: 1.12, fontWeight: 700, letterSpacing: -0.8, textWrap: 'balance' as const }}>
-            Kelimeyi bilmek yetmez. Nereye koyduğun kazandırır.
+          <div style={{ alignSelf: 'flex-start' }}><LandingLogo height={story ? 38 : 36} /></div>
+          <p style={{ margin: 0, alignSelf: 'stretch', fontSize: story ? 30 : 31, lineHeight: 1.14, fontWeight: 700, letterSpacing: -0.6, whiteSpace: 'nowrap' }}>
+            Kelimeyi bilmek yetmez.<br />Nereye koyduğun kazandırır.
           </p>
           <div data-kesit="" style={{ width: 340, zoom: kesitZoom, marginTop: 8 }}>
             <BolgeKesiti />
           </div>
-          <p style={{ margin: 0, fontSize: story ? 26 : 24, fontWeight: 700, color: ACCENT, letterSpacing: -0.3 }}>
+          <p style={{ margin: 0, fontSize: story ? 26 : 24, fontWeight: 700, color: '#1B2430', letterSpacing: -0.3 }}>
             Yepyeni bir kelime oyunu
           </p>
           <div style={{ alignSelf: 'stretch', height: 54, borderRadius: 6, background: ACCENT, color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center',
