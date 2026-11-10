@@ -597,3 +597,50 @@ seviyeye ulaşan hamle sayısı" ve cevabın tanınır bir kelime olması.
 
 - **MOBİL PORT (3 Kas 2026, taslak PR `claude/hamle-avi-mobil`, 9 Kasım treni):** yazıldı — `mobile/docs/parca-log.md` → Parça 256. Gizlilik metni (§2 rekor maddesi, §5 silme listesi, §6 "dokuz durum" + (9) ölçüm cümlesi, "Son güncelleme: 3 Kasım 2026") ve "Detaylı Kurallar › Hamle Avı" bölümü BU PR'da web+port birlikte; **gizlilik metni tarihi merge gününe çekilmeli** (3 Kasım yazıldı; yayın 9 Kasım+ ise `LegalContent.tsx` + `legal_modals.dart` tarihi ve `legal_text_test` tek yerden eşit kalır — tarihi iki tarafta birlikte değiştir). (9) maddesi `is_guest` bayrağını (girişli olup olmadığı) açıkça sayıyor — sunucu koyuyor, kimlik değil. 375 pt × 1,3 yazı ölçeğinde `OYUNU BAŞLAT` ilk kareden düştü (Hamle Avı satırı ~126 px, kullanıcının "her yerde en üstte" kararının bedeli) — muafiyet `setup_screen_test`te yazılı.
 
+
+## Oyun geçmişi: skor kutusuna dokununca skor kartı — ERTELENDİ, kod YOK (10 Kasım 2026)
+
+**İstek (kullanıcı):** Oyun geçmişinde bir oyun açılınca üstte çıkan kişi/puan
+kutularına dokunulunca o kişinin skor kartı açılsın; tahtaya dokunulunca
+Paylaş / Tekrar Oyna / Kapat çıksın. **Karar (aynı gün, kullanıcı):** *"Bu
+konudan vazgeçtim şimdilik."* Hiçbir şey yazılmadı; bu kayıt, ileride
+konuşulanların referansı.
+
+**Bulgular (koddan, ölçüm değil okuma):**
+- **Tahtaya dokununca menü ZATEN VAR**, iki platformda: web `GameHistoryModal.tsx`
+  (`ActionSheet`: Paylaş · Tekrar Oyna · Kapat) ↔ port `score/game_history_modal.dart`
+  (`showActionSheet`, `_openBoardSheet`); 4 Eylül 2026'da kullanıcı isteğiyle
+  eklendi. **"Tekrar Oyna" yalnızca kendi geçmişindeki CANLI oyunlarda** çıkar
+  (`online_game_id` dolu + `userId` boş); YZ'ye karşı yerel oyunda yalnızca
+  Paylaş/Kapat. İstek bunu bilmeden gelmişti; kullanıcı bir ekranda
+  görmüyorsa ayrı bir hata olarak bakılır.
+- **Skor kutuları tıklanabilir DEĞİL:** web `ScoreBoxRow` (`GameHistoryModal.tsx`)
+  ↔ port `score/score_box_row.dart`. Canlı oyun ekranının üst kutuları ise
+  zaten skor kartı açıyor (`OnlineGameScreen.tsx` → `handlePlayerBoxClick`).
+- **Engel = kimlik:** geçmiş kaydındaki oyuncu satırı (`GamePlayerSnapshot`,
+  `database.types.ts`) yalnızca `name, score, is_ai, surrendered?, colorIndex?`
+  taşır — **`user_id` YOK**, yani kutu hangi kişiyi temsil ediyor bilinmiyor.
+
+**Tasarım seçenekleri (hangisi yapılırsa):**
+1. **Dokununca sorgula (önerilen):** Canlı oyunun koltuk listesi (kimliklerle)
+   çekilir, dokunulan kutu koltukla eşleşir, mevcut `PlayerScoreCard` /
+   `showPlayerScoreCard` açılır. Veri tabanı ve gizlilik metni DEĞİŞMEZ; eski
+   kayıtlarda da çalışır. Oyun başına bir kez çekilip saklanır.
+2. **Kayda `user_id` yaz:** yeni kayıtlarda çalışır, eskilerde çalışmaz; veri
+   sözleşmesi + gizlilik metni etkilenir. Önerilmedi.
+- **YZ'ye karşı yerel oyun:** yalnızca KENDİ kutun anlamlı; YZ kutuları
+  tıklanmaz (kartları yok).
+
+**Asıl risk — YANLIŞ KİŞİNİN KARTI** (hiç göstermemekten kötü): kutu ↔ koltuk
+eşleştirmesi SIRA numarasıyla yapılırsa eski kayıtlarda kayabilir
+(`20260729081244_fix_online_finish_players_order.sql` bir kez oyun bitiş kaydının
+oyuncu sırasını düzeltmişti). Eşleştirme **renk numarası + ad** birlikte
+olmalı; emin olunamayan kutu tıklanabilir yapılmaz.
+
+**Yapılmadan ÖNCE doğrulanacak iki şey (yapılmadı):**
+- Biten Canlı oyunun koltuk listesi, katılımcı olarak sorgulanabiliyor mu (yetki)?
+- `colorIndex` eski kayıtlarda dolu mu (sonradan eklenmiş; eskilerde yok →
+  o kayıtlarda kutular tıklanamaz kalır).
+
+**Kapsam kuralları (yapılırsa):** web + port ikizi AYNI PR'larda; mobil yarısı
+taslak PR olarak sürüm trenini bekler (`mobile/docs/surumler.md` → "SÜRÜM TRENİ").
