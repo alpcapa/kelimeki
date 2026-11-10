@@ -249,3 +249,7 @@ ama bu kararla kelime bulucular için hiç gerekmez.
 mağaza bağlantılarını biz hazırlarız. Kabul edilmezse kapanır, ısrar yok.
 **Not:** bu tür sitelerin "çok indeksli sayfası" çoğu zaman otomatik üretilmiş
 harf kombinasyonu sayfalarıdır; bağlantı değeri göründüğünden düşüktür.
+
+**10 Kasım 2026 — durum:** karşı teklif Kelimelodi'ye iletildi (kullanıcı
+bildirdi), henüz cevap gelmedi. Bekleyen iş YOK: ısrar edilmez, kabul gelirse
+metin/görsel/mağaza bağlantılarını biz hazırlarız, gelmezse konu kapanır.
