@@ -79,6 +79,7 @@ import { AdminChatTranscriptModal } from './AdminChatTranscriptModal';
 import { AdminBlockedWordsModal } from './AdminBlockedWordsModal';
 import { CountBadge } from './CountBadge';
 import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
+import { fillDailyGaps, istanbulToday } from '../utils/dailySeries';
 import { SplitPieChart } from './SplitPieChart';
 import {
   StackedBucketChart,
@@ -274,6 +275,14 @@ const DURATION_CARDS: {
 // Mavi+amber çifti ölçülerek seçildi (renk körlüğü ayrım testi): mavi+mor
 // deutan'da ΔE 5.2 ile AYIRT EDİLEMİYOR, bu çift ise protan 27.0 / tritan 28.8 /
 // normal 32.9 ile altı kontrolün hepsinden geçiyor. USER_SERIES ile aynı çift.
+// Hamle Avı günlük çizgi grafiği (11 Kasım 2026, kullanıcı isteği: "oyun/üye gibi line graph").
+// `kişi` = benzersiz CİHAZ (anon_id), insan değil — bkz. `admin_hamle_avi_stats`.
+const HAMLE_AVI_SERIES: ChartSeriesDef[] = [
+  { key: 'plays', label: 'Oyun', color: '#2a78d6' },
+  { key: 'players', label: 'Kişi (cihaz)', color: '#D97706' },
+  { key: 'found', label: 'Bulunan', color: '#008300' },
+];
+
 const ACTIVE_PLAYER_SERIES: ChartSeriesDef[] = [
   { key: 'active_28d', label: 'Aktif Oyuncu (28 gün)', color: '#2a78d6' },
   { key: 'active_in_bucket', label: 'Dönem İçi Aktif', color: '#D97706' },
@@ -1969,8 +1978,8 @@ function HamleAviCard({
       sub: `bulmaca · ${num(stats.members_total, 0)} üye`,
     },
   ];
-  const days = stats.daily.slice(-14);
-  const maxPlays = Math.max(1, ...days.map((d) => d.plays));
+  // Boş günler sıfırla doldurulur: çizgi grafik atlanan günleri doğrudan birleştirirdi.
+  const daily = fillDailyGaps(stats.daily, { players: 0, plays: 0, found: 0 }, istanbulToday());
   return (
     <div className="flex flex-col gap-2" data-admin-hamle-avi="">
       {infoHint && <div className="self-end">{infoHint}</div>}
@@ -1989,25 +1998,17 @@ function HamleAviCard({
           </div>
         ))}
       </div>
-      {days.length === 0 ? (
+      {daily.length === 0 ? (
         <div className="text-xs font-mono text-muted text-center py-3">Bu aralıkta oyun yok.</div>
       ) : (
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] font-mono uppercase tracking-[0.5px] text-muted">
-            Günlük (son {days.length} gün) — oyun · kişi
-          </span>
-          {days.map((d) => (
-            <div key={d.day} className="flex items-center gap-2 text-[10px] font-mono">
-              <span className="w-12 shrink-0 text-muted">{d.day.slice(8, 10)}.{d.day.slice(5, 7)}</span>
-              <div className="flex-1 h-2 rounded bg-void overflow-hidden">
-                <div className="h-full bg-accent" style={{ width: `${(d.plays / maxPlays) * 100}%` }} />
-              </div>
-              <span className="w-14 shrink-0 text-right text-text">
-                {d.plays} · {d.players}
-              </span>
-            </div>
-          ))}
-        </div>
+        <GrowthChart
+          data={daily}
+          granularity="day"
+          series={HAMLE_AVI_SERIES}
+          defaultActiveKeys={['plays', 'players']}
+          controls={<span className={sectionTitleCls}>Günlük — oyun / kişi</span>}
+          csvBaseName="kelimeki-hamle-avi"
+        />
       )}
     </div>
   );

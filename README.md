@@ -188,6 +188,7 @@ src/
 │   ├── boardSnapshot.ts # oyun sonu tahtasının games.board_snapshot JSON'una serileştirilmesi/geri yüklenmesi
 │   ├── bag.ts          # taş torbası (buildBag, drawTiles)
 │   ├── outline.ts      # bölge/bonus dış hat SVG path üretimi
+│   ├── dailySeries.ts  # günlük serilerde boş günleri sıfırla doldurur + İstanbul günü (admin line grafikleri)
 │   ├── turkish.ts      # trUpper / trLower (i/İ, ı/I dönüşümü) + trCompare (Türkçe alfabetik sıralama)
 │   ├── random.ts       # karıştırma
 │   ├── ranking.ts      # oyun sonu sıralama (teslim olanlar en sona)
