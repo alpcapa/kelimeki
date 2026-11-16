@@ -75,10 +75,6 @@ Aşağıdaki ikisinin kaydı kök `CLAUDE.md` → Kaynak Hunisi bölümünde:
 
 ---
 
-## ⚠ `main` web-ci `parite` işi KIRMIZI (4 Ekim 2026'dan beri) — bilinen, #815 ile kapanacak
-
-Tek düşen test: `friends_test.dart` → *"FriendsModal metinler web `FriendsModal.tsx` ile BİREBİR"* (web ⋯ menüsünde "Engel / şikayet ayarları" var — #813 — port hâlâ "Sessize alma / şikayet ayarları"). 11 Ekim'de ölçüldü: `main`'in son sekiz web CI koşusu aynı yüzden kırmızı; #828/#829/#830 de yalnızca bu testle kırmızı (tam takım 1037 geçti, 1 düştü). **Bilerek YAPILMADI:** yalnız etiketi değiştiren kısmi bir port yaması — menü "Engel…" derken içindeki pencere hâlâ sessize alma anlatırdı (1.1.3'te kullanıcıya yarım özellik vaadi). Kapanış #815 (Engelle port ikizi, tam özellik). **KARAR (11 Ekim, kullanıcı: *"12 Ekime alalım, her şey yeşil olsun"*): #815 12 Ekim kesimine ALINDI.** Birleşik durum (#815 + #779 + main) tam takım 1057 yeşil. ⚠ **Sıra:** #815 ilk merge edilenlerden olmalı (kırmızıyı kapatan o); diğer taslakların CI'ı o merge'den sonra yeniden koşulmalı (eski koşular kırmızı kalır).
-
 ## Faz planı — kalan işlerin YAYIN sırası (29 Ağustos 2026)
 
 Kullanıcı isteği: *"Tüm işleri fazlandırıp plan yapalım. Uygun gördüğün

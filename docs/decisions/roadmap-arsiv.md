@@ -1965,6 +1965,13 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunuc
 - **F. Şerit HEP görünür + "N koltuk kaldı" her yerde + tek seferlik tanıtım balonu — 19 Ekim treni (12 Ekim 2026, kullanıcı).** Veri: yayında 1,5 gün, 32 ilanın 15'i eşleşmiş, 13'ünde kurucunun kendi hesabı, yabancı iki kişinin eşleştiği oyun YOK; kullanıcı: *"çoğu insan bilmiyor"*. Web taslak PR **#850** (`claude/rastgele-bos-serit-web`) + port taslak PR (`claude/rastgele-bos-serit-port`, #850'nin ÜSTÜNDE): boşken tek satır "Bekleyen oyun yok. Hemen aç." (sunucu BAŞARIYLA boş dedikten sonra), "Bekliyor" etiketleri kalktı → "N koltuk kaldı" (benim ilanımda açık + yanıtı beklenen davetli: karma kadroda açık koltuk 0 olsa da oyun başlamaz), başlık çapalı balon (bir kez, 7 sn, *"Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen katılsın. Önce gelen koltuğu kapar."*). Ayrıntı: `docs/decisions/random-opponent.md` §22. ⚠ **İKİ PR AYNI GÜN merge edilir** (web PR'ı `mobile/app/test/random_games_test.dart`a dokunduğu için tek başına da mobil derlemeyi tetikler). **Başarı ölçütü:** `online_games` → `listing='random'` günlük ilan sayısı ve FARKLI kurucu sayısı (taban 11 Eki 22, 12 Eki 6; çoğu kurucunun/test hesaplarının) — sorgu `docs/testing-rastgele.md`.
 
 
+## ⚠ `main` web-ci `parite` işi KIRMIZI (4 Ekim 2026'dan beri) — bilinen, #815 ile kapanacak
+
+✅ **KAPANDI (16 Kasım 2026):** `main`'in `web-ci` işinin son sekiz koşusu YEŞİL (5-11 Kas 2026, koşu #986 → #1004, hepsi `push`/`success`). #815 merge EDİLMEDEN kapatıldı (taslak PR, 11 Ekim); Engelle port ikizi 1.1.3/1.1.4 trenleriyle girdi ve `friends_test.dart` ↔ `FriendsModal.tsx` farkı kapandı. Aşağıdaki metin 11 Ekim tarihli kayıttır, olduğu gibi duruyor.
+
+
+Tek düşen test: `friends_test.dart` → *"FriendsModal metinler web `FriendsModal.tsx` ile BİREBİR"* (web ⋯ menüsünde "Engel / şikayet ayarları" var — #813 — port hâlâ "Sessize alma / şikayet ayarları"). 11 Ekim'de ölçüldü: `main`'in son sekiz web CI koşusu aynı yüzden kırmızı; #828/#829/#830 de yalnızca bu testle kırmızı (tam takım 1037 geçti, 1 düştü). **Bilerek YAPILMADI:** yalnız etiketi değiştiren kısmi bir port yaması — menü "Engel…" derken içindeki pencere hâlâ sessize alma anlatırdı (1.1.3'te kullanıcıya yarım özellik vaadi). Kapanış #815 (Engelle port ikizi, tam özellik). **KARAR (11 Ekim, kullanıcı: *"12 Ekime alalım, her şey yeşil olsun"*): #815 12 Ekim kesimine ALINDI.** Birleşik durum (#815 + #779 + main) tam takım 1057 yeşil. ⚠ **Sıra:** #815 ilk merge edilenlerden olmalı (kırmızıyı kapatan o); diğer taslakların CI'ı o merge'den sonra yeniden koşulmalı (eski koşular kırmızı kalır).
+
 ## İçindekiler
 
 > Madde 0 (FAZ B), merge turu, #33/#36, madde 31, madde 24 (FAZ C),
@@ -1973,7 +1980,7 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunuc
 
 | Ne | Kapanış |
 |---|---|
-| ROADMAP "✅ ÇÖZÜLDÜ (11 Ekim)" (Değiştir → BERABERE, #830) · "1.1.3 treni" kapanış kaydı · "1.1.4 treni" + "Rastgele Oyuncu (#804/#805) — üç açık karar" | 16 Kasım 2026 (1.1.4 iki mağazada: 23-24 Ekim) |
+| ROADMAP "✅ ÇÖZÜLDÜ (11 Ekim)" (Değiştir → BERABERE, #830) · "1.1.3 treni" kapanış kaydı · "1.1.4 treni" + "Rastgele Oyuncu (#804/#805) — üç açık karar" · "web-ci `parite` KIRMIZI" (yeşile döndü) | 16 Kasım 2026 (1.1.4 iki mağazada: 23-24 Ekim) |
 | ROADMAP "1.1.3 treni" — 15 PR'lık içerik tablosu + kesim kaydı + Rastgele Oyuncu TestFlight notu (#804/#805) | 11 Ekim 2026 (1.1.3 iki mağazada) |
 | ROADMAP #25 (iOS simge rozeti sayısı) · #34 (canlı sohbet okundu — port) · #35 (Kayıt Hunisi — port) + 1.1.2 (831) içerik tablosu ve kesim kaydı | 2 Ekim 2026 (1.1.2 iki mağazada) |
 | ROADMAP #37 (küfür süzgeci — koşul metni + port #640) · #38 (tahta yükseklik bütçesi, port #657) · #41 (ilk oyun akışı v2 — port #739-#746, 1.1.2 cihaz turu ✅) | 1 Ekim 2026 |
