@@ -1972,6 +1972,12 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunuc
 
 Tek düşen test: `friends_test.dart` → *"FriendsModal metinler web `FriendsModal.tsx` ile BİREBİR"* (web ⋯ menüsünde "Engel / şikayet ayarları" var — #813 — port hâlâ "Sessize alma / şikayet ayarları"). 11 Ekim'de ölçüldü: `main`'in son sekiz web CI koşusu aynı yüzden kırmızı; #828/#829/#830 de yalnızca bu testle kırmızı (tam takım 1037 geçti, 1 düştü). **Bilerek YAPILMADI:** yalnız etiketi değiştiren kısmi bir port yaması — menü "Engel…" derken içindeki pencere hâlâ sessize alma anlatırdı (1.1.3'te kullanıcıya yarım özellik vaadi). Kapanış #815 (Engelle port ikizi, tam özellik). **KARAR (11 Ekim, kullanıcı: *"12 Ekime alalım, her şey yeşil olsun"*): #815 12 Ekim kesimine ALINDI.** Birleşik durum (#815 + #779 + main) tam takım 1057 yeşil. ⚠ **Sıra:** #815 ilk merge edilenlerden olmalı (kırmızıyı kapatan o); diğer taslakların CI'ı o merge'den sonra yeniden koşulmalı (eski koşular kırmızı kalır).
 
+## ROADMAP "Bekleyen, tarihli işler" — 1.1.5 KESİLDİ satırı (3-4 Kasım 2026; 16 Kasım'da taşındı)
+
+1.1.5 iki mağazada yayında (Play 3 Kas 13:36 TSİ · App Store 3 Kas 23:55). Tablo satırı olduğu gibi aşağıda; tek geçerli uyarısı (`play-ai-turn`) `docs/decisions/ai-levels.md`'ye taşındı.
+
+| **Salı–Çarş 3-4 Kas** | **1.1.5 KESİLDİ (2 Kas):** dokuz PR `main`'de (#905 #903 #898 #907 #909 #884 #889 #886 + sürüm PR'ı) | ✅ Kesim derlemesi #982 yeşil, TestFlight'ta build **982**. Sırada TestFlight turu, sonra Android `.apk` cihaz turu (`mobile/docs/surumler.md` → "1.1.5"), Perşembe gönderim. ⚠ `play-ai-turn` BİLEREK yeniden yüklenmedi: canlı (v10) ↔ repo farkı yalnızca Kolay sabitleri ve fonksiyon seviye almıyor (hep Normal) — bir sonraki davranış değiştiren `_game/` değişikliğinde birlikte gider |
+
 ## İçindekiler
 
 > Madde 0 (FAZ B), merge turu, #33/#36, madde 31, madde 24 (FAZ C),
@@ -1980,7 +1986,7 @@ Tek düşen test: `friends_test.dart` → *"FriendsModal metinler web `FriendsMo
 
 | Ne | Kapanış |
 |---|---|
-| ROADMAP "✅ ÇÖZÜLDÜ (11 Ekim)" (Değiştir → BERABERE, #830) · "1.1.3 treni" kapanış kaydı · "1.1.4 treni" + "Rastgele Oyuncu (#804/#805) — üç açık karar" · "web-ci `parite` KIRMIZI" (yeşile döndü) | 16 Kasım 2026 (1.1.4 iki mağazada: 23-24 Ekim) |
+| ROADMAP "✅ ÇÖZÜLDÜ (11 Ekim)" (Değiştir → BERABERE, #830) · "1.1.3 treni" kapanış kaydı · "1.1.4 treni" + "Rastgele Oyuncu (#804/#805) — üç açık karar" · "web-ci `parite` KIRMIZI" (yeşile döndü) · "Bekleyen işler" tablosunun 1.1.5 satırı | 16 Kasım 2026 (1.1.4 iki mağazada: 23-24 Ekim) |
 | ROADMAP "1.1.3 treni" — 15 PR'lık içerik tablosu + kesim kaydı + Rastgele Oyuncu TestFlight notu (#804/#805) | 11 Ekim 2026 (1.1.3 iki mağazada) |
 | ROADMAP #25 (iOS simge rozeti sayısı) · #34 (canlı sohbet okundu — port) · #35 (Kayıt Hunisi — port) + 1.1.2 (831) içerik tablosu ve kesim kaydı | 2 Ekim 2026 (1.1.2 iki mağazada) |
 | ROADMAP #37 (küfür süzgeci — koşul metni + port #640) · #38 (tahta yükseklik bütçesi, port #657) · #41 (ilk oyun akışı v2 — port #739-#746, 1.1.2 cihaz turu ✅) | 1 Ekim 2026 |
