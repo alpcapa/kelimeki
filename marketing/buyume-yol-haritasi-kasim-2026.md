@@ -94,6 +94,12 @@ CPI/retention için aranacak: Appodeal "Mobile Casual Benchmarks Report 2025", L
   cihaz başına oynanan farklı günler). Tutuyorsa Hamle Avı reklam kancası olarak denenir (yol haritası §4 Faz 3,
   vergi sorunu `§3b`: bulmacaların %41'i vergi tuzağı → ana sayfa üzerinden, doğrudan değil); tutmuyorsa kancaya
   harcamadan önce elde tutma sorunu çözülür.
+- **OKUMA YAPILDI (17 Kas 2026, ajan, `hamle_avi_events` canlıdan, yalnız `source='prod'`):** 22 cihaz (3-16 Kas). **Başka bir
+  güne dönen: 9 / 22** (D1 gözlenebilir 21 cihazdan **9** başka bir gün oynamış; yalnızca **ertesi gün 2/21**, D+2'de **6/20**) ·
+  **3+ farklı gün oynayan 4**. Yani dönüş var ama ertesi güne değil, 2+ gün sonrasına yığılıyor. Örnek ÇOK küçük ve çarpık:
+  tek cihaz 397 oyun (toplamın ~%60'ı; test cihazı olabilir, çıkarılırsa dönüş en fazla 8/21), 13 Kas'ın 73 oyunu tek cihaz.
+  Platform: Android 13 cihaz (7 dönen), iOS 6 (1), web 3 (1). **Karar henüz verilmedi** (eşik önceden yazılmamıştı; sonuçtan sonra
+  eşik uydurulmadı) — kullanıcıya sunuldu.
 
 ## 4. Önerilen yol haritası
 
