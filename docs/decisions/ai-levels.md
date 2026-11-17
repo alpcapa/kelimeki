@@ -399,3 +399,22 @@ girmişti (80/120 KB) ve kuralı "tarihli anlatıyı `docs/decisions/*`'e
 taşı, orada yalnızca HER YERDE geçerli kural kalsın" diyor.
 
 - **YZ seviyesi (Kolay / Normal / Zor — ROADMAP #23; TASARIM KAYDI `docs/decisions/ai-levels.md`, bir şey değiştirmeden önce onu oku):** `findAIMove(..., level)` (`src/utils/ai.ts`) = `findAIMoves` (en iyi N hamlenin sıralı listesi; vergisiz hamle varsa yalnızca onlar) + `pickTopMove` (boş → null; tek eleman → o, rastgele değer ÇAĞRILMAZ; birden fazla → TEK `nextRandom()`, `floor(r·len)`); N `AI_LEVEL_TOP_N` (`src/game/constants.ts`: Kolay 4 · Normal 1 · Zor 1). **Zor'un gücü N'den değil ARAMANIN GENİŞLİĞİNDEN gelir** — `AI_LEVEL_SEARCH` (`{ wide, maxWordLen }`; Normal/Kolay dar: tek çapadan geçen hat, havuz 2-7; Zor geniş: bir taşa komşu boş "kanca" hücresinden başlayan PARALEL dizişler + aynı hattaki birden çok taştan geçen kelimeler, havuz 2-8). Kural bunlara baştan beri izin veriyordu (`validatePlacement`), Normal'in araması hiç üretmiyordu. **Rakibin rafına bakan hiçbir yol YOK** (kullanıcı kararı, 7 Eylül 2026: hiledir; oyun sonu çözücü de bu yüzden silindi). **Normal hiç rastgele değer tüketmez** (golden'lar bayt-eş kaldı), Zor da tüketmez (N=1); Kolay torbayla AYNI enjekte edilebilir kaynaktan tüketir (`reducer_ai2_kolay.json` kilitler). Döngü SIRASI davranışın parçası — `reducer_ai2_zor.json` Dart'ı, `verify-edge-engine-parity`nin Zor adımı Edge'i kilitler. Seviye `GameState.aiLevel?` (opsiyonel; **Normal JSON'a YAZILMAZ** — `'normal'` yazma, aynı şeyi ikinci biçimde söylemek olur; eski kayıtlar/bulut kayıtları/Canlı oyunlar hep alansız, `STORAGE_VERSION` sabit), `START` payload'ıyla bir kez yazılır, değiştiren action YOK. `buildGameRecord` → `games.ai_level` (Normal → null); `leaguePoints(rank, count, surrendered, level)` dört kartta (`GameOver`/`GameHistoryModal`/`RecentGamesSection`/`SharedGamePage`) seviyeyle hesaplanır — ⚠ `level`ine JS varsayılanı VERME, `verify-league-points` ariteyi `.length`le okuyor. `AiLevelBadge` YZ oyununda HER seviyede çıkar (Kolay YEŞİL · Normal TURUNCU · Zor KIRMIZI — `AI_LEVEL_BADGE_CLASS` ↔ port `aiLevelBadgeColor`), Canlı oyunda hiç çıkmaz — "YZ oyunu mu" kararı ÇAĞIRANDA (`aiLevelForBadge(raw, isAiGame)`). Terminoloji tek: **Zorluk: Kolay · Normal · Zor**. ⚠ **Üç kopya:** Dart `aiLevelTopN`/`aiLevelSearch` (golden `ai_level.json`) + Edge `_game/constants.ts`; `AiLevel` tipinin kaynağı `src/game/types.ts`, `database.types.ts` yeniden dışa aktarır. Port ikizi `util/ai_level.dart` + `ui/ai_level_badge.dart` — `ai_level_parity_test.dart` etiket/seçilebilir liste/seviye açıklamaları/yardım paragrafını kilitler, biri değişirse İKİSİ AYNI PR'da. Ölçümler (Zor ↔ Normal %70/%72, elenen dokuz sezgisel, düşünme süresi), ürün yüzeyinin fazları ve seçici altı açıklama metinlerinin gerekçesi: `docs/decisions/ai-levels.md`.
+
+## `play-ai-turn` BİLEREK yeniden yüklenmedi — canlı ↔ repo farkı (3-4 Kasım 2026)
+
+1.1.5'in Kolay ayarı (en iyi 8 + en fazla 5 harf) 2 Kasım'da kesildi; sunucudaki
+YZ fonksiyonu **`play-ai-turn` o sırada yeniden deploy EDİLMEDİ** ve bu bilinçli:
+canlıdaki sürüm (v10) ile repodaki `supabase/functions/_game/` arasındaki tek
+fark Kolay seviyesinin sabitleri, ve fonksiyon zaten seviye almıyor — Canlı
+oyunda sunucu YZ'si HEP Normal oynuyor. Yani deploy etmemek kullanıcıya görünen
+bir davranış değiştirmiyor.
+
+⚠ **Sonraki davranış değiştiren `_game/` değişikliğinde `play-ai-turn` o
+değişiklikle BİRLİKTE yeniden yüklenmeli.** Aksi hâlde canlı fonksiyon repodaki
+motordan ayrışmış kalır (aynı sınıf hata 5 Eylül 2026'da aylarca canlıda kaldı;
+bkz. kök `CLAUDE.md` → motorun ÜÇÜNCÜ kopyası). Deploy öncesi `list_edge_functions`
+ile `verify_jwt`'nin mevcut değerini oku ve AYNEN geçir (deploy aracı parametre
+verilmezse `true` varsayar ve önceki değeri korumaz).
+
+Kaynak: `ROADMAP.md` "Bekleyen, tarihli işler" tablosundaki 3-4 Kasım satırından
+(1.1.5 yayınlanınca satır silindi, 16 Kasım 2026).
