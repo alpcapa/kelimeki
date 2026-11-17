@@ -35,6 +35,11 @@ import { BOTTOM_STRIP_MIN_HEIGHT_PX } from '../utils/boardFit';
  *    kararı *"Telefonda web'in yatay çalışması gerekmiyor"*); tablet ve açık
  *    katlanabilir artık hiçbir koşulda bloklanmaz, orada kısa sayfada tahta
  *    tabanına iner ve gerekirse birkaç piksel kaydırılır.
+ * 5. **Açık iPhone Duo bloklandı (17 Kasım 2026, kullanıcı ekran görüntüsü).**
+ *    Safari yatay, açık katlanabilir iPhone: kısa kenar ölçüsü <600 çıktı,
+ *    telefon sanıldı. Üçüncü koşul artık ORANA da bakıyor (`PHONE_MIN_ASPECT`):
+ *    4:3'e yakın ekran telefon değildir. ⚠ Cihazda DOĞRULANMADI — `screen`
+ *    değerleri ölçülmedi; düzeltme oran varsayımına dayanıyor.
  *
  * ## Neden banner YETMEDİ
  *
@@ -70,6 +75,11 @@ import { BOTTOM_STRIP_MIN_HEIGHT_PX } from '../utils/boardFit';
  */
 /** Bu kısa kenarın altı TELEFON sayılır (bkz. tarihçe #4). */
 export const PHONE_MAX_SHORT_SIDE_PX = 600;
+/** Bu orandan (uzun/kısa kenar) DAR ekran telefon sayılmaz: açık katlanabilirler
+ *  4:3'e yakın (Fold 1104/768 = 1,44; iPhone Duo ~1,4), telefonlar ≥ 1,7
+ *  (16:9 = 1,78). 17 Kasım 2026: iPhone Duo Safari'de yatayda blok çıktı —
+ *  yalnızca kısa kenara bakmak yetmedi (bkz. tarihçe #5). */
+export const PHONE_MIN_ASPECT = 1.6;
 
 export function LandscapeBlock() {
   const [blocked, setBlocked] = useState(false);
@@ -92,7 +102,11 @@ export function LandscapeBlock() {
     /** Telefon mu — ekranın KISA kenarı (yönelimden bağımsız; iOS
      *  `screen`i hep dikey verir, Android o anki yönelimle). Telefonlar
      *  320–440, en küçük iPad (mini) 744, açık katlanabilir ~880. */
-    const telefon = () => Math.min(window.screen.width, window.screen.height) < PHONE_MAX_SHORT_SIDE_PX;
+    const telefon = () => {
+      const kisa = Math.min(window.screen.width, window.screen.height);
+      const uzun = Math.max(window.screen.width, window.screen.height);
+      return kisa < PHONE_MAX_SHORT_SIDE_PX && uzun / kisa >= PHONE_MIN_ASPECT;
+    };
 
     const update = () =>
       setBlocked(coarse.matches && short.matches && telefon() && !yaziliyor());
