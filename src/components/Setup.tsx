@@ -763,7 +763,7 @@ export function Setup({
               },
               {
                 key: "live" as const,
-                label: "Arkadaşınla",
+                label: "Arkadaş",
                 // 3 Eylül 2026: bekleyen iş (davet + sırası sende) YANINDA
                 // bitişini görmediğin oyunlar da sayılıyor — "Son
                 // Oynananlar" bir ALT sekme olduğundan, üst sekmede
