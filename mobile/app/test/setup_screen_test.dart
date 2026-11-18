@@ -105,7 +105,7 @@ AppServices liveBadgeServices(AuthService auth, OnlineGamesRepo onlineGames,
 /// found yet") — hata mesajı testin GERÇEK sonucunu gizliyor.
 Finder arkadaslaRozeti() => find.descendant(
       of: find.ancestor(
-          of: find.text('ARKADAŞINLA'), matching: find.byType(Stack)),
+          of: find.text('ARKADAŞ'), matching: find.byType(Stack)),
       matching: find.byType(CountBadge),
     );
 
@@ -437,7 +437,7 @@ void main() {
     await setPhoneViewSize(tester, const Size(420, 900));
     await pumpSetup(tester, services());
 
-    await tester.tap(find.text('ARKADAŞINLA'));
+    await tester.tap(find.text('ARKADAŞ'));
     await tester.pumpAndSettle();
     // Girişsiz + Supabase yapılandırılmamış: LiveGamesTab'ın misafir görünümü;
     // GİRİŞ YAP butonu yalnızca auth.configured iken çizilir (burada değil).
@@ -485,7 +485,7 @@ void main() {
     Future<void> arkadasinla(WidgetTester tester) async {
       await setPhoneViewSize(tester, const Size(420, 900));
       await pumpSetup(tester, services(auth: AuthService.fake()));
-      await tester.tap(find.text('ARKADAŞINLA'));
+      await tester.tap(find.text('ARKADAŞ'));
       await tester.pumpAndSettle();
       expect(find.text(kGuestLiveTitle), findsOneWidget);
       expect(find.text(kGuestLiveBody), findsOneWidget);
@@ -1262,7 +1262,7 @@ void main() {
     expect(arkadaslaRozeti(), findsNothing,
         reason: 'olay gelmeden rozet zaten tazelenmiş — test bir şey '
             'kanıtlamıyor demektir');
-    await tester.tap(find.text('ARKADAŞINLA'));
+    await tester.tap(find.text('ARKADAŞ'));
     await tester.pumpAndSettle();
     expect(tester.widget<CountBadge>(arkadaslaRozeti()).count, 1,
         reason: 'sekmeye dönüş listeyi yeniden yükler, rozet onunla gelir');

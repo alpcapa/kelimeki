@@ -1393,7 +1393,7 @@ class _SetupScreenState extends State<SetupScreen>
                             const SizedBox(width: 8),
                             Expanded(
                               child: _ChoiceButton(
-                                label: 'ARKADAŞINLA',
+                                label: 'ARKADAŞ',
                                 selected: _liveView,
                                 // 3 Eylül 2026: bekleyen iş (davet + sırası
                                 // sende) YANINDA bitişini görmediğin oyunlar
