@@ -217,7 +217,7 @@ test('Girişsiz Arkadaşınla: alttan giriş penceresi, "Yapay Zekayla devam et"
   // misafir boş bir sekmede kalmıyor.
   await donenKullanici(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Arkadaşınla' }).click();
+  await page.getByRole('button', { name: 'Arkadaş', exact: true }).click();
   const pencere = page.getByRole('dialog', { name: 'Arkadaşınla oynamak için giriş yap' });
   await expect(pencere).toBeVisible();
   await expect(pencere.getByRole('button', { name: 'Üye Ol' })).toBeVisible();

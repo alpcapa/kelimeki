@@ -75,7 +75,7 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       sabitliydi ve iPad/iPhone tarayıcısının yüzen alt çubuğunun arkasına
       yarı giriyordu — kullanıcı ekran görüntüsüyle gösterdi).
 - [ ] **Girişsiz "Arkadaşınla" (27 Eylül 2026).** Çıkış yapmış hâlde
-      "Kime karşı" → Arkadaşınla: alttan "Arkadaşınla oynamak için giriş yap"
+      "Kime karşı" → Arkadaş: alttan "Arkadaşınla oynamak için giriş yap"
       penceresi açılmalı. Üye Ol → kayıt formu, Giriş Yap → giriş formu;
       "Yapay Zekayla devam et" ya da arka plana dokunmak pencereyi kapatıp
       "Kime karşı"yı Yapay Zeka'ya çevirmeli.
