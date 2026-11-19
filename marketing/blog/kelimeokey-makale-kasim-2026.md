@@ -54,6 +54,10 @@ Oynama biçimleri
 
 Oyun yapay zekaya karşı üç zorluk seviyesiyle (Kolay, Normal, Zor), ya da arkadaşlarla iki veya dört kişilik canlı oyunlarla oynanabiliyor; canlı oyunlarda oyuncular sırası geldiğinde 48 saat içinde hamle yapabiliyor ve oyun içinde mesajlaşabiliyor. Bunların yanında "Hamle Avı" bölümü, üç dakika içinde tahtadaki en iyi hamleyi bulmaya yönelik bulmacalar içeriyor.
 
+k-lig
+
+Oyunlar sonuçsuz kalmıyor: üye girişi yapan oyuncuların sonuçları kaydediliyor ve oyun sonundaki sıralamaya göre "k-lig" adı verilen sıralama sistemine puan olarak işleniyor. Puanlar biriktikçe oyuncular Çaylak'tan başlayıp Kozmik'e uzanan dokuz rütbeden birine yükseliyor; rütbe, lider tablosunda oyuncunun adının yanında bir mühür olarak görünüyor. Yapay zekaya karşı oynarken seçilen zorluk puanı etkiliyor, canlı oyunda süresi içinde hamle yapmamak ise puan kaybettiriyor.
+
 Erişim
 
 Kelimeki ücretsiz; üyelik gerektirmeden hem tarayıcıdan hem de iPhone ve Android uygulamalarından oynanabiliyor. İlk oyunda yaklaşık bir dakikalık bir tanıtım oyunu kuralları adım adım gösteriyor. Kuralların ayrıntıları oyunun kurallar sayfasında (https://kelimeki.com/nasil-oynanir/?ref=kelimeokey) yer alıyor. Uygulamalar Google Play (https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki) ve App Store (https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id6809809788) üzerinden indirilebiliyor.
