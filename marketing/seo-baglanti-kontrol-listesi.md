@@ -40,6 +40,8 @@ ama Google'a "bu site gerçek bir marka" sinyali verir ve keşfi kolaylaştırı
 - [ ] **Bağımsız geliştirici toplulukları / Türkçe girişim yazıları:** "bu
   oyunu nasıl yaptım" tarzı bir yazı hem bağlantı hem ilgi getirir.
 
+- [ ] **kelimeokey blogu (19 Kas 2026):** 6 Kas e-postamıza olumlu döndü — makale + 3 link isteniyor. Yazı hazır, gönderilmedi: `marketing/blog/kelimeokey-makale-kasim-2026.md`.
+
 ## C. Kısa e-posta şablonu (blog/liste yazarına)
 > Merhaba, "<yazının başlığı>" yazınızı okudum. Kelimeki adında, 13×13 tahtada
 > köşe bölgeleriyle oynanan, ücretsiz bir Türkçe kelime oyunu geliştirdim
