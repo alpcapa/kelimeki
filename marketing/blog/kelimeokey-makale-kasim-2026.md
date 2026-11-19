@@ -36,7 +36,7 @@ Bağlantı kuralları: `marketing/seo-baglanti-kontrol-listesi.md`.
 
 Türkçe kelime oyunlarına yeni bir yaklaşım: Kelimeki
 
-Haziran 2026'da yayına giren Kelimeki, iki ya da dört kişiyle, yapay zekaya veya arkadaşlara karşı oynanabilen, strateji odaklı bir kelime oyunu. Alışılmış kelime oyunlarından farklı olarak her oyuncu kendi köşesinden başlıyor, kelimeleri yerleştirerek bölgesini büyütüyor; rakibin bölgesine temas eden ise vergiyle karşılaşıyor.
+Temmuz 2026'da yayına giren Kelimeki, iki ya da dört kişiyle, yapay zekaya veya arkadaşlara karşı oynanabilen, strateji odaklı bir kelime oyunu. Alışılmış kelime oyunlarından farklı olarak her oyuncu kendi köşesinden başlıyor, kelimeleri yerleştirerek bölgesini büyütüyor; rakibin bölgesine temas eden ise vergiyle karşılaşıyor.
 
 Harfleri tahtaya dizip puan toplamaya dayanan kelime oyunları Türkçede uzun zamandır var. Bağımsız olarak geliştirilen Kelimeki (https://kelimeki.com/?ref=kelimeokey), bu bilindik düzene tahtanın kendisinden gelen bir kural ekliyor: oyuncular ortadan değil, kendi köşelerinden başlıyor.
 
