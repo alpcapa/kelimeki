@@ -32,58 +32,56 @@ Bağlantı kuralları: `marketing/seo-baglanti-kontrol-listesi.md`.
 
 ---
 
-## YAZI (blogda yayınlanacak metin)
+## YAZI (blogda yayınlanacak metin — haber/makale dili, 19 Kas 2. sürüm)
 
-**Başlık:** Kelimeki: 13×13 Tahtada, Köşeden Köşeye Türkçe Kelime Oyunu
+**Başlık:** Türkçe kelime oyunlarına yeni bir yaklaşım: Kelimeki
 
-**Özet:** Yeni bir Türkçe kelime oyunu: her oyuncunun kendi köşesi var, rakibin
-bölgesine girmek ise bedeli olan bir hamle.
+**Özet:** Yaklaşık üç ay önce yayına giren, her oyuncuya bir köşe veren ve rakip bölgesine
+girmeyi vergiye bağlayan ücretsiz bir Türkçe kelime oyunu.
 
-Türkçe kelime oyunu denince çoğumuzun aklına aynı tahta gelir: ortadan başlarsın,
-harfleri yerleştirirsin, en yüksek puanı toplayan kazanır. **Kelimeki** bu
-kalıba bir soru ekliyor: *Kelimeyi bilmek yetmiyorsa, onu nereye koyduğun da
-önemliyse?*
+Harfleri tahtaya dizip puan toplamaya dayanan kelime oyunları Türkçede uzun
+zamandır var. Bağımsız olarak geliştirilen ve yaklaşık üç ay önce yayına giren
+[Kelimeki](https://kelimeki.com/?ref=kelimeokey), bu bilindik düzene tahtanın
+kendisinden gelen bir kural ekliyor: oyuncular ortadan değil, köşelerinden başlıyor.
 
-### Köşeden başlarsın
+**Köşeden başlayan oyun**
 
-Oyun 13×13'lük bir tahtada oynanır. Dört köşenin her biri 4×4'lük bir bölge ve
-her oyuncu kendi köşesinden oyuna başlar. İlk kelimen mutlaka köşendeki başlangıç
-karesine değmeli; oradan tahtanın ortasına doğru genişlersin. Taşlarını kendi
-taşlarına bağlı biçimde ilerlettikçe bölgen de büyür.
+Oyun 13×13'lük bir tahtada oynanıyor. Dört köşenin her biri 4×4'lük bir bölge
+oluşturuyor ve her oyuncu kendi köşesinden başlıyor. İlk kelimenin köşedeki
+başlangıç karesine değmesi gerekiyor; sonraki hamlelerle tahtanın ortasına doğru
+ilerleniyor. Oyuncunun bölgesi, köşesine kesintisiz bağlı kendi taşlarıyla
+genişliyor.
 
-### Rakibin bölgesine girmek bedelli
+**Rakip bölgesine girmenin bedeli**
 
-Rakibin bölgesine kelime kurmak serbest, ama bedava değil: hamlenin puanının bir
-kısmı bölge sahibine gider. Bu **bölge vergisi** her hamleyi bir hesaba
-çeviriyor. Yüksek puanlı bir kelime rakibin alanına değiyorsa, vergiyi ödemeye
-değer mi? Yoksa kendi bölgende daha az puanla yetinmek mi akıllıca? Rakip
-bölgesine bıraktığın izole bir taş ise bölgeyi senin lehine değiştirmeyebilir;
-ama zincirini kendi köşene bağlamayı başarırsan o hücreler senin olur.
+Oyunun ayırt edici yanı bölge vergisi. Rakibin bölgesine taş koymak ya da
+bölgenin sınırına değmek yasak değil, ancak hamlenin puanının bir bölümü bölge
+sahibine geçiyor. Bir rakip bölgesiyle etkileşimde puanın üçte biri o rakibe
+gidiyor; birden fazla rakip bölgesine değen hamlelerde pay, bölge sahipleri
+arasında paylaşılıyor. Böylece yüksek puanlı bir kelime her zaman en iyi hamle
+olmayabiliyor: vergiden sonra geriye kalan puan, kendi bölgede kurulan daha
+mütevazı bir kelimeden düşük kalabiliyor.
 
-Tahtanın ortasındaki 5×5'lik şerit de ayrı bir gerilim: orada yeni bir taş
-koyarak kurduğun kelime çarpanla puanlanır, tam merkez ise üç kat.
+Tahtanın ortasındaki 5×5'lik şerit de puanı etkiliyor. Bu şeride o turda yeni bir
+taş konan kelimenin puanı ikiye katlanıyor; tam merkez hücre ise üç kat
+puanlıyor. Oyunda ayrıca her istenen harfe dönüşebilen iki joker bulunuyor ve
+raftaki yedi taşın tamamını tek hamlede kullanmak 25 puan bonus getiriyor.
 
-### Kime karşı oynarsın
+**Oynama biçimleri**
 
-- **Yapay zekaya karşı:** Kolay, Normal ve Zor olmak üzere üç seviye.
-- **Arkadaşınla:** Canlı oyun; sırayla, istediğin zaman hamleni yap. 2 ya da 4
-  kişilik oynanabilir ve oyun içi mesajlaşma var.
-- **Hamle Avı:** 3 dakikalık bir bulmaca: tahtadaki en iyi hamleyi bul.
+Oyun yapay zekaya karşı üç zorluk seviyesiyle (Kolay, Normal, Zor), ya da arkadaşlarla
+iki veya dört kişilik canlı oyunlarla oynanabiliyor; canlı oyunlarda oyuncular
+sırayla, kendi zamanlarında hamle yapıyor ve oyun içinde mesajlaşabiliyor.
+Bunların yanında "Hamle Avı" adlı bölüm, üç dakika içinde tahtadaki en iyi
+hamleyi bulmaya dayanıyor.
 
-Oyunda iki joker taş var; her istediğin harfe dönüşür. Raftaki 7 taşın hepsini
-tek hamlede kullanırsan 25 puan bonus kazanırsın.
+**Erişim**
 
-### Ücretsiz ve hemen başlar
-
-Kelimeki ücretsiz; üyelik gerekmeden tarayıcıdan oynayabilirsin. İlk oyunda
-yaklaşık bir dakikalık, oynayarak öğreten kısa bir tanıtım seni karşılıyor.
-Android uygulaması da Google Play'de.
-
-- **Hemen oyna:** [kelimeki.com](https://kelimeki.com/?ref=kelimeokey)
-- **Kurallar:** [Nasıl oynanır?](https://kelimeki.com/nasil-oynanir/?ref=kelimeokey)
-- **Android:** [Google Play'den indir](https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki)
-
-*Kelimeki, bağımsız olarak geliştirilen bir Türkçe kelime oyunudur.*
+Kelimeki ücretsiz ve üyelik gerektirmeden tarayıcıdan oynanabiliyor; ilk oyunda
+yaklaşık bir dakikalık bir tanıtım kuralları adım adım gösteriyor. Kuralların
+ayrıntıları [oyunun kurallar sayfasında](https://kelimeki.com/nasil-oynanir/?ref=kelimeokey)
+yer alıyor. Oyunun Android sürümü [Google Play](https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki)
+üzerinden indirilebiliyor.
 
 ---
 
