@@ -251,8 +251,13 @@ Web'in eşi: kök `TESTING.md` §10.5. Sunucu (view + RPC) zaten canlıda.
 - [ ] **Pencere Puan Ligi ile açılır.** k-lig'i aç: başlığın altında iki
       sekme (🏆 Puan Ligi · 🧠 Beyin Ligi) — emojiler KUTU (□) değil gerçek
       emoji olarak çizilmeli; liste dünküyle aynı. Kapat/aç: yine Puan Ligi.
-- [ ] **Beyin Ligi listesi.** Sütunlar SIRA · OYUNCU · OYUN · OHP; puan ve
-      rütbe mührü YOK. Aynı hesapla webde de aç: sıralar ve OHP'ler BİREBİR
+- [ ] **Beyin Ligi listesi.** Sütunlar SIRA · OYUNCU · OYUN · OHP; puan
+      kolonu YOK. **Her oyuncunun isminin yanında rütbe mührü VAR (20 Kasım
+      2026, Puan Ligi'ndekiyle aynı 18px kompakt mühür):** aynı kişinin Puan
+      Ligi'ndeki kademesiyle birebir aynı olmalı; mühürler liste açılır açılmaz
+      değil, puanlar gelince çıkar (bir an mühürsüz görünmesi normal, herkes
+      bir an Çaylak GÖRÜNMEMELİ); uzun isim "…" ile kısalır, mühür kesilmez.
+      "SENİN SIRAN" satırında mühür YOK. Aynı hesapla webde de aç: sıralar ve OHP'ler BİREBİR
       aynı olmalı. Altta YZ/eşitlik notu.
 - [ ] **10. sıradaki hesap — "senin sıran" sabit satırı (16 Ekim 2026,
       Parça 245).** Listede senden önce 8-9 kişi olsun (iPad'de ilk ekran 8
