@@ -2,7 +2,8 @@
 
 **Durum (19 Kas 2026):** kelimeokey blog sahibi 6 Kas'taki e-postamıza OLUMLU döndü
 (*"Makalenizi iletirseniz blog kısmına eklerim. 3 adet link çıkışı da
-ekleyebilirsiniz"*). Yazı aşağıda; GÖNDERİLMEDİ, kullanıcı onayı bekliyor.
+ekleyebilirsiniz"*). **19 Kas 2026: kullanıcı yazıyı kendi revizesiyle e-postayla GÖNDERDİ (aşağıdaki "GÖNDERİLEN METİN" bölümü). Sıradaki adım: blog sahibinin yayınlaması; yayın bağlantısı gelince buraya yaz.**
+Görseller: `marketing/play-store/promo-1920x1080.png` (ana), `feature-graphic.png`, `store-icon-512.png`, `public/logo.png` (zip olarak verildi).
 Gönderen: `destek@kelimeki.com` (imza **Kelimeki Destek** — kurumsal ad).
 Bağlantı kuralları: `marketing/seo-baglanti-kontrol-listesi.md`.
 
@@ -63,6 +64,11 @@ Erişim
 Kelimeki ücretsiz; üyelik gerektirmeden hem tarayıcıdan hem de iPhone ve Android uygulamalarından oynanabiliyor. İlk oyunda yaklaşık bir dakikalık bir tanıtım oyunu kuralları adım adım gösteriyor. Kuralların ayrıntıları oyunun kurallar sayfasında (https://kelimeki.com/nasil-oynanir/?ref=kelimeokey) yer alıyor. Uygulamalar Google Play (https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki) ve App Store (https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id6809809788) üzerinden indirilebiliyor.
 
 ---
+
+## GÖNDERİLEN METİN (19 Kas 2026, kullanıcının son hâli — kayıt için)
+
+Yukarıdaki sürümden farkları: "Temmuz 2026" + ana sayfa bağlantısı ilk cümlede; "Bonus alanı kazandırıyor" ara başlığı; bölge vergisi paragrafı yeniden yazıldı; k-lig bölümü ve App Store bağlantısı eklendi.
+⚠ Gönderilen metinde kalan küçük pürüzler (blog yayınlamadan düzeltilirse iyi olur): "kendi bölgende yaptığın" (ikinci tekil — haber dili üçüncü şahıs); "bir tanıtım oyunun kurallarını" → "oyunu"; "bonus alanına konulan kelime puanları" → "kelimenin puanı".
 
 ## Gönderirken kontrol
 - [ ] Yazıdaki her cümle oyunla örtüşüyor mu? (kurallar kaynağı:
