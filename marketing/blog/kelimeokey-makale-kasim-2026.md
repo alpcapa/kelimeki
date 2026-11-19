@@ -1,6 +1,6 @@
 # Kelimeokey blog yazısı — Kasım 2026
 
-**YAYINLANDI (19 Kas 2026, kullanıcı bildirdi): https://kelimeokeyi.com/blog/kelimeki-turkce-kelime-oyunlarina-yeni-yaklasim/** — metin kullanıcıdan alındı ve kurallarla karşılaştırıldı (hata yok); `?ref=kelimeokey`'in bağlantıda DOĞRU girildiğini KULLANICI teyit etti (19 Kas). Ajan sayfayı açamadı (ağ `kelimeokeyi.com`'u engelliyor); gelen trafiği `web_sessions` → `utm_source = 'kelimeokey'` ile izle.
+**YAYINLANDI (19 Kas 2026, kullanıcı bildirdi): https://kelimeokeyi.com/blog/kelimeki-turkce-kelime-oyunlarina-yeni-yaklasim/** — metin kullanıcıdan alındı ve kurallarla karşılaştırıldı (hata yok); `?ref=kelimeokey`'in bağlantıda DOĞRU girildiğini ve Google Play + App Store bağlantılarının DOĞRU olduğunu KULLANICI teyit etti (19 Kas). Ajan sayfayı açamadı (ağ `kelimeokeyi.com`'u engelliyor); gelen trafiği `web_sessions` → `utm_source = 'kelimeokey'` ile izle.
 
 **Durum (19 Kas 2026):** kelimeokey blog sahibi 6 Kas'taki e-postamıza OLUMLU döndü
 (*"Makalenizi iletirseniz blog kısmına eklerim. 3 adet link çıkışı da
