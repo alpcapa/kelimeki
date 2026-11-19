@@ -4,6 +4,7 @@
 (*"Makalenizi iletirseniz blog kısmına eklerim. 3 adet link çıkışı da
 ekleyebilirsiniz"*). **19 Kas 2026: kullanıcı yazıyı kendi revizesiyle e-postayla GÖNDERDİ (aşağıdaki "GÖNDERİLEN METİN" bölümü). Sıradaki adım: blog sahibinin yayınlaması; yayın bağlantısı gelince buraya yaz.**
 Görseller: `marketing/play-store/promo-1920x1080.png` (ana), `feature-graphic.png`, `store-icon-512.png`, `public/logo.png` (zip olarak verildi).
+**Ek (19 Kas, kullanıcı paylaştı):** `kelimeki-store-screenshots-ipad-13.zip` (8 dosya, 3,6 MB — iPad 13" mağaza ekran görüntüleri seti) blog sahibine ayrıca iletildi; zip repoda değil, kullanıcının cihazında.
 Gönderen: `destek@kelimeki.com` (imza **Kelimeki Destek** — kurumsal ad).
 Bağlantı kuralları: `marketing/seo-baglanti-kontrol-listesi.md`.
 
