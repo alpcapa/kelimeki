@@ -1253,7 +1253,11 @@ Gerçek bir oturum gerektirir (view yalnızca `authenticated`a açık).
       geçtikten sonra yeniden aç: yine Puan Ligi'nde açılmalı (son sekme
       hatırlanmaz — kullanıcı kararı).
 - [ ] **Beyin Ligi listesi.** Sekmeye geç: sütunlar **Sıra · Oyuncu · Oyun ·
-      OHP**, puan ve rütbe mührü YOK. OHP büyükten küçüğe; listedeki herkesin
+      OHP**, puan kolonu YOK. **Her oyuncunun isminin hemen yanında rütbe
+      mührü var (20 Kasım 2026, Puan Ligi'ndeki mührün AYNISI, 18px):** aynı
+      kişinin Puan Ligi'ndeki mührüyle birebir aynı kademe olmalı; uzun isim
+      kısalır (…), mühür kesilmez. "Senin sıran" satırında mühür YOK (Puan
+      Ligi'nde de yok). OHP büyükten küçüğe; listedeki herkesin
       "Oyun" sayısı ≥ 5. Bir satırın OHP'si o oyuncunun Skor Kartı'ndaki
       "Ortalama Hamle Puanı" ile AYNI olmalı (satıra dokun, kart açılır).
       En altta not: *"YZ'ye karşı oynanan oyunlar da sayılır. OHP eşitse daha

@@ -2,16 +2,24 @@
 //
 // `Leaderboard.tsx`in "Beyin Ligi" sekmesi. Puan Ligi listesinin ikizi ama
 // puan YOK: sıra yalnızca OHP'ye göre (sunucuda, `beyin_ligi_siralama`).
-// Rütbe mührü de YOK — mühür toplam puandan türüyor, puansız listede
-// anlamsız (kullanıcı kararı). Port ikizi:
+// Rütbe mührü 2 Ekim 2026'da YOKTU (mühür toplam puandan türüyor, kullanıcı
+// kararı); 20 Kasım 2026'da kullanıcı isteğiyle EKLENDİ (*"Beyin ligindeki
+// isimlerin yanına da rütbe rozeti koyalım puan ligi gibi"*): sıralama hâlâ
+// yalnızca OHP'ye göre, mühür yalnızca oyuncunun kimliğini gösterir. Puan
+// `useRankScores` ile (toplu `leaderboard` okuması) gelir — satırda puan
+// kolonu YOK, bu yüzden Puan Ligi gibi `total_score` satırdan okunamaz.
+// "Senin sıran" satırında mühür YOK (Puan Ligi'nin aynı satırı da çizmiyor).
+// Port ikizi:
 // `mobile/app/lib/src/ui/score/beyin_ligi_list.dart`.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { LoadingNote } from './LoadingNote';
 import { Avatar } from './Avatar';
+import { RankSeal } from './RankSeal';
 import { fetchBeyinLigi, fetchMyBeyinLigiRank } from '../lib/api';
 import type { BeyinLigiRow, MyBeyinLigiRank } from '../lib/database.types';
 import { useAuth } from '../hooks/useAuth';
 import { useRowInView } from '../hooks/useRowInView';
+import { useRankScores } from '../hooks/useRankScores';
 import { shouldPinOwnRow } from '../utils/ownRowPin';
 import type { PlayerSummary } from './PlayerScoreCard';
 import { shortDisplayName } from '../utils/profileFields';
@@ -96,6 +104,11 @@ export function BeyinLigiList({ onSelect }: BeyinLigiListProps) {
     return () => observer.disconnect();
   }, [hasMore, rowsLoaded, loadMore]);
 
+  // ⚠ Hook, aşağıdaki erken `return`ün ÜSTÜNDE (React #300 kapısı:
+  // `npm run verify-hook-order`). Satırlar yüklenene kadar boş dizi: lookup
+  // `null` döner ve mühür HİÇ çizilmez (herkesi bir an Çaylak göstermez).
+  const tierOf = useRankScores((rows ?? []).map((r) => r.user_id));
+
   if (rows === null) {
     return (
       <div className="h-[50vh] min-h-0 flex items-center justify-center">
@@ -155,7 +168,14 @@ export function BeyinLigiList({ onSelect }: BeyinLigiListProps) {
                     {r.sira}
                   </span>
                   <Avatar url={r.avatar_url} name={name} size={22} className="mr-1 shrink-0" />
-                  <span className="flex-1 min-w-0 truncate text-text">{name}</span>
+                  <span className="flex-1 min-w-0 flex items-center gap-1">
+                    <span className="truncate text-text">{name}</span>
+                    {/* Rütbe mührü — Puan Ligi satırıyla AYNI boy/yer (18px
+                        kompakt, ismin hemen yanında); GÜNCEL puandan türer. */}
+                    {tierOf(r.user_id) && (
+                      <RankSeal tier={tierOf(r.user_id)!} size={18} className="shrink-0" />
+                    )}
+                  </span>
                   <span className="min-w-[34px] whitespace-nowrap text-right text-[11px] text-muted shrink-0">
                     {r.ohp_games}
                   </span>
