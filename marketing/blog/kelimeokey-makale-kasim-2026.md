@@ -32,56 +32,31 @@ Bağlantı kuralları: `marketing/seo-baglanti-kontrol-listesi.md`.
 
 ---
 
-## YAZI (blogda yayınlanacak metin — haber/makale dili, 19 Kas 2. sürüm)
+## YAZI (blogda yayınlanacak metin — KULLANICININ REVİZESİ + ajan düzeltmeleri, 19 Kas 3. sürüm)
 
-**Başlık:** Türkçe kelime oyunlarına yeni bir yaklaşım: Kelimeki
+Türkçe kelime oyunlarına yeni bir yaklaşım: Kelimeki
 
-**Özet:** Yaklaşık üç ay önce yayına giren, her oyuncuya bir köşe veren ve rakip bölgesine
-girmeyi vergiye bağlayan ücretsiz bir Türkçe kelime oyunu.
+Haziran 2026'da yayına giren Kelimeki, iki ya da dört kişiyle, yapay zekaya veya arkadaşlara karşı oynanabilen, strateji odaklı bir kelime oyunu. Alışılmış kelime oyunlarından farklı olarak her oyuncu kendi köşesinden başlıyor, kelimeleri yerleştirerek bölgesini büyütüyor; rakibin bölgesine temas eden ise vergiyle karşılaşıyor.
 
-Harfleri tahtaya dizip puan toplamaya dayanan kelime oyunları Türkçede uzun
-zamandır var. Bağımsız olarak geliştirilen ve yaklaşık üç ay önce yayına giren
-[Kelimeki](https://kelimeki.com/?ref=kelimeokey), bu bilindik düzene tahtanın
-kendisinden gelen bir kural ekliyor: oyuncular ortadan değil, köşelerinden başlıyor.
+Harfleri tahtaya dizip puan toplamaya dayanan kelime oyunları Türkçede uzun zamandır var. Bağımsız olarak geliştirilen Kelimeki (https://kelimeki.com/?ref=kelimeokey), bu bilindik düzene tahtanın kendisinden gelen bir kural ekliyor: oyuncular ortadan değil, kendi köşelerinden başlıyor.
 
-**Köşeden başlayan oyun**
+Köşeden başlayan oyun
 
-Oyun 13×13'lük bir tahtada oynanıyor. Dört köşenin her biri 4×4'lük bir bölge
-oluşturuyor ve her oyuncu kendi köşesinden başlıyor. İlk kelimenin köşedeki
-başlangıç karesine değmesi gerekiyor; sonraki hamlelerle tahtanın ortasına doğru
-ilerleniyor. Oyuncunun bölgesi, köşesine kesintisiz bağlı kendi taşlarıyla
-genişliyor.
+Oyun 13×13'lük bir tahtada oynanıyor; her oyuncuya tahtanın bir köşesindeki 4×4'lük bölge ait. Her oyuncu ilk hamlesini kendi köşesindeki başlangıç karesinden yapıyor; sonraki hamlelerle tahtanın ortasına doğru ilerleyerek bölgesini genişletiyor.
 
-**Rakip bölgesine girmenin bedeli**
+Rakip bölgesine girmenin bedeli
 
-Oyunun ayırt edici yanı bölge vergisi. Rakibin bölgesine taş koymak ya da
-bölgenin sınırına değmek yasak değil, ancak hamlenin puanının bir bölümü bölge
-sahibine geçiyor. Bir rakip bölgesiyle etkileşimde puanın üçte biri o rakibe
-gidiyor; birden fazla rakip bölgesine değen hamlelerde pay, bölge sahipleri
-arasında paylaşılıyor. Böylece yüksek puanlı bir kelime her zaman en iyi hamle
-olmayabiliyor: vergiden sonra geriye kalan puan, kendi bölgede kurulan daha
-mütevazı bir kelimeden düşük kalabiliyor.
+Oyunun ayırt edici yanı bölge vergisi. Rakibin bölgesine taş koymak ya da sınırına değmek serbest, ancak bu durumda hamle puanının bir bölümü bölge sahibine vergi olarak geçiyor. Böylece yüksek puanlı bir kelime her zaman en iyi hamle olmayabiliyor: vergiden sonra geriye kalan puan, kendi bölgesinde kurulan daha mütevazı bir kelimenin puanından düşük kalabiliyor.
 
-Tahtanın ortasındaki 5×5'lik şerit de puanı etkiliyor. Bu şeride o turda yeni bir
-taş konan kelimenin puanı ikiye katlanıyor; tam merkez hücre ise üç kat
-puanlıyor. Oyunda ayrıca her istenen harfe dönüşebilen iki joker bulunuyor ve
-raftaki yedi taşın tamamını tek hamlede kullanmak 25 puan bonus getiriyor.
+Tahtanın ortasındaki 5×5'lik bonus alanına yeni bir taş konan kelimenin puanı ikiye katlanıyor; tam merkez hücre ise üç kat puanlıyor. Bu da oyuncuları köşelerinden merkeze doğru ilerlemeye yöneltiyor. Raftaki yedi taşın tamamını tek hamlede kullanmak 25 puan bonus getiriyor. Oyunu, son hamlesinde yalnızca joker taş koyarak bitirmek de bonus kazandırıyor: bir jokerle 25, iki jokerle 50 puan.
 
-**Oynama biçimleri**
+Oynama biçimleri
 
-Oyun yapay zekaya karşı üç zorluk seviyesiyle (Kolay, Normal, Zor), ya da arkadaşlarla
-iki veya dört kişilik canlı oyunlarla oynanabiliyor; canlı oyunlarda oyuncular
-sırayla, kendi zamanlarında hamle yapıyor ve oyun içinde mesajlaşabiliyor.
-Bunların yanında "Hamle Avı" adlı bölüm, üç dakika içinde tahtadaki en iyi
-hamleyi bulmaya dayanıyor.
+Oyun yapay zekaya karşı üç zorluk seviyesiyle (Kolay, Normal, Zor), ya da arkadaşlarla iki veya dört kişilik canlı oyunlarla oynanabiliyor; canlı oyunlarda oyuncular sırası geldiğinde 48 saat içinde hamle yapabiliyor ve oyun içinde mesajlaşabiliyor. Bunların yanında "Hamle Avı" bölümü, üç dakika içinde tahtadaki en iyi hamleyi bulmaya yönelik bulmacalar içeriyor.
 
-**Erişim**
+Erişim
 
-Kelimeki ücretsiz ve üyelik gerektirmeden tarayıcıdan oynanabiliyor; ilk oyunda
-yaklaşık bir dakikalık bir tanıtım kuralları adım adım gösteriyor. Kuralların
-ayrıntıları [oyunun kurallar sayfasında](https://kelimeki.com/nasil-oynanir/?ref=kelimeokey)
-yer alıyor. Oyunun Android sürümü [Google Play](https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki)
-üzerinden indirilebiliyor.
+Kelimeki ücretsiz; üyelik gerektirmeden hem tarayıcıdan hem de iPhone ve Android uygulamalarından oynanabiliyor. İlk oyunda yaklaşık bir dakikalık bir tanıtım oyunu kuralları adım adım gösteriyor. Kuralların ayrıntıları oyunun kurallar sayfasında (https://kelimeki.com/nasil-oynanir/?ref=kelimeokey) yer alıyor. Uygulamalar Google Play (https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki) ve App Store (https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id6809809788) üzerinden indirilebiliyor.
 
 ---
 
