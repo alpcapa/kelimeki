@@ -40,7 +40,7 @@ ama Google'a "bu site gerçek bir marka" sinyali verir ve keşfi kolaylaştırı
 - [ ] **Bağımsız geliştirici toplulukları / Türkçe girişim yazıları:** "bu
   oyunu nasıl yaptım" tarzı bir yazı hem bağlantı hem ilgi getirir.
 
-- [ ] **kelimeokey blogu (19 Kas 2026):** 6 Kas e-postamıza olumlu döndü — makale + 3 link isteniyor. **Yazı 19 Kas'ta kullanıcı tarafından e-postayla GÖNDERİLDİ** (`marketing/blog/kelimeokey-makale-kasim-2026.md`); yayın bağlantısı bekleniyor, gelince `?ref=kelimeokey` oturumlarına `web_sessions`'ta bak.
+- [ ] **kelimeokey blogu (19 Kas 2026):** 6 Kas e-postamıza olumlu döndü — makale + 3 link isteniyor. **Yazı 19 Kas'ta kullanıcı tarafından e-postayla GÖNDERİLDİ** (`marketing/blog/kelimeokey-makale-kasim-2026.md`); **YAYINLANDI 19 Kas: https://kelimeokeyi.com/blog/kelimeki-turkce-kelime-oyunlarina-yeni-yaklasim/** — `?ref=kelimeokey` oturumlarına `web_sessions`'ta bak (utm_source `kelimeokey`).
 
 ## C. Kısa e-posta şablonu (blog/liste yazarına)
 > Merhaba, "<yazının başlığı>" yazınızı okudum. Kelimeki adında, 13×13 tahtada
