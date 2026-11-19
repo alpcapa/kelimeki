@@ -188,6 +188,8 @@ sıran" satırı pencerenin altında kesiliyordu (#796, web) ve Puan Ligi'nin
 altına da "YZ'ye karşı oynanan oyunlar da sayılır" notu (#797, web); ikisinin
 port yarısı #795'te. Mobil saha kontrolü 1.1.3 ile.
 
+**Saha (20 Kasım 2026, rütbe mührü):** web yayında (PR #972, derleme `3f6e296`); kullanıcı cihazda baktı — *"Rozetler geldi, sorun yok"*. Mobil yarısı taslak PR #973, 1.1.7 ile; mobil saha kontrolü `mobile/docs/testing-klig.md` §13.x.
+
 **Terms/Privacy değişmedi:** gizlilik metni zaten "oyun istatistikleriniz
 k-lig aracılığıyla diğer KAYITLI kullanıcılara görünür" diyor; OHP ve oyun
 sayısı bu kapsamda, yeni veri toplanmıyor.
