@@ -233,7 +233,7 @@ nereden okunacağı ve kartın "12" tavanı orada.
 4. **Birleşik dalda merge'ten ÖNCE kanıt:** PR'ın Mobil derleme koşusunda **Android APK + `.aab` + iOS + Analiz/testler dördü de yeşil** olmalı. Android kırmızıysa merge ETME (`mobile-latest` bozulur). Gradle 9.5.0/AGP 9.3.1 kırmızı çıkarsa yalnızca #980 çıkarılır (#977 yeterli: Android 3.50.0 ile yeşil ölçüldü).
 5. **Çakışma beklentisi:** `ROADMAP.md` ("binecekler" satırları), `mobile/docs/parca-log.md` (Parça 257 ↔ 258) ve `mobile/app/pubspec.lock` (#978 yeni bağımlılık; oturum hook'unun gürültüsünü commit'e ALMA — `git add` dosya adıyla, `-A` ile değil). Çakışmayı çözerken derleyiciye güvenme: `dart analyze` + `flutter test` koş.
 6. **Merge'ten önce kök `CLAUDE.md` komutu:** `git diff --name-only origin/main...HEAD | grep -E '^(mobile/|\.github/workflows/mobile-build\.yml)' | grep -vE '^mobile/docs/|\.md$'` — COMMIT'TEN SONRA koş, dosya adı basmıyorsa ölçtüğün boşluktur.
-7. **Merge sonrası:** sürüm kütüğü (`mobile/docs/surumler.md` "SÜRÜM SENKRONU"), bu satırı arşive taşı, #937-benzeri "#NNN'e alındı" notuyla kapatılan taslakları kapat.
+7. **Merge sonrası:** sürüm kütüğü (`mobile/docs/surumler.md` "SÜRÜM SENKRONU"), bu satırı arşive taşı, #952'deki gibi "#NNN'e alındı" notuyla kapatılan taslakları kapat.
 
 ⚠ **DURUM (2 Ekim 2026): 1.1.2 (831) İKİ MAĞAZADA YAYINDA** — Play 2 Eki 00:56 TSİ, App Store 2 Eki akşamı (kullanıcı: *"Apple released"*). Mağazadaki paket = `05f1c1f` (koşu #831). Sıradaki sürüm **1.1.3**, kesim **Pazartesi 12 Ekim** (yukarıdaki "1.1.3 treni" tablosu); mobil işler taslak PR olarak bekler. 1.1.2'nin içerik tablosu, kesim kaydı ve gönderim kararları arşivde: `docs/decisions/roadmap-arsiv.md` → "Yedinci taşıma". Kayıt: `surumler.md` → "1.1.2 (831)".
 
