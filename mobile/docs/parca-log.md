@@ -25,7 +25,7 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
-## Parça 257 — Beyin Ligi isimlerinin yanına rütbe mührü (20 Kasım 2026, kullanıcı isteği — web ikizi `BeyinLigiList.tsx`, taslak PR — 1.1.7 treni)
+## Parça 259 — Beyin Ligi isimlerinin yanına rütbe mührü (20 Kasım 2026, kullanıcı isteği — web ikizi `BeyinLigiList.tsx`, taslak PR — 1.1.7 treni)
 
 Kullanıcı: *"Beyin ligindeki isimlerin yanına da rütbe rozeti koyalım puan ligi gibi."* 2 Ekim'deki "Beyin Ligi'nde mühür YOK" kararı (`docs/decisions/league-system.md`) değişti. `beyin_ligi_list.dart`: `RankScores` (friends_modal ile aynı desen) satırların id'leri için `ensure` çağırıyor; `BeyinLigiRowTile` yeni `tier` alanıyla ismin yanına `RankSeal(size: 18)` çiziyor. Puan Ligi'nin aynısı: "senin sıran" satırında mühür YOK, puan bilinmiyorken (null) mühür HİÇ çizilmez. Migration/sunucu değişikliği YOK (`leaderboard` view'ından toplu okuma zaten vardı). `beyin_ligi_test.dart` "mühür YOK" iddiasını "satır sayısı kadar mühür + kademe puandan türer"e çevirdi. Doğrulama: `beyin_ligi_test`, `leaderboard_layout_test`, `text_wrap_test` yerelde geçti. **Sınır:** cihazda görünüm (uzun isim + 1,3 yazı ölçeği + dar ekran) ölçülmedi → `mobile/docs/testing-klig.md` §13.x.
 ## Parça 258 — Uygulama içi puan isteği (20 Kasım 2026, ROADMAP #42, taslak PR — 1.1.7 treni)

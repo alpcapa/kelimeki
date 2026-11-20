@@ -231,7 +231,7 @@ nereden okunacağı ve kartın "12" tavanı orada.
 2. **Birleştirme sırası:** önce Android'i onaran üçlü — **#979** (Flutter 3.50.0 sabitle) → **#977** (Gradle 9.3.1 + AGP 9.1.1) → **#980** (Gradle 9.5.0 + AGP 9.3.1; #977'nin üzerine kurulu) — sonra özellik/düzeltme PR'ları (#968 #970 #973 #976 #978 ve eski #955), EN SONA sürüm yükseltmesi.
 3. **Sürüm yükseltmesi ŞART:** `appVersion` (`config/env.dart`) + `pubspec` 1.1.6+1 → 1.1.7+1 birlikte (`app_version_parity_test`). 1.1.6 Apple'dan ONAYLI; yükseltilmezse TestFlight adımı `90186` verir.
 4. **Birleşik dalda merge'ten ÖNCE kanıt:** PR'ın Mobil derleme koşusunda **Android APK + `.aab` + iOS + Analiz/testler dördü de yeşil** olmalı. Android kırmızıysa merge ETME (`mobile-latest` bozulur). Gradle 9.5.0/AGP 9.3.1 kırmızı çıkarsa yalnızca #980 çıkarılır (#977 yeterli: Android 3.50.0 ile yeşil ölçüldü).
-5. **Çakışma beklentisi:** `ROADMAP.md` ("binecekler" satırları), `mobile/docs/parca-log.md` (Parça 257 ↔ 258) ve `mobile/app/pubspec.lock` (#978 yeni bağımlılık; oturum hook'unun gürültüsünü commit'e ALMA — `git add` dosya adıyla, `-A` ile değil). Çakışmayı çözerken derleyiciye güvenme: `dart analyze` + `flutter test` koş.
+5. **Çakışma beklentisi:** `ROADMAP.md` ("binecekler" satırları), `mobile/docs/parca-log.md` (Parça numaraları: Beyin Ligi 259, puan isteği 258, TestFlight turu 257) ve `mobile/app/pubspec.lock` (#978 yeni bağımlılık; oturum hook'unun gürültüsünü commit'e ALMA — `git add` dosya adıyla, `-A` ile değil). Çakışmayı çözerken derleyiciye güvenme: `dart analyze` + `flutter test` koş.
 6. **Merge'ten önce kök `CLAUDE.md` komutu:** `git diff --name-only origin/main...HEAD | grep -E '^(mobile/|\.github/workflows/mobile-build\.yml)' | grep -vE '^mobile/docs/|\.md$'` — COMMIT'TEN SONRA koş, dosya adı basmıyorsa ölçtüğün boşluktur.
 7. **Merge sonrası:** sürüm kütüğü (`mobile/docs/surumler.md` "SÜRÜM SENKRONU"), bu satırı arşive taşı, #952'deki gibi "#NNN'e alındı" notuyla kapatılan taslakları kapat.
 
@@ -255,7 +255,7 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **1.1.7'ye binecek (18 Kasım, taslak PR) — "Kime karşı" sekmesi `ARKADAŞINLA` → `ARKADAŞ` (kullanıcı isteği; web ikizi `Setup.tsx`, aynı gün). Yalnızca etiket; `setup_screen.dart` + beş test dosyası. Cihaz kontrolü gerekmez.
 **1.1.7'ye binecek (19 Kasım, taslak PR) — `HandshakeException` artık ağ hatası sayılıyor** (`isNetworkError`): günlük hata özetinde `online_games_repo.load` → `HandshakeException: Connection terminated during handshake` (ios 1.1.6, 1 cihaz/1 kez) çıktı; TLS el sıkışmasında bağlantı kopması, uygulama kusuru değil, telemetriye düşmemeli. Cihaz kontrolü gerekmez.
-**1.1.7'ye binecek (20 Kasım, taslak PR) — Beyin Ligi isimlerinin yanına rütbe mührü** (kullanıcı isteği; web ikizi aynı gün `BeyinLigiList.tsx`). Parça 257. Cihaz kontrolü: `mobile/docs/testing-klig.md` §13.x.
+**1.1.7'ye binecek (20 Kasım, taslak PR) — Beyin Ligi isimlerinin yanına rütbe mührü** (kullanıcı isteği; web ikizi aynı gün `BeyinLigiList.tsx`). Parça 259. Cihaz kontrolü: `mobile/docs/testing-klig.md` §13.x.
 
 **1.1.6'ya binecek (3 Kasım, taslak PR, kesim 9 Kasım) — Hamle Avı (ROADMAP #48):** mobil port ikizi + Gizlilik metni (web+port) + Detaylı Kurallar bölümü. Ayrıntı: `mobile/docs/parca-log.md` → Parça 256. Cihaz kontrolü: `mobile/TESTING.md` §35. Sürüm numarası (`appVersion` + `pubspec`) kesim gününde 1.1.6'ya yükseltilir.
 
