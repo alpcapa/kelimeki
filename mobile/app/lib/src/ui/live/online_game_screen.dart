@@ -88,6 +88,7 @@ import '../../util/online_status.dart';
 import '../../util/onboarding.dart';
 import '../../util/rematch_slots.dart';
 import '../../data/error_reporter.dart';
+import '../../data/store_review.dart';
 import '../../util/error_message.dart';
 
 const Color _muted = kMuted;
@@ -284,6 +285,24 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       totalWins: stats?.wins,
       guestCelebrated: true,
     ));
+  }
+
+  /// Oyun sonu puan isteği (ROADMAP #42) — yerel ekranın `_puanIstegi`siyle
+  /// aynı kural (iki ekran deseni paylaşıyor, biri değişirse öteki de).
+  Future<void> _puanIstegi(bool kutlamaVar) async {
+    final storageFuture = widget.storage;
+    if (storageFuture == null || _mySlot < 0) return;
+    final ranked = rankPlayers(state.players);
+    final meRank = ranked
+            .where((r) => r.index == _mySlot)
+            .map((r) => r.rank)
+            .firstOrNull ??
+        0;
+    final me = _mySlot < state.players.length ? state.players[_mySlot] : null;
+    final won = meRank == 1 && !(me?.surrendered ?? false);
+    final storage = await storageFuture;
+    await maybeAskStoreReview(
+        flags: storage.flags, won: won, celebrationShown: kutlamaVar);
   }
 
   bool _loaded = false;
@@ -1982,6 +2001,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                     myIndex: _mySlot),
                 onFeedback: auth == null ? null : openFeedback,
                 celebration: kutlama);
+            // Uygulama içi puan isteği (ROADMAP #42) — yerel ekranla aynı kural.
+            unawaited(_puanIstegi(kutlama != null));
             if (!mounted || !context.mounted) return;
             await _askFriendSuggest();
           });
