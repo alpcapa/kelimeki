@@ -221,7 +221,7 @@ export function RandomGamesStrip({
           className="w-full min-h-[44px] rounded-[10px] border border-border bg-panel shadow-raised px-3 py-2 text-center font-mono text-xs text-muted active:opacity-70"
         >
           {RANDOM_EMPTY_TEXT}{' '}
-          <span className="font-bold text-accent underline underline-offset-[3px]">{RANDOM_EMPTY_LINK}</span>
+          <span className="font-bold text-accent">{RANDOM_EMPTY_LINK}</span>
         </button>
       ) : (
       <div
