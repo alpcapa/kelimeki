@@ -141,6 +141,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.50.0'
           cache: true
       # Saf Dart motor paketi: golden vector replay testleri (web motoruyla
       # parite kanıtı). Flutter'a hiç bağlı değil, `dart` ile koşuyor.
@@ -188,10 +189,11 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.50.0'
           cache: true
       # Anahtarlar verilmezse uygulama TAMAMEN OFFLINE moda düşer (web'deki
       # `configured` bayrağının eşleniği) — derleme doğrulaması için yeterli.
@@ -424,6 +426,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.50.0'
           cache: true
       # `--no-codesign`: sertifika/profil GEREKTİRMEZ, yalnızca derlemenin
       # (pod install dahil) çalıştığını kanıtlar. Apple üyeliği olmadan da
@@ -659,6 +662,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.50.0'
           cache: true
       - uses: actions/configure-pages@v5
       # `--no-web-resources-cdn`: CanvasKit'i gstatic.com yerine kendi

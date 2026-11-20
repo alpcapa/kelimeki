@@ -350,8 +350,6 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: _accent,
-                            decoration: TextDecoration.underline,
-                            decorationColor: _accent,
                           ),
                         ),
                       ],

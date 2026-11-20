@@ -49,6 +49,7 @@ import '../loading_note.dart';
 import '../tokens.dart';
 import 'invasion_confirm.dart';
 import '../../util/online_status.dart';
+import '../../data/store_review.dart';
 
 class GameScreen extends StatefulWidget {
   final GameController controller;
@@ -677,6 +678,21 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     return karar;
   }
 
+  /// Oyun sonu puan isteği (ROADMAP #42) — girdileri toplar, karar saf
+  /// fonksiyonda (`shouldRequestReview`), OS çağrısı `maybeAskStoreReview`da.
+  Future<void> _puanIstegi(GameState state, bool kutlamaVar) async {
+    final storageFuture = widget.storage;
+    if (storageFuture == null) return;
+    final ranked = rankPlayers(state.players);
+    final meRank =
+        ranked.where((r) => r.index == 0).map((r) => r.rank).firstOrNull ?? 0;
+    final me = state.players.isEmpty ? null : state.players[0];
+    final won = meRank == 1 && !(me?.surrendered ?? false);
+    final storage = await storageFuture;
+    await maybeAskStoreReview(
+        flags: storage.flags, won: won, celebrationShown: kutlamaVar);
+  }
+
   /// Zoom balonunu göster — karar ve sayaç eğitim balonu sırasında
   /// (`_ipucuKarar`); burada yalnızca gösterim + kendi kendine kapanma.
   void _zoomHintGoster() {
@@ -1282,6 +1298,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 // bu parametreyi hiç geçirmez.
                 aiLevel: aiLevelForBadge(ended.aiLevel, isAiGame: true),
                 celebration: kutlama);
+            // Uygulama içi puan isteği (ROADMAP #42): modal kapandıktan SONRA,
+            // kazanç anında; karar `shouldRequestReview`da.
+            unawaited(_puanIstegi(ended, kutlama != null));
           });
         } else if (!state.isGameOver && _gameOverShown) {
           _gameOverShown = false;

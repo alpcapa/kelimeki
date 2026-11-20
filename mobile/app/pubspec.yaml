@@ -7,7 +7,7 @@ publish_to: none
 # Sürüm ayrıca lib/src/config/env.dart'taki appVersion sabitinde tutulur
 # (mobile_min_supported_version karşılaştırması için) — release'te ikisi
 # BİRLİKTE artırılmalı, bkz. mobile/CLAUDE.md "Sürüm disiplini".
-version: 1.1.6+1
+version: 1.1.7+1
 
 environment:
   sdk: ^3.4.0
@@ -76,6 +76,7 @@ dependencies:
   # olarak kaldı. YALNIZCA Android eklentisi ve yalnızca Play'den KURULMUŞ
   # pakette çalışır (bkz. lib/src/data/store_update.dart → sınırlar).
   in_app_update: ^5.0.0
+  in_app_review: ^2.0.10
   # Güncelleme ekranındaki mağaza YEDEĞİ için (29 Ağustos 2026) —
   # in_app_update'in çalışmadığı yerde (yan yüklenmiş paket, Play yok) tek
   # çıkış yolu bu. Uygulamanın dış bağlantı AÇTIĞI TEK yer burası; paylaşım

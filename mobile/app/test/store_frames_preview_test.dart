@@ -136,7 +136,7 @@ void main() {
 
   testWidgets('03 arkadaşınla', (t) async {
     await _ciz(t, kurulumEkrani('03-arkadasinla'));
-    await t.tap(find.text('ARKADAŞINLA'));
+    await t.tap(find.text('ARKADAŞ'));
     await settle(t);
     await _yaz(t, '03-arkadasinla');
   });

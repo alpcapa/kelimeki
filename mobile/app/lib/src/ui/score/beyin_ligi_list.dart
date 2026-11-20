@@ -2,8 +2,11 @@
 //
 // k-lig penceresinin "Beyin Ligi" sekmesi. Puan Ligi listesinin ikizi ama
 // puan YOK: sıra yalnızca OHP'ye göre (sunucuda, `beyin_ligi_siralama`).
-// Rütbe mührü de YOK — mühür toplam puandan türüyor, puansız listede
-// anlamsız (kullanıcı kararı). Sayfalama ve "kaydırılamıyorsa kendiliğinden
+// Rütbe mührü 2 Ekim 2026'da YOKTU; 20 Kasım 2026'da kullanıcı isteğiyle
+// EKLENDİ (web `BeyinLigiList.tsx` ikizi): sıralama hâlâ yalnızca OHP'ye göre,
+// mühür oyuncunun kimliği. Puan `RankScores` ile (satırda puan kolonu yok).
+// "Senin sıran" satırında mühür YOK (Puan Ligi'nin aynı satırı da çizmiyor).
+// Sayfalama ve "kaydırılamıyorsa kendiliğinden
 // sonraki sayfa" kuralı `leaderboard_modal.dart`taki Puan Ligi listesiyle
 // aynı (bkz. oradaki `_maybeAutoLoadIfNotScrollable` notu).
 import 'package:flutter/material.dart';
@@ -15,6 +18,9 @@ import '../../data/stats_api.dart';
 import '../../util/beyin_ligi.dart';
 import '../auth/k_avatar.dart';
 import '../loading_note.dart';
+import '../rank/league_rank.dart';
+import '../rank/rank_scores.dart';
+import '../rank/rank_seal.dart';
 import '../text_scale.dart';
 import '../tokens.dart';
 import 'own_row_pin.dart';
@@ -48,10 +54,15 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
   MyBeyinLigiRank? _mine;
   final _scrollController = ScrollController();
   final _ownRow = OwnRowTracker();
+  late final RankScores _rankScores;
 
   @override
   void initState() {
     super.initState();
+    _rankScores = RankScores(widget.stats)
+      ..addListener(() {
+        if (mounted) setState(() {});
+      });
     widget.stats.beyinLigi(limit: _initialPageSize, offset: 0).then((rows) {
       if (!mounted) return;
       setState(() {
@@ -76,6 +87,7 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
 
   @override
   void dispose() {
+    _rankScores.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -137,6 +149,8 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
     final mine = _mine;
     final meInList = user != null && rows.any((r) => r.userId == user.id);
     _measureOwnRow();
+    // Görünen satırların puanı TEK toplu çekimle (eksik id'ler için).
+    _rankScores.ensure(rows.map((r) => r.userId));
     final remaining = mine != null && mine.rank == null
         ? gamesUntilBeyinLigi(mine.ohpGames)
         : 0;
@@ -210,6 +224,7 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
                     games: r.ohpGames,
                     avgMoveScore: r.avgMoveScore,
                     isMe: isMe,
+                    tier: _rankScores.tierOf(r.userId),
                     onTap: () => _openCard(r.userId, r.shortName, r.avatarUrl),
                   );
                   return isMe
@@ -334,6 +349,10 @@ class BeyinLigiRowTile extends StatelessWidget {
   final bool isMe;
   final VoidCallback onTap;
 
+  /// Rütbe mührü (Puan Ligi satırıyla aynı: 18px kompakt, ismin yanında).
+  /// null = puan henüz bilinmiyor ya da "senin sıran" satırı → çizilmez.
+  final RankTier? tier;
+
   const BeyinLigiRowTile({
     super.key,
     required this.rank,
@@ -343,6 +362,7 @@ class BeyinLigiRowTile extends StatelessWidget {
     required this.avgMoveScore,
     required this.isMe,
     required this.onTap,
+    this.tier,
   });
 
   @override
@@ -377,10 +397,22 @@ class BeyinLigiRowTile extends StatelessWidget {
               KAvatar(url: avatarUrl, name: name, size: 22),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(name,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontFamily: 'SpaceMono', fontSize: 14, color: kText)),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontFamily: 'SpaceMono',
+                              fontSize: 14,
+                              color: kText)),
+                    ),
+                    if (tier != null) ...[
+                      const SizedBox(width: 4), // web gap-1
+                      RankSeal(tier: tier!, size: 18),
+                    ],
+                  ],
+                ),
               ),
               ScaledCell(
                 width: 34,
