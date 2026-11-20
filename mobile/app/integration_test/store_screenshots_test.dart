@@ -63,7 +63,7 @@ void main() {
     await settle(tester);
     // Ekran "Yapay Zeka ile" sekmesiyle açılıyor; kare Canlı oyunu
     // anlatacak, o yüzden sekme DEĞİŞTİRİLİYOR (gerçek dokunuşla).
-    await tester.tap(find.text('ARKADAŞINLA'));
+    await tester.tap(find.text('ARKADAŞ'));
     await settle(tester);
 
     await kareCek(binding, tester, '03-arkadasinla');

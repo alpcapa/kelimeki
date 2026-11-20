@@ -370,7 +370,7 @@ void main() {
     await tester.tap(find.text('SON OYNANANLAR'));
     await tester.pumpAndSettle();
     expect(find.text('SON OYNADIKLARIM'), findsOneWidget);
-    await tester.tap(find.text('ARKADAŞINLA'));
+    await tester.tap(find.text('ARKADAŞ'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('YAPAY ZEKA'));
     await tester.pumpAndSettle();
