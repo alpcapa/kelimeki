@@ -25,6 +25,19 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 258 — Uygulama içi puan isteği (20 Kasım 2026, ROADMAP #42, taslak PR — 1.1.7 treni)
+
+**Ne:** oyun sonunda işletim sisteminin kendi puan penceresi (`in_app_review`: iOS `SKStoreReviewController`, Android Play In-App Review). Web'de karşılığı YOK (yalnızca port). Gerekçe: App Store'da hiç yorum yok; kendi uygulamana yorum yazmak yasak (Review Guidelines 5.6), tek temiz yol OS penceresi.
+
+**Kural (`util/review_prompt.dart`, saf fonksiyon):** oyuncu o oyunu KAZANDI + bu cihazda en az 3 oyun bitti (yerel + Canlı) + o oyunda ilk-galibiyet kutlaması gösterilmedi + toplamda en fazla 3 istek + iki istek arası ≥120 gün. Sayaçlar `FlagsStore`ta (`review_games_finished`, `review_ask_count`, `review_last_asked_ms`). Kural seçimi (3 oyun / 120 gün / tavan 3) AJANIN önerisi; ROADMAP #42 yalnızca "3.–5. oyun ya da galibiyet" diyordu. Değişmesi bir ürün kararı.
+
+**Çağrı yeri:** iki oyun ekranı (`game_screen.dart` ve `online_game_screen.dart`) `showGameOverModal` kapandıktan SONRA `_puanIstegi`yi çağırır (iki ekran deseni paylaşıyor — biri değişirse öteki de). `maybeAskStoreReview` (`data/store_review.dart`) sayacı artırır, işareti OS çağrısından ÖNCE koyar, her hatayı yutar.
+
+**Bilinçli yok:** "memnun musun?" ön elemesi (Apple/Google yönergelerine aykırı); pencerenin gösterilip gösterilmediği bilinmez (OS bildirmez); web.
+
+**Doğrulama sınırı:** `test/review_prompt_test.dart` kuralı ve sayaç akışını sahte `StoreReview` ile sınar. OS penceresi ancak GERÇEK cihazda/mağaza kurulumunda görülür: TestFlight'ta pencere çıkar ama yorum gönderilemez; Play'de yalnızca Play'den kurulu pakette (`mobile/TESTING.md` §36).
+
+
 ## Parça 256 — Hamle Avı mobil portu + gizlilik/yardım ikizi (3 Kasım 2026, ROADMAP #48, taslak PR — 9 Kasım treni)
 
 **Ne:** Web yarısı (PR #923, `f48712a`) yayında; bu parça port ikizi. `ui/hamle_avi/hamle_avi_screen.dart` (web `HamleAvi.tsx`: faz makinesi loading→intro→play→found/missed→review/exhausted, 3 dk geri sayım, seri/rekor, "daha düşük geçerli hamle → pozisyon başa döner, süre SÜRER", süre bitince doğru hamle tahtada, anlam penceresi), `util/hamle_avi.dart` (saf mantık + `findAIMoves` ile Dart çözücüsü), `storage/hamle_avi_store.dart`, `data/hamle_avi_api.dart`, Setup'ta `_HamleAviButonu` (en üstte, her görünümde, "YENİ" balonu HEP görünür), `assets/hamle_avi/bank.json`. **Aynı PR'da:** Gizlilik metni (§2 rekor maddesi, §5 silme listesi, §6 "sekiz → DOKUZ durum" + (9), "Son güncelleme: 3 Kasım 2026" — web `LegalContent.tsx` + `legal_modals.dart` + `legal_text_test`) ve "Detaylı Kurallar › Hamle Avı" bölümü (web `HelpModal.tsx` + `help_modal.dart`, parite alt sınırı 11 → 12).

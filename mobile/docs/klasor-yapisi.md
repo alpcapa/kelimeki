@@ -169,6 +169,7 @@ mobile/
                              # SÖZLEŞME, dosya başlığında liste
       data/analytics_gateway.dart # gerçek uç (FirebaseAnalytics.logEvent)
       data/store_update.dart # Play In-App Update — "açılışta yeni sürüm
+      data/store_review.dart # uygulama içi puan isteği (in_app_review) + `maybeAskStoreReview` — kural util/review_prompt.dart (ROADMAP #42, Parça 258)
                              # varsa uyar ve yaptır". Sunucuda sürüm satırı
                              # TUTMAZ (Play'in kendisi bilir). YALNIZCA
                              # Android VE yalnızca Play'den kurulmuş pakette

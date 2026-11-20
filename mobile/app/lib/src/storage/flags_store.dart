@@ -24,6 +24,9 @@ class FlagsStore {
   static const _anonId = 'anon_id';
   static const _anonVisitDate = 'anon_visit_date';
   static const _utmSource = 'utm_source';
+  static const _reviewFinished = 'review_games_finished';
+  static const _reviewAsks = 'review_ask_count';
+  static const _reviewLastAsked = 'review_last_asked_ms';
 
   /// İlk açılış tanıtımı (`IntroScreen`) bir kez gösterildi mi — web'in
   /// karşılama katmanındaki `kelimeki:seen-intro` anahtarının karşılığı
@@ -63,6 +66,18 @@ class FlagsStore {
   String? get friendSuggestAskedGame => prefs.getString(_friendSuggestAsked);
   Future<void> markFriendSuggestAsked(String gameId) =>
       prefs.setString(_friendSuggestAsked, gameId);
+
+  /// Uygulama içi puan isteği (ROADMAP #42) — bu cihazda biten oyun sayısı,
+  /// kaç kez istendiği ve son istek anı. Karar `util/review_prompt.dart`ta.
+  int get reviewGamesFinished => prefs.getInt(_reviewFinished) ?? 0;
+  Future<void> bumpReviewGamesFinished() =>
+      prefs.setInt(_reviewFinished, reviewGamesFinished + 1);
+  int get reviewAskCount => prefs.getInt(_reviewAsks) ?? 0;
+  int? get reviewLastAskedMs => prefs.getInt(_reviewLastAsked);
+  Future<void> markReviewAsked(int nowMs) async {
+    await prefs.setInt(_reviewAsks, reviewAskCount + 1);
+    await prefs.setInt(_reviewLastAsked, nowMs);
+  }
 
   bool get seenChatIntro => prefs.getBool(_seenChatIntro) ?? false;
   Future<void> markChatIntroSeen() => prefs.setBool(_seenChatIntro, true);
