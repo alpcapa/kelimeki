@@ -1978,6 +1978,10 @@ Tek düşen test: `friends_test.dart` → *"FriendsModal metinler web `FriendsMo
 
 | **Salı–Çarş 3-4 Kas** | **1.1.5 KESİLDİ (2 Kas):** dokuz PR `main`'de (#905 #903 #898 #907 #909 #884 #889 #886 + sürüm PR'ı) | ✅ Kesim derlemesi #982 yeşil, TestFlight'ta build **982**. Sırada TestFlight turu, sonra Android `.apk` cihaz turu (`mobile/docs/surumler.md` → "1.1.5"), Perşembe gönderim. ⚠ `play-ai-turn` BİLEREK yeniden yüklenmedi: canlı (v10) ↔ repo farkı yalnızca Kolay sabitleri ve fonksiyon seviye almıyor (hep Normal) — bir sonraki davranış değiştiren `_game/` değişikliğinde birlikte gider |
 
+## `board-fit.spec.ts:303` main'de KIRMIZIYDI (20-24 Kasım 2026) — KAPANDI
+
+Sebep ürün değil TESTTİ. #966 (17 Kasım) `LandscapeBlock.telefon()`a en-boy oranı koşulu ekledi (`PHONE_MIN_ASPECT` 1,6). "YAZARKEN blok çıkmaz" testi klavyeyi viewport'u 390×450'ye küçülterek taklit ediyor; Playwright `setViewportSize`ta `window.screen`i de viewport'a eşitliyor (`test.use({ screen })` bunu ENGELLEMİYOR, ölçüldü: `screen=[390,450]`) → oran 1,15 → "telefon değil" → blok hiç çıkmıyor: `toBeHidden` bedavadan geçiyor, odak kalkınca `toBeVisible` düşüyor. Gerçek telefonda klavye `screen`i değiştirmez. Düzeltme: testte `screen`i `addInitScript` ile 390×844'e sabitlemek (yalnızca o test; dosya geneline konmadı, öteki testler tablet/katlanabilir oranını viewport'tan okuyor). Ürün koduna dokunulmadı. Ders: kapıya `screen` okuyan bir koşul eklenirse, viewport'u değiştiren her test `screen`i de sabitlemeli.
+
 ## İçindekiler
 
 > Madde 0 (FAZ B), merge turu, #33/#36, madde 31, madde 24 (FAZ C),
