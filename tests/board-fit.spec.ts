@@ -316,6 +316,18 @@ test('YAZARKEN blok çıkmaz — ekran klavyesi viewport\'u kısaltsa bile', asy
       // depolama kapalıysa kapı katmanı gösterir; bu test onu ölçmüyor
     }
   }, SEEN_INTRO_KEY);
+  // ⚠ `screen` SABİTLENİR. Playwright `setViewportSize`ta `window.screen`i
+  // de viewport'a eşitliyor (`test.use({ screen })` bunu ENGELLEMİYOR —
+  // 24 Kasım 2026'da ölçüldü: screen=[390,450]). Klavyeyi taklit etmek için
+  // viewport 390×450'ye inince `LandscapeBlock.telefon()`un oran koşulu
+  // (#966, `PHONE_MIN_ASPECT` 1,6) 450/390 = 1,15 ile "telefon değil" der ve
+  // blok HİÇ çıkmaz: `toBeHidden` bedavadan geçer, `toBeVisible` düşer
+  // (20 Kasım 2026'dan beri CI'da kırmızıydı). Gerçek telefonda klavye
+  // `screen`i değiştirmez, yalnızca layout viewport'unu kısaltır.
+  await page.addInitScript(() => {
+    Object.defineProperty(window.screen, 'width', { get: () => 390 });
+    Object.defineProperty(window.screen, 'height', { get: () => 844 });
+  });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
 
