@@ -1,7 +1,7 @@
 // Kelimeki — oyun sonu ekranı (çok oyunculu)
 import { Fragment } from 'react';
 import { Modal } from './Modal';
-import { PLAYER_COLORS } from '../game/constants';
+import { PLAYER_COLORS, rackEndTotal } from '../game/constants';
 import type { AiLevel, Player } from '../game/types';
 import { trUpper } from '../utils/turkish';
 import { rankPlayers } from '../utils/ranking';
@@ -175,7 +175,7 @@ export function GameOver({ show, players, turnCount, aiLevel, onOpenHistory, onO
           <span data-metin-kutusu="klig-baslik" className="min-w-5 ml-1 text-right whitespace-nowrap text-[9px] tracking-wide text-muted">k-lig</span>
           {ranked.map(({ player: p, index: i, rank }) => {
             const col = PLAYER_COLORS[p.colorIndex];
-            const remaining = p.rack.reduce((s, t) => s + t.pts, 0);
+            const remaining = rackEndTotal(p.rack);
             const points = leaguePoints(rank, players.length, p.surrendered, aiLevel);
             return (
               <Fragment key={i}>

@@ -7,6 +7,7 @@ import {
   buildInitialBonuses,
   cornersFor,
   jokerFinishBonus,
+  rackEndTotal,
   maxSwapCount,
   swapLimitMessage,
 } from './constants';
@@ -166,7 +167,7 @@ export function isFirstMove(state: GameState): boolean {
  * sadece kalan taşı olan oyuncuların puanından düşülür.
  */
 function endGame(state: GameState, reason: GameState['endReason'] = 'normal'): GameState {
-  const remaining = (p: Player) => p.rack.reduce((s, t) => s + t.pts, 0);
+  const remaining = (p: Player) => rackEndTotal(p.rack);
 
   const players = state.players.map((p) => {
     const score = Math.max(0, p.score - remaining(p));

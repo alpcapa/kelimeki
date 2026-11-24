@@ -78,6 +78,20 @@ zaman YZ), modalın hotseat dalı — *"başka bir insan oyuncuyu teslim et,
 diğerleri devam etsin"* — pratikte hiç tetiklenmiyordu.
 
 
+## Rafta kalan joker oyun sonunda −10 (24 Kasım 2026, kullanıcı kararı)
+
+**Fikir (kullanıcı):** *"Oyun sonunda yıldız elinde kalırsa ceza olmalı; yıldızı en son hamleye kadar tutmak bir risk oluşturmalı çünkü başkası senden önce bitirebilir."* İlk öneri −15'ti; kullanıcı **J'nin puanı kadar (−10)** önerdi ve J'nin puanının hiç değişmeyeceğini söyledi → sabit 10.
+
+**Neden −10:** kural kendini anlatıyor ("elde kalan joker en değerli harf gibi sayılır", mevcut raf düşümüyle aynı mantık); jokerle bitirme bonusu (+25/+50) ile oranı −15'e göre daha dengeli (risk 10 · ödül 25). Ölçüm (24 Kasım 2026, 100'er oyun YZ↔YZ, Normal): −10 ≈ 0,85 ortalama hamle (≈12 puan/hamle); skora oranı 2 kişilikte %4,5, 4 kişilikte %10.
+
+**Ölçümün bir sınırı:** YZ jokeri neredeyse hiç elinde bırakmıyor (2 kişilikte 0/100, 4 kişilikte 2/100 oyun) — `ai.ts` harf yetmeyince jokeri harcıyor, "bekle" mantığı yok. Yani ceza YZ'yi etkilemez (YZ kodu DEĞİŞMEDİ), insan davranışı ölçülmedi. İnsan oyunlarında bekletme sıklığı sahada `games.players` + `game_finishes`ten ölçülebilir.
+
+**Kural:** oyun biterken (raf+torba boş ya da 2 tur pas) rafta kalan HER joker `JOKER_END_PENALTY = 10` düşer; 2 joker −20. Mevcut kuralların hepsi aynı: skor en az 0 (taban), teslim olanın puanı zaten 0 ve rafı torbaya gidiyor (ceza yok), bitiren oyuncuya diğerlerinin cezası EKLENMEZ. Rafta joker `wild` bayrağı olmadan yalnızca `letter == '?'` taşır → ikisi de tanınır (`rackEndValue`).
+
+**Kopyalar (hepsi tek PR):** `src/game/constants.ts` (`rackEndTotal`) · `gameReducer.ts` `endGame` · Dart `constants.dart` + `reducer.dart` · SQL `submit_move` + `check_turn_timeout` (canlıda doğrulandı: başka fonksiyon bu düşümü taşımıyor; Edge `_game`'de oyun sonu skoru YOK) · `GameOver.tsx` / `game_over_modal.dart` ("Kalan" sütunu) · `HelpModal.tsx` / `help_modal.dart` ("Oyunun Sonu"). Golden: `reducer_crafted_joker_end.json` (iki tur: 30−11 = 19; taban 4 → 0) + `reducer_human2.json` bir satır değişti. Doğrulayıcı: `verify-sql-engine-parity` (migration ↔ sabit).
+
+**YAYIN SIRASI (kritik):** motor değişikliği golden'ları `mobile/` altında değiştirdiğinden web ve port AYNI PR'da, `[Sonraki sürüm]` taslağı. SQL migration CANLIYA UYGULANMADI: sunucu kuralı anında herkese işler, ama eski mobil sürümlerde (1.1.6 ve öncesi) bitiş ekranının "Kalan" satırı joker için 0 gösterir ve skorla tutmaz (yalnızca joker kalan oyunlarda; kozmetik). Uygulama zamanı kesim günü: web merge + migration birlikte. Bayraklı (`app_config`) yayın seçeneği düşünüldü, kullanıcı onaylamadı — gerekirse eklenir.
+
 ## Taş değiştirme sınırı: torbada kalandan fazlası değiştirilemez (14 Eylül 2026)
 
 **Kullanıcı raporu (Asnmzr):** *"torbada 4 harf kalmışken 7 harf
