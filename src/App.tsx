@@ -1165,9 +1165,13 @@ export default function App() {
     },
     // Son-raf joker balonu (25 Kasım 2026): sıra İNSANDA, torba boş, rafında
     // joker. Rafı gösterilen oyuncu = sırası gelen insan (hotseat'te de).
-    jokerEndgame:
-      !state.players[state.current].isAI &&
-      hasJokerEndgame(state.bag.length, state.players[state.current].rack),
+    // ⚠ `players` KURULUM ekranında BOŞ (oyun başlamadan hook yine koşar):
+    // doğrudan `.isAI`ye erişmek açılışta ErrorBoundary'ye düşürüyordu (smoke
+    // testi yakaladı, 25 Kasım 2026).
+    jokerEndgame: (() => {
+      const sira = state.players[state.current];
+      return !!sira && !sira.isAI && hasJokerEndgame(state.bag.length, sira.rack);
+    })(),
     hasDraft: Object.keys(state.placed).length > 0,
     onZoom: boardZoom.showHint,
   });
