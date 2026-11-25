@@ -1793,3 +1793,13 @@ Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağ�
 - [ ] Ölçüm: her bulmaca için TEK anonim olay (bulundu/süre bitti/çıktı) `hamle_avi_events`e düşer (devtools → Network; yalnızca kelimeki.com `source='prod'` sayılır, preview 'preview'); admin kartı için bkz. `docs/testing-admin.md` §9.17.
 - [ ] Uçak modu: banka bir kez indiyse oynanır; ilk açılışta çevrimdışıysa "Bulmacalar yüklenemedi" mesajı çıkar (banka parçasının SW önbelleğine girdiği ayrıca doğrulanmalı).
 
+## 10. Son-raf joker balonu (25 Kasım 2026 — #983'ün ÜSTÜNE istifli taslak PR)
+
+> Mobil port ikizi (Parça 261): `mobile/TESTING.md` §37. Otomatik kapsam: `npm run verify-tutorial-script` (karar tablosu + metindeki 25/50/−10'un kurala bağlanması).
+
+- [ ] Yerel oyun (YZ'ye karşı): torba BOŞALANA kadar oyna (~30. hamle, "Torba 0"); rafında joker varken sıra sana geçince rafın ÜSTÜNDE mavi balon: "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar." ~7 sn kalır (öteki balonlardan uzun).
+- [ ] Bir kez: oyundan çıkıp yenisinde (ya da sayfayı yenileyip) aynı durumda TEKRAR çıkmamalı (cihaz sayacı; sıfırlamak için devtools → localStorage `kelimeki:hint-shown:joker` sil).
+- [ ] Taş koymaya başlayınca (taslak) balon hemen kalkar.
+- [ ] ÇIKMAMALI: rakibin sırasında, torba doluyken, rafta joker yokken.
+- [ ] Canlı oyun (iki oturum): aynı koşullarda kendi rafının üstünde çıkar; rakibin ekranında (rafında joker yoksa) çıkmaz. Balonun mesaj şeridini kapatması sorun değil (4-7 sn).
+- [ ] Balon diğer eğitim balonlarıyla AYNI anda iki tane görünmez (yeni balon eskisinin yerine geçer).

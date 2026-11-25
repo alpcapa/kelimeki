@@ -49,6 +49,7 @@ import {
 } from './utils/onboarding';
 import {
   ONBOARDING_HINT_TEXTS,
+  hasJokerEndgame,
   onboardingHintYon,
   markTutorialSeen,
 } from './utils/onboarding';
@@ -1160,7 +1161,13 @@ export default function App() {
       torba: true,
       // Yerel/YZ oyununda mesajlaşma yok.
       mesaj: false,
+      joker: true,
     },
+    // Son-raf joker balonu (25 Kasım 2026): sıra İNSANDA, torba boş, rafında
+    // joker. Rafı gösterilen oyuncu = sırası gelen insan (hotseat'te de).
+    jokerEndgame:
+      !state.players[state.current].isAI &&
+      hasJokerEndgame(state.bag.length, state.players[state.current].rack),
     hasDraft: Object.keys(state.placed).length > 0,
     onZoom: boardZoom.showHint,
   });
@@ -2046,7 +2053,10 @@ export default function App() {
         </div>
 
         <div className="flex gap-1.5 items-stretch">
-          <div className="flex-1 min-w-0">
+          <div className="relative flex-1 min-w-0">
+            {hint?.id === 'joker' && (
+              <HintBubble text={ONBOARDING_HINT_TEXTS.joker} yon="ust" hiza="orta" />
+            )}
             <Rack
               tiles={rackPlayer.rack}
               selectedTile={state.selectedTile}

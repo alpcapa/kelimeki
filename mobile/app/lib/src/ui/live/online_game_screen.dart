@@ -547,6 +547,14 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     if (storageFuture == null) return;
     final flags = (await storageFuture).flags;
     if (!mounted) return;
+    // Son-raf joker balonu (25 Kasım 2026, web `OnlineGameScreen.tsx` ikizi):
+    // sıra bende, torba boş, rafımda joker.
+    final ben = _mySlot >= 0 && _mySlot < s.players.length
+        ? s.players[_mySlot]
+        : null;
+    final jokerSonu = ben != null &&
+        s.current == _mySlot &&
+        hasJokerEndgame(s.bag.length, ben.rack.map((t) => t.letter));
     final secilen = await _hints.onMoves(
       moves: _moves.length,
       playerCount: s.players.length,
@@ -560,7 +568,9 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
         OnboardingHintId.hamleler,
         OnboardingHintId.torba,
         OnboardingHintId.mesaj,
+        OnboardingHintId.joker,
       },
+      jokerEndgame: jokerSonu,
       flags: flags,
     );
     if (secilen == null || !mounted) return;
@@ -570,7 +580,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     }
     _hintTimer?.cancel();
     setState(() => _uiHint = secilen);
-    _hintTimer = Timer(onboardingHintDuration, () {
+    _hintTimer = Timer(onboardingHintMs(secilen), () {
       if (mounted) setState(() => _uiHint = null);
     });
   }
@@ -2286,7 +2296,14 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                                 CrossAxisAlignment.stretch,
                                             children: [
                                               Expanded(
-                                                child: KeyedSubtree(
+                                                child: HintAnchor(
+                                                  show: _uiHint ==
+                                                      OnboardingHintId.joker,
+                                                  text: onboardingHintTexts[
+                                                      OnboardingHintId.joker]!,
+                                                  yon: HintBubbleYon.ust,
+                                                  hiza: HintBubbleHiza.orta,
+                                                  child: KeyedSubtree(
                                                   key: _rackKey,
                                                   child: RackWidget(
                                                     tiles: me.rack,
@@ -2341,6 +2358,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                                     onTilePointerCancel:
                                                         _cancelTileDrag,
                                                   ),
+                                                ),
                                                 ),
                                               ),
                                               if (!state.swapMode) ...[

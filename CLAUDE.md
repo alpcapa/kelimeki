@@ -117,7 +117,8 @@ Projenin geri kalanının çok büyük bölümü (Canlı oyun, mesajlaşma, e-po
 mini oyun gelir (`TutorialGame` + `utils/tutorialScript.ts`). Aynı kural
 kümesine bağlı üç yüzey daha var: **eğitim balonları** (`pickOnboardingHint` —
 1 Ekim 2026'dan beri SIRA: menü → anlam → zoom → hamleler → torba → mesaj,
-birer kez, 2. turdan sonra 4'er tur arayla),
+birer kez, 2. turdan sonra 4'er tur arayla; **+ SIRAYA GİRMEYEN `joker`**, 25 Kasım
+2026: torba boş + sırası gelenin rafında joker → rafa çapalı, 7 sn, iki cümle),
 **tekrar oynama** (`TUTORIAL_REPLAY_CTA`, yalnızca Setup'tan açılan pencerede)
 ve **oyun sonu kutlaması** (`pickFirstWinCelebration`). Dördünün de kararı
 `utils/onboarding.ts`'te SAF FONKSİYON — koşula bileşen içinde karar verme.

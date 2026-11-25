@@ -875,6 +875,55 @@ cihaz, bir sonraki oyununa kadar yine tanıtımı görebilir (geriye dönük
 bayrak yok — o cihazın "oynadı" bilgisi yerelde durmuyor). Web hemen
 yayında, port 12 Ekim treninde.
 
+### Son-raf joker balonu — sıraya GİRMEYEN, duruma bağlı yedinci balon (25 Kasım 2026)
+
+Kullanıcı isteği, sözleri birebir: *"Oyunda son rafta joker varsa tek seferlik
+rafa doğru bir bilgi balonu (hep kullandığımız gibi) çıkartıp 'Tek veya çift
+jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalınsa -10 puan
+yazar.'"* ("kalınsa" yazım hatası "kalırsa" yapıldı.) Kural kaynağı: `docs/decisions/game-rules.md` → "Rafta kalan joker −10"
+(#983) — **bu balon o PR'a bağımlı**, metin −10 diyor; #983'ten ÖNCE yayınlanırsa
+yanlış kural söyler. Bu yüzden PR #983'ün dalının üstüne istiflendi.
+
+**Tetik (`hasJokerEndgame` + "sıra bende"):** torba BOŞ (bu raf son raf) ve
+sırası gelen oyuncunun rafında en az bir joker (`letter === '?'`). Rakibin
+sırasında çıkmaz — "bitir" demenin anlamı yok. Yerel oyunda "sıra bende" =
+sırası gelen insan (hotseat dahil), Canlı'da `state.current === mySlotIndex`.
+Karar, `moves` değişince çalışan mevcut effect'te verilir (rakip/YZ oynadıktan
+sonra sıra sana geçince yakalar).
+
+**Neden SIRAYA girmedi:** diğer altı balon ARAYÜZÜ anlatır ve tur sayısıyla
+açılır (2. tur → 4'er tur arayla); sıraya sokulsaydı önündeki balonlar
+bitmeden (ilk oyun ~33 hamlede biter) HİÇ çıkmazdı. Bu yüzden
+`ONBOARDING_HINT_ORDER`da YOK (port `onboardingHintOrder` de aynı; parite
+testi sırayı satır satır karşılaştırıyor) ve `pickOnboardingHint` onu en başta,
+tur eşiklerine bakmadan karara bağlıyor. Yine de her balon gibi cihaz başına
+**en fazla bir kez** (`ONBOARDING_HINT_MAX_SHOWS`) ve bu ekranda çizilemiyorsa
+(`available.joker` false) atlanır.
+
+**Üç bilinçli sapma (hepsi `verify-tutorial-script` + `tutorial_parity_test`
+ile kilitli):**
+1. **İki cümle.** Tanıtımın "tek cümle bütçesi" (7 Eylül) bu balon için aşıldı:
+   metni kullanıcı verdi, iki fikir taşıyor (bonus + ceza). Kapı bunu
+   "joker TAM İKİ cümle olmalı" diye kilitliyor, öteki altısı tek cümle kalıyor.
+2. **7 sn, 4 sn değil** (`ONBOARDING_HINT_JOKER_MS`, `RANDOM_HINT_MS` emsali):
+   ~95 karakter 4 sn'de okunmaz. Hook süreyi `onboardingHintMs(id)`den okuyor.
+3. **Metin DÜZ sabit, kuraldan türetilmiyor** — parite testi
+   `  <id>: '...'` kalıbıyla web kaynağını regex'le okuyor, şablon dize olamaz.
+   Bayatlama kapısı doğrulayıcıda: metin `+${jokerFinishBonus(1)}/${jokerFinishBonus(2)}`
+   ve `-${JOKER_END_PENALTY} puan`ı içermiyorsa `verify-tutorial-script` düşer
+   (bonus tablosu ya da ceza sabiti oynarsa).
+
+**Çizim:** `HintBubble` yon `ust`, hiza `orta`, rafın SARMALAYICISINA çapalı
+(`App.tsx` + `OnlineGameScreen.tsx`, ikisi aynı desen; portta `HintAnchor` ile
+`_rackKey`in DIŞINDA — sürükle-bırak alanı değişmedi). Bonus kuralının
+kendisi: yalnız oyunu BİTİREN hamlenin taşlarının TAMAMI joker ise
+(`jokerFinishBonus`: 1 joker +25, 2 joker +50); ceza rafta kalan HER jokere işler.
+
+Port ikizi: `util/onboarding.dart` (`OnboardingHintId.joker`, `hasJokerEndgame`,
+`onboardingHintMs`), `OnboardingHintScheduler.onMoves(jokerEndgame:)`,
+`game_screen.dart` + `online_game_screen.dart`. Cihaz kontrolü:
+`mobile/TESTING.md` §37, web: `TESTING.md` §10.
+
 ## Faz 3 — tanıtımı tekrar oynama (8 Eylül 2026)
 
 "Nasıl oynanır?" penceresinin **en başında** bir buton:

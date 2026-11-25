@@ -304,13 +304,14 @@ void main() {
     final misafir = {...yerel}..remove(OnboardingHintId.menu);
     final canli = {...hepsi}..remove(OnboardingHintId.anlam);
     OnboardingHintInput girdi(int moves, int? last, Set<OnboardingHintId> av,
-            {bool word = true, int n = 2}) =>
+            {bool word = true, int n = 2, bool joker = false}) =>
         OnboardingHintInput(
             movesSinceOpen: moves,
             playerCount: n,
             lastShownAt: last,
             wordPlaced: word,
-            available: av);
+            available: av,
+            jokerEndgame: joker);
     const ilk = onboardingHintFirstRounds * 2;
     const ara = onboardingHintGapRounds * 2;
     const anlam = onboardingHintAnlamMinRounds * 2;
@@ -319,6 +320,7 @@ void main() {
     const z = OnboardingHintId.zoom;
     const h = OnboardingHintId.hamleler;
     const t = OnboardingHintId.torba;
+    const j = OnboardingHintId.joker;
     final vakalar = <(
       String,
       OnboardingHintInput,
@@ -390,6 +392,44 @@ void main() {
         bitti(OnboardingHintId.values),
         null
       ),
+      // ── `joker`: SIRANIN DIŞINDA, durum tetikler (25 Kasım 2026) —
+      // web `verify-tutorial-script` vakalarının birebir eşi.
+      (
+        'joker: tur eşiğinden ÖNCE bile çıkar (sıraya bağlı değil)',
+        girdi(1, null, yerel, word: false, joker: true),
+        sifir,
+        j
+      ),
+      (
+        'joker: sıradaki menü/anlam balonlarının ÖNÜNE geçer',
+        girdi(ilk, null, yerel, joker: true),
+        sifir,
+        j
+      ),
+      (
+        'joker: aralık dolmadan da çıkar (son balondan hemen sonra)',
+        girdi(ilk + 1, ilk, yerel, joker: true),
+        bitti([m]),
+        j
+      ),
+      (
+        'joker: bir kez gösterildi → bir daha ASLA (sıra da onsuz sürer)',
+        girdi(ilk + ara, ilk, yerel, joker: true),
+        bitti([m, j]),
+        a
+      ),
+      (
+        'joker durumu YOK → joker balonu çıkmaz',
+        girdi(ilk, null, yerel),
+        sifir,
+        m
+      ),
+      (
+        'joker bu ekranda çizilemiyorsa → atlanır, normal akış',
+        girdi(ilk, null, {...yerel}..remove(j), joker: true),
+        sifir,
+        m
+      ),
     ];
     for (final (ad, girdi, sayac, beklenen) in vakalar) {
       expect(pickOnboardingHint(girdi, sayac), beklenen, reason: 'ipucu "$ad"');
@@ -400,10 +440,34 @@ void main() {
     expect(onboardingHintYon(onboardingHintAltRows), 'ust');
     expect(onboardingHintYon(12), 'ust');
     // Metinler TEK cümle ve terim `bölge` (bkz. kök CLAUDE.md → Terminoloji).
+    // İSTİSNA `joker` (25 Kasım 2026): metni kullanıcı verdi → TAM İKİ cümle.
     for (final MapEntry(key: id, value: metin) in onboardingHintTexts.entries) {
-      expect('.'.allMatches(metin).length, 1, reason: '$id tek cümle olmalı');
+      final beklenenCumle = id == OnboardingHintId.joker ? 2 : 1;
+      expect('.'.allMatches(metin).length, beklenenCumle,
+          reason: '$id $beklenenCumle cümle olmalı');
       expect(metin.toLowerCase().contains('sınır'), isFalse,
           reason: '$id "sınır" diyor — verginin/alanın adı "bölge"');
+    }
+    // Son-raf joker balonu: metindeki sayılar KURALA bağlı (web
+    // `verify-tutorial-script` ile aynı gerekçe — kural değişince metin
+    // sessizce bayatlamasın) + süre genel 4 sn'den uzun.
+    final jokerMetin = onboardingHintTexts[j]!;
+    expect(jokerMetin.contains('+${jokerFinishBonus(1)}/${jokerFinishBonus(2)}'),
+        isTrue,
+        reason: 'joker balonu bonusu söylemeli');
+    expect(jokerMetin.contains('-$jokerEndPenalty puan'), isTrue,
+        reason: 'joker balonu cezayı söylemeli');
+    expect(onboardingHintMs(j), onboardingHintJokerDuration);
+    expect(onboardingHintJokerDuration > onboardingHintDuration, isTrue);
+    expect(onboardingHintMs(t), onboardingHintDuration);
+    for (final (ad, torba, raf, beklenen) in <(String, int, List<String>, bool)>[
+      ('torba boş + rafta joker', 0, ['A', '?'], true),
+      ('torba boş + iki joker', 0, ['?', '?'], true),
+      ('torba DOLU + rafta joker (son raf değil)', 1, ['A', '?'], false),
+      ('torba boş + jokersiz raf', 0, ['A', 'A'], false),
+      ('torba boş + raf boş', 0, <String>[], false),
+    ]) {
+      expect(hasJokerEndgame(torba, raf), beklenen, reason: ad);
     }
   });
 }
