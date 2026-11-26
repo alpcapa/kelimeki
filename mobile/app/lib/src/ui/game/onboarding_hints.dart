@@ -35,6 +35,7 @@ class OnboardingHintScheduler {
     required int playerCount,
     required bool wordPlaced,
     required Set<OnboardingHintId> available,
+    required bool jokerEndgame,
     required FlagsStore flags,
   }) async {
     if (!_armed) {
@@ -56,6 +57,7 @@ class OnboardingHintScheduler {
         lastShownAt: _lastShownAt,
         wordPlaced: wordPlaced,
         available: available,
+        jokerEndgame: jokerEndgame,
       ),
       flags.onboardingHintShownCounts,
     );

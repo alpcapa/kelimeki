@@ -432,7 +432,7 @@ mantık değişirse yukarıdaki kural üç ekran için geçerli.
 **Onboarding Faz 2·3·5 (8 Eylül 2026) — üç dosya web'e karşı kilitli:**
 `util/onboarding.dart`ın eğitim balonları (1 Eki 2026'dan beri SIRA: menü →
 anlam → zoom → hamleler → torba → mesaj; `pickOnboardingHint`, metinler,
-sıra, tavan) `tutorial_parity_test.dart` tarafından `src/utils/onboarding.ts`
+sıra, tavan; **+ sıraya girmeyen bağlamsal `joker` balonu**, 25 Kas 2026, Parça 261) `tutorial_parity_test.dart` tarafından `src/utils/onboarding.ts`
 ile SATIR SATIR karşılaştırılıyor; `tutorial_script.dart`ın kapanış/tekrar
 buton etiketleri (`tutorialFinishButton` · `tutorialReplayFinishButton` ·
 `tutorialReplayCta`) `src/utils/tutorialScript.ts`ten okunuyor. İpucu balonu

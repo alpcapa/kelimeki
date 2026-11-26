@@ -59,7 +59,7 @@ bool isFirstMove(GameState state) {
 }
 
 GameState _endGame(GameState state, [EndReason reason = EndReason.normal]) {
-  int remaining(Player p) => p.rack.fold(0, (s, t) => s + t.pts);
+  int remaining(Player p) => rackEndTotal(p.rack);
   final players = [
     for (final p in state.players)
       p.copyWith(score: (p.score - remaining(p)) < 0 ? 0 : p.score - remaining(p)),

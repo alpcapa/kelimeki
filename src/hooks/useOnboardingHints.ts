@@ -9,7 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   bumpOnboardingHintShown,
-  ONBOARDING_HINT_MS,
+  onboardingHintMs,
   onboardingHintShownCounts,
   pickOnboardingHint,
   type OnboardingHintId,
@@ -28,6 +28,7 @@ export function useOnboardingHints({
   playerCount,
   lastWordCell,
   available,
+  jokerEndgame,
   hasDraft,
   onZoom,
 }: {
@@ -39,6 +40,9 @@ export function useOnboardingHints({
   /** Son hamle tahtaya kelime oturttuysa onun ilk karesi, yoksa `null`. */
   lastWordCell: [number, number] | null;
   available: Readonly<Record<OnboardingHintId, boolean>>;
+  /** Sırası gelen oyuncunun rafında son-raf joker durumu var mı
+   *  (`hasJokerEndgame` + "sıra bende") — `joker` balonunun koşulu. */
+  jokerEndgame: boolean;
   /** Oyuncu taş koymaya başladı — balon erken kapanır. */
   hasDraft: boolean;
   /** Sıra zoom'a geldi: balonu tahta çizer (`useBoardZoom.showHint`). */
@@ -52,8 +56,8 @@ export function useOnboardingHints({
   const seen = useRef(0);
   const lastShownAt = useRef<number | null>(null);
   // Girdilerin GÜNCEL hâli — effect yalnızca `moves`/`active`e bağlı.
-  const latest = useRef({ playerCount, lastWordCell, available, onZoom });
-  latest.current = { playerCount, lastWordCell, available, onZoom };
+  const latest = useRef({ playerCount, lastWordCell, available, jokerEndgame, onZoom });
+  latest.current = { playerCount, lastWordCell, available, jokerEndgame, onZoom };
 
   useEffect(() => {
     if (!active) {
@@ -79,7 +83,7 @@ export function useOnboardingHints({
     }
     if (moves === seen.current) return;
     seen.current = moves;
-    const { playerCount: n, lastWordCell: kelime, available: var_, onZoom: zoom } = latest.current;
+    const { playerCount: n, lastWordCell: kelime, available: var_, jokerEndgame: jokerSonu, onZoom: zoom } = latest.current;
     const movesSinceOpen = moves - base.current;
     const secilen = pickOnboardingHint(
       {
@@ -88,6 +92,7 @@ export function useOnboardingHints({
         lastShownAt: lastShownAt.current,
         wordPlaced: kelime !== null,
         available: var_,
+        jokerEndgame: jokerSonu,
       },
       onboardingHintShownCounts(),
     );
@@ -108,7 +113,7 @@ export function useOnboardingHints({
   // Balon kendi kendine kapanır; oyuncu taş koymaya başladıysa daha erken.
   useEffect(() => {
     if (!hint) return;
-    const t = setTimeout(() => setHint(null), ONBOARDING_HINT_MS);
+    const t = setTimeout(() => setHint(null), onboardingHintMs(hint.id));
     return () => clearTimeout(t);
   }, [hint]);
   useEffect(() => {

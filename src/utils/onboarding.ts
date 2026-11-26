@@ -260,7 +260,17 @@ export const SEEN_INTRO_KEY = 'kelimeki:seen-intro';
 //
 // Desen eski tek balonun aynısı: "gösterim" balonun EKRANA GELMESİDİR (nasıl
 // kapandığı sayacı etkilemez), depolama kapalıysa varsayılan GÖSTERME.
-export type OnboardingHintId = 'menu' | 'anlam' | 'zoom' | 'hamleler' | 'torba' | 'mesaj';
+//
+// ⚠ **`joker` SIRAYA GİRMEZ (25 Kasım 2026, kullanıcı isteği):** *"Oyunda son
+// rafta joker varsa tek seferlik rafa doğru bir bilgi balonu (hep kullandığımız
+// gibi) çıkartıp 'Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama
+// dikkat, elinde kalırsa -10 puan yazar.'"* Diğer altısı ARAYÜZÜ anlatır ve
+// zamanla (tur sayısı) açılır; bu bir DURUMA bağlı: torba boş + sırası gelen
+// oyuncunun rafında joker. Sıraya girseydi önündeki balonlar bitene kadar
+// (oyun biter) hiç çıkmazdı — o yüzden `ONBOARDING_HINT_ORDER`da YOK ve
+// `pickOnboardingHint` onu tur eşiklerine bakmadan, en başta karara bağlar.
+// Yine de her balon gibi EN FAZLA BİR KEZ (cihaz sayacı).
+export type OnboardingHintId = 'menu' | 'anlam' | 'zoom' | 'hamleler' | 'torba' | 'mesaj' | 'joker';
 
 /**
  * Gösterim sırası. ⚠ Port `onboardingHintOrder` ile BİREBİR
@@ -327,6 +337,27 @@ export function onboardingHintYon(r: number): 'ust' | 'alt' {
  *  Zoom balonu kendi `ZOOM_HINT_AUTO_HIDE_MS`ini kullanır (aynı değer). */
 export const ONBOARDING_HINT_MS = 4000;
 
+/** `joker` balonunun süresi: İKİ cümle (~95 karakter) 4 sn'de okunmaz —
+ *  `RANDOM_HINT_MS` (üç cümle, 7 sn) ile aynı gerekçe ve aynı değer. */
+export const ONBOARDING_HINT_JOKER_MS = 7000;
+
+/** Bir balonun ekranda kalma süresi — hook bunu kullanır. */
+export function onboardingHintMs(id: OnboardingHintId): number {
+  return id === 'joker' ? ONBOARDING_HINT_JOKER_MS : ONBOARDING_HINT_MS;
+}
+
+/**
+ * Son-raf joker durumu: torba BOŞ (artık çekiş yok, bu raf son raf) ve rafta
+ * en az bir joker. Bonus (`jokerFinishBonus`) yalnızca oyunu BİTİREN hamlenin
+ * taşlarının tamamı joker olursa, ceza (`JOKER_END_PENALTY`) rafta kalan her
+ * jokere işler — ikisi de ancak bu durumda gündeme gelir. Çağıran ayrıca
+ * SIRASININ kendisinde olduğunu eler (rakibin sırasında rafa bakıp "bit"
+ * demek anlamsız). Port ikizi `hasJokerEndgame`.
+ */
+export function hasJokerEndgame(bagCount: number, rack: ReadonlyArray<{ letter: string }>): boolean {
+  return bagCount === 0 && rack.some((t) => t.letter === '?');
+}
+
 /**
  * Balon metinleri — her biri TEK cümle (kullanıcı kararı, 7 Eylül 2026:
  * tanıtımın "tek cümle bütçesi"). Menü/hamleler/torba/mesaj kullanıcının
@@ -339,6 +370,12 @@ export const ONBOARDING_HINT_TEXTS: Record<Exclude<OnboardingHintId, 'zoom'>, st
   hamleler: 'Buradan tüm hamleleri görebilirsin.',
   torba: 'Dışarıda kalan taşlar burada.',
   mesaj: 'Buradan oyunculara mesaj gönderebilirsin.',
+  // ⚠ Kullanıcının cümlesi (25 Kasım 2026; "kalınsa" yazım hatası düzeltildi).
+  // 25/50 = `jokerFinishBonus(1)`/`(2)`, 10 = `JOKER_END_PENALTY` — parite
+  // testi bu satırı DÜZ METİN olarak okuyor (şablon dize olamaz); kural
+  // değişirse `verify-tutorial-script` düşer. İki cümle: tek-cümle bütçesinin
+  // BİLİNÇLİ istisnası (metni kullanıcı verdi), süresi bu yüzden 7 sn.
+  joker: 'Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar.',
 };
 
 function hintKey(id: OnboardingHintId): string {
@@ -365,6 +402,7 @@ export function onboardingHintShownCounts(): Record<OnboardingHintId, number> {
     hamleler: hintShown('hamleler'),
     torba: hintShown('torba'),
     mesaj: hintShown('mesaj'),
+    joker: hintShown('joker'),
   };
 }
 
@@ -395,6 +433,9 @@ export interface OnboardingHintInput {
   wordPlaced: boolean;
   /** Bu ekranda çizilebilen balonlar — çizilemeyen ATLANIR. */
   available: Readonly<Record<OnboardingHintId, boolean>>;
+  /** Sıra bu oyuncuda MI ve son-raf joker durumu var mı (`hasJokerEndgame`)
+   *  — `joker` balonunun tek koşulu, sıranın dışında karar verilir. */
+  jokerEndgame: boolean;
 }
 
 /**
@@ -406,6 +447,12 @@ export function pickOnboardingHint(
   input: OnboardingHintInput,
   shown: Record<OnboardingHintId, number>,
 ): OnboardingHintId | null {
+  // Bağlamsal balon SIRANIN DIŞINDA: tur eşiklerine ve aralığa bakmaz (bkz.
+  // `OnboardingHintId` üstündeki not). Sayaç dolduysa ya da bu ekranda
+  // çizilemiyorsa normal akışa düşer.
+  if (input.jokerEndgame && input.available.joker && (shown.joker ?? 0) < ONBOARDING_HINT_MAX_SHOWS) {
+    return 'joker';
+  }
   const n = Math.max(1, input.playerCount);
   const acilistanTur = Math.floor(input.movesSinceOpen / n);
   const tur =

@@ -460,6 +460,28 @@ void main() {
     );
     expect(find.text(kOfflineNoConnection), findsOneWidget);
     expect(find.text('Henüz hiç oyun kaydın yok.'), findsNothing);
+    // 9 Kasım 2026 (1.1.6 turu, kullanıcı): çevrimdışı metin KIRMIZI.
+    expect(tester.widget<Text>(find.text(kOfflineNoConnection)).style?.color,
+        kRed);
+  });
+
+  // 9 Kasım 2026 (1.1.6 turu): uçak modunda Skor Kartı 7-8 sn "Yükleniyor…"
+  // gösterip sonra "İnternet bağlantısı yok" diyordu — okuma zaman aşımına
+  // kadar ağda bekliyordu. Çevrimdışıyken ağa HİÇ çıkılmaz, yanıt anında gelir.
+  test('StatsRepo: çevrimdışıyken ağa HİÇ çıkmaz (okumalar anında null/boş)',
+      () async {
+    final gw = _CountingGateway();
+    final repo = StatsRepo(gw)..isOnline = () => false;
+    expect(await repo.playerStats('u', StatsTab.all), isNull);
+    expect(await repo.myRank('u'), isNull);
+    expect(await repo.myBeyinRank('u'), isNull);
+    expect(await repo.ageGenderLabel('u'), '');
+    expect(gw.cagri, 0, reason: 'çevrimdışıyken sunucuya istek gitti');
+
+    // Negatif eş: çevrimiçiyken okuma GİDER (kapı yalnızca çevrimdışını keser).
+    repo.isOnline = () => true;
+    await repo.playerStats('u', StatsTab.all);
+    expect(gw.cagri, greaterThan(0));
   });
 
   // 1 Ekim 2026, 1.1.2 cihaz turu: başlık "SIRAOYUNCU" diye bitişik
@@ -1110,6 +1132,33 @@ void main() {
     expect(parseNullableDouble(null), isNull);
     expect(parseNullableDouble('abc'), isNull);
   });
+}
+
+class _CountingGateway extends _ThrowingGateway {
+  int cagri = 0;
+  @override
+  Future<Map<String, Object?>?> playerStats(String userId, int? playerCount) {
+    cagri++;
+    return super.playerStats(userId, playerCount);
+  }
+
+  @override
+  Future<Map<String, Object?>?> myLeaderboardRank(String userId) {
+    cagri++;
+    return super.myLeaderboardRank(userId);
+  }
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async {
+    cagri++;
+    return null;
+  }
+
+  @override
+  Future<Map<String, Object?>?> profileAgeGender(String userId) async {
+    cagri++;
+    return null;
+  }
 }
 
 class _ThrowingGateway implements StatsGateway {

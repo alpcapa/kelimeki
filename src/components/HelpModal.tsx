@@ -316,6 +316,12 @@ export function DetailedRules() {
           eklenmez.
         </P>
         <P>
+          <strong>Elinde kalan joker en değerli harf gibi sayılır:</strong> oyun bittiğinde
+          harf kutusunda joker kalmışsa puanından <strong>10 puan</strong> (J harfinin değeri)
+          düşülür. Jokeri sona saklamak bonus getirebilir, ama oyunu rakip senden önce
+          bitirirse bedelini ödersin.
+        </P>
+        <P>
           Tüm oyuncular arka arkaya 2 tur boyunca pas geçerse de oyun sona erer. Bu durumda da
           tüm oyuncuların puanından elinde kalan taşların değeri düşer. En yüksek puana sahip
           oyuncu kazanır.

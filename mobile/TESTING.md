@@ -1661,3 +1661,25 @@ taşındı (kök `CLAUDE.md` → "Doküman Boyutu Bütçesi"; bu dosya uyarı
 bandındaydı). İçerik AYNEN duruyor, bölüm numaraları korundu — kesme
 noktası içeriğin türü: burası her sürüm baştan koşulan ÖZELLİK listesi,
 orası belirli bir Parça'nın gerilemediğini doğrulayan TARİHLİ turlar.
+
+## 36. Uygulama içi puan isteği (20 Kasım 2026, ROADMAP #42 — `[Sonraki sürüm]` taslak PR, Parça 258)
+
+⚠ OS penceresi yalnızca GERÇEK cihazda ve mağaza kurulumunda görülür; yan yüklenmiş `.apk`da Play pencereyi vermez, TestFlight'ta pencere çıkar ama yorum gönderilemez.
+
+- [ ] Yeni kurulumda ilk iki oyunda (kazanılsa bile) pencere ÇIKMAZ.
+- [ ] 3. biten oyunu KAZANINCA (kutlama penceresi yoksa) oyun sonu penceresi kapandıktan sonra OS puan penceresi çıkar (iOS: çıkmayabilir, kota OS'ta).
+- [ ] Kaybedilen/teslim edilen oyunda çıkmaz.
+- [ ] Çıktıktan sonraki oyunlarda 120 gün boyunca tekrar çıkmaz.
+- [ ] Canlı oyun kazancında da aynı kural (iki ekran).
+
+## 37. Oyun sonunda rafta kalan joker −10 (24 Kasım 2026 — `[Sonraki sürüm]` taslak PR, Parça 260)
+
+⚠ Canlı oyun maddeleri SQL migration'ı UYGULANDIKTAN sonra anlamlı (kesim günü).
+
+- [ ] Yerel oyun: rafında joker varken rakip (YZ) oyunu bitirince bitiş ekranında senin "Kalan" sütunun `-10` (+ varsa diğer taşların puanı), Toplam buna göre.
+- [ ] İki joker kalırsa `-20`. Skor 10'un altındaysa Toplam 0'a iner, eksiye düşmez.
+- [ ] Oyunu SEN bitirirsen rakibin rafındaki joker rakibe `-10` yazar, sana EKLENMEZ.
+- [ ] Yardım → "Oyunun Sonu": "Elinde kalan joker en değerli harf gibi sayılır…" paragrafı var.
+- [ ] Canlı oyun (migration sonrası): bitiş ekranındaki "Kalan" satırı ile Toplam tutuyor.
+- [ ] **Son-raf joker balonu (25 Kasım 2026, Parça 261):** torba BOŞALDIKTAN sonra sıra sana geçtiğinde rafında joker varsa rafın ÜSTÜNDE mavi balon çıkar: "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar." ~7 sn (diğer balonlardan UZUN) kalır, taş koymaya başlayınca erken kapanır, aynı cihazda bir daha ÇIKMAZ. Rafa dokunma/sürükleme balonun varlığında da çalışmalı. Rakibin sırasında, torba doluyken ya da jokersiz rafta ÇIKMAMALI. Hem yerel/YZ hem Canlı oyunda dene.
+

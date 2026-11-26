@@ -88,6 +88,7 @@ import '../../util/online_status.dart';
 import '../../util/onboarding.dart';
 import '../../util/rematch_slots.dart';
 import '../../data/error_reporter.dart';
+import '../../data/store_review.dart';
 import '../../util/error_message.dart';
 
 const Color _muted = kMuted;
@@ -284,6 +285,24 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       totalWins: stats?.wins,
       guestCelebrated: true,
     ));
+  }
+
+  /// Oyun sonu puan isteği (ROADMAP #42) — yerel ekranın `_puanIstegi`siyle
+  /// aynı kural (iki ekran deseni paylaşıyor, biri değişirse öteki de).
+  Future<void> _puanIstegi(bool kutlamaVar) async {
+    final storageFuture = widget.storage;
+    if (storageFuture == null || _mySlot < 0) return;
+    final ranked = rankPlayers(state.players);
+    final meRank = ranked
+            .where((r) => r.index == _mySlot)
+            .map((r) => r.rank)
+            .firstOrNull ??
+        0;
+    final me = _mySlot < state.players.length ? state.players[_mySlot] : null;
+    final won = meRank == 1 && !(me?.surrendered ?? false);
+    final storage = await storageFuture;
+    await maybeAskStoreReview(
+        flags: storage.flags, won: won, celebrationShown: kutlamaVar);
   }
 
   bool _loaded = false;
@@ -547,6 +566,14 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     if (storageFuture == null) return;
     final flags = (await storageFuture).flags;
     if (!mounted) return;
+    // Son-raf joker balonu (25 Kasım 2026, web `OnlineGameScreen.tsx` ikizi):
+    // sıra bende, torba boş, rafımda joker.
+    final ben = _mySlot >= 0 && _mySlot < s.players.length
+        ? s.players[_mySlot]
+        : null;
+    final jokerSonu = ben != null &&
+        s.current == _mySlot &&
+        hasJokerEndgame(s.bag.length, ben.rack.map((t) => t.letter));
     final secilen = await _hints.onMoves(
       moves: _moves.length,
       playerCount: s.players.length,
@@ -560,7 +587,9 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
         OnboardingHintId.hamleler,
         OnboardingHintId.torba,
         OnboardingHintId.mesaj,
+        OnboardingHintId.joker,
       },
+      jokerEndgame: jokerSonu,
       flags: flags,
     );
     if (secilen == null || !mounted) return;
@@ -570,7 +599,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     }
     _hintTimer?.cancel();
     setState(() => _uiHint = secilen);
-    _hintTimer = Timer(onboardingHintDuration, () {
+    _hintTimer = Timer(onboardingHintMs(secilen), () {
       if (mounted) setState(() => _uiHint = null);
     });
   }
@@ -1982,6 +2011,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                     myIndex: _mySlot),
                 onFeedback: auth == null ? null : openFeedback,
                 celebration: kutlama);
+            // Uygulama içi puan isteği (ROADMAP #42) — yerel ekranla aynı kural.
+            unawaited(_puanIstegi(kutlama != null));
             if (!mounted || !context.mounted) return;
             await _askFriendSuggest();
           });
@@ -2286,7 +2317,14 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                                 CrossAxisAlignment.stretch,
                                             children: [
                                               Expanded(
-                                                child: KeyedSubtree(
+                                                child: HintAnchor(
+                                                  show: _uiHint ==
+                                                      OnboardingHintId.joker,
+                                                  text: onboardingHintTexts[
+                                                      OnboardingHintId.joker]!,
+                                                  yon: HintBubbleYon.ust,
+                                                  hiza: HintBubbleHiza.orta,
+                                                  child: KeyedSubtree(
                                                   key: _rackKey,
                                                   child: RackWidget(
                                                     tiles: me.rack,
@@ -2341,6 +2379,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                                     onTilePointerCancel:
                                                         _cancelTileDrag,
                                                   ),
+                                                ),
                                                 ),
                                               ),
                                               if (!state.swapMode) ...[

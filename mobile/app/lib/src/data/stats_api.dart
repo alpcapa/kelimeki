@@ -408,6 +408,11 @@ class StatsRepo {
   /// null: satır yok (hiç oyun kaydı yok) YA DA ağ hatası — ikisi de UI'da
   /// aynı "veri yok" hâline düşer (web davranışı birebir).
   Future<PlayerStats?> playerStats(String userId, StatsTab tab) async {
+    // Çevrimdışıyken ağa HİÇ çıkma (9 Kasım 2026, 1.1.6 turu: uçak modunda
+    // Skor Kartı 7-8 sn "Yükleniyor…" gösterip sonra "İnternet bağlantısı yok"
+    // diyordu — istek zaman aşımına kadar bekliyordu). Sonuç zaten aynı;
+    // `null` = "veri yok", ekran çevrimdışı metnini `online`dan seçer.
+    if (!online) return null;
     try {
       final row = await gateway.playerStats(userId, tab.playerCount);
       return row == null ? null : PlayerStats.fromJson(row);
@@ -460,6 +465,11 @@ class StatsRepo {
 
   /// Oturum açanın Beyin Ligi durumu; satır yoksa ya da hata varsa null.
   Future<MyBeyinLigiRank?> myBeyinRank(String userId) async {
+    // Çevrimdışıyken ağa HİÇ çıkma (9 Kasım 2026, 1.1.6 turu: uçak modunda
+    // Skor Kartı 7-8 sn "Yükleniyor…" gösterip sonra "İnternet bağlantısı yok"
+    // diyordu — istek zaman aşımına kadar bekliyordu). Sonuç zaten aynı;
+    // `null` = "veri yok", ekran çevrimdışı metnini `online`dan seçer.
+    if (!online) return null;
     try {
       final row = await _birKezDaha(() => gateway.myBeyinLigiRank(userId));
       if (row == null) return null;
@@ -504,6 +514,11 @@ class StatsRepo {
   }
 
   Future<MyLeaderboardRank?> myRank(String userId) async {
+    // Çevrimdışıyken ağa HİÇ çıkma (9 Kasım 2026, 1.1.6 turu: uçak modunda
+    // Skor Kartı 7-8 sn "Yükleniyor…" gösterip sonra "İnternet bağlantısı yok"
+    // diyordu — istek zaman aşımına kadar bekliyordu). Sonuç zaten aynı;
+    // `null` = "veri yok", ekran çevrimdışı metnini `online`dan seçer.
+    if (!online) return null;
     try {
       final row = await _birKezDaha(() => gateway.myLeaderboardRank(userId));
       if (row == null) return null;
@@ -530,6 +545,11 @@ class StatsRepo {
   /// veri girilmemişse boş dizge döner, yani satır hiç çizilmez (web'de de
   /// öyle: `formatAgeGender` boş dönünce blok render edilmiyor).
   Future<String> ageGenderLabel(String userId) async {
+    // Çevrimdışıyken ağa HİÇ çıkma (9 Kasım 2026, 1.1.6 turu: uçak modunda
+    // Skor Kartı 7-8 sn "Yükleniyor…" gösterip sonra "İnternet bağlantısı yok"
+    // diyordu — istek zaman aşımına kadar bekliyordu). Sonuç zaten aynı;
+    // `null` = "veri yok", ekran çevrimdışı metnini `online`dan seçer.
+    if (!online) return '';
     try {
       final row = await _birKezDaha(() => gateway.profileAgeGender(userId));
       if (row == null) return '';

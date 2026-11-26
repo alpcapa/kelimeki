@@ -10,6 +10,7 @@
 // Bu betik ÜRETİM reducer'ını ve üretim `remainingTiles`ini gerçekten
 // koşturur; sahte bir kopya değil. Çalıştırma: `npm run verify-remaining-tiles`.
 import { gameReducer, createInitialState } from '../src/game/gameReducer';
+import { rackEndTotal } from '../src/game/constants';
 import type { GameState, Player, Tile } from '../src/game/types';
 import { remainingTiles } from '../src/utils/bag';
 import { TILE_DATA } from '../src/data/tiles';
@@ -36,7 +37,7 @@ function outside(state: GameState, myIndex: number): { count: number; pts: numbe
 
 /** Bir rafın toplam puanı — `endGame`'in düştüğü tutarın aynısı. */
 function rackPts(p: Player): number {
-  return p.rack.reduce((s, t) => s + t.pts, 0);
+  return rackEndTotal(p.rack);
 }
 
 const t = (letter: string): Tile => ({ letter, pts: TILE_DATA[letter].pts });

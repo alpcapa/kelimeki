@@ -61,6 +61,7 @@ void main() {
         'ClientException: Failed to fetch, uri=https://xyz.supabase.co',
         'TypeError: Load failed',
         'Connection refused',
+        'HandshakeException: Connection terminated during handshake',
         'TimeoutException after 0:00:20.000000',
       ]) {
         expect(isNetworkError(Exception(e)), isTrue, reason: e);

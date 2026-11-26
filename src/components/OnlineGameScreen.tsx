@@ -77,6 +77,7 @@ import {
   markChatRead as markChatReadLocal,
   pickFirstWinCelebration,
   ONBOARDING_HINT_TEXTS,
+  hasJokerEndgame,
   type FirstWinCelebrationId,
 } from '../utils/onboarding';
 import { zoomHintTarget } from '../utils/boardZoom';
@@ -509,7 +510,14 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       hamleler: true,
       torba: true,
       mesaj: true,
+      joker: true,
     },
+    // Son-raf joker balonu (25 Kasım 2026): sıra bende, torba boş, rafımda
+    // joker. `me` bu noktada henüz tanımlı değil → doğrudan slot dizisinden.
+    jokerEndgame:
+      state.current === mySlotIndex &&
+      !!state.players[mySlotIndex] &&
+      hasJokerEndgame(state.bag.length, state.players[mySlotIndex].rack),
     hasDraft: Object.keys(state.placed).length > 0,
     onZoom: boardZoom.showHint,
   });
@@ -1749,7 +1757,10 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
           )}
 
           <div className="flex gap-1.5 items-stretch">
-            <div className="flex-1 min-w-0">
+            <div className="relative flex-1 min-w-0">
+              {hint?.id === 'joker' && (
+                <HintBubble text={ONBOARDING_HINT_TEXTS.joker} yon="ust" hiza="orta" />
+              )}
               <Rack
                 tiles={me.rack}
                 selectedTile={state.selectedTile}

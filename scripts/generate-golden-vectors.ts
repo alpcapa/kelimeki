@@ -365,6 +365,48 @@ function craftedFinishScenario(): void {
 }
 
 /**
+ * Oyun sonunda RAFTA KALAN JOKER −10 (J'nin puanı) — 24 Kasım 2026.
+ * İki tur: (1) normal düşüm (joker 10 + K 1 = −11, 30 → 19), (2) taban 0
+ * (rafta tek joker, skor 4 → 0). Rafta jokerin `wild` bayrağı YOK, yalnızca
+ * `letter: '?'` — gerçek torbadan gelen raf böyle ve ceza ikisini de tanımalı.
+ */
+function craftedJokerEndScenario(): void {
+  const run = new Runner(13, 1);
+  const build = (rackB: Tile[], scoreB: number): GameState => {
+    const st = JSON.parse(JSON.stringify(serState(createInitialState()))) as GameState;
+    st.phase = 'play';
+    st.bonuses = {};
+    st.board[6][4] = { letter: 'A', pts: 1, owner: 0 } as Tile;
+    st.board[0][0] = { letter: 'K', pts: 1, owner: 0 } as Tile;
+    st.board[12][12] = { letter: 'E', pts: 1, owner: 1 } as Tile;
+    st.bag = [];
+    st.players = [
+      {
+        name: 'Bitiren', corners: [0], colorIndex: 0, isAI: false, surrendered: false,
+        rack: [{ letter: 'B', pts: 3 }] as Tile[],
+        score: 10, bestMoveScore: 8, bestWordScore: 6, longestWord: 'KAR', moveCount: 2, moveScoreSum: 12,
+      },
+      {
+        name: 'Bekleyen', corners: [3], colorIndex: 1, isAI: false, surrendered: false,
+        rack: rackB,
+        score: scoreB, bestMoveScore: 9, bestWordScore: 7, longestWord: 'JETON', moveCount: 2, moveScoreSum: 14,
+      },
+    ] as Player[];
+    st.current = 0;
+    st.turnCount = 4;
+    return st;
+  };
+  const play = (st: GameState) => {
+    run.dispatch({ type: 'RESUME_SAVED', state: st });
+    run.dispatch({ type: 'PLACE_TILE', r: 6, c: 5, rackIndex: 0 });
+    run.dispatch({ type: 'PLAY', skipWordCheck: true });
+  };
+  play(build([{ letter: '?', pts: 0 }, { letter: 'K', pts: 1 }] as Tile[], 30));
+  play(build([{ letter: '?', pts: 0 }] as Tile[], 4));
+  run.finish('reducer_crafted_joker_end');
+}
+
+/**
  * Bingo (7 taşın hepsi tek hamlede) — hem İNSAN hem YZ mesaj şablonu.
  *
  * NEDEN AYRI BİR SENARYO: `reducer_ai4` bingo İÇERİYOR ama YZ oyunlarında
@@ -918,6 +960,7 @@ async function main(): Promise<void> {
   aiScenario('reducer_ai2_zor', 4242, 2, undefined, 'zor');
   humanScenario();
   craftedFinishScenario();
+  craftedJokerEndScenario();
   craftedBingoScenario();
   craftedAiExchangeScenario();
   craftedSwapDraftScenario();

@@ -91,7 +91,11 @@ bool shouldShowTutorial(TutorialGateInput input) {
 //   • bu ekranda çizilemeyen balon ATLANIR (Canlı'da anlam, YZ oyununda
 //     mesaj, misafirde menü, dolu köşede zoom);
 //   • anlam kelime oturmadan ve 6. turdan önce BEKLER.
-enum OnboardingHintId { menu, anlam, zoom, hamleler, torba, mesaj }
+/// ⚠ `joker` SIRAYA GİRMEZ (25 Kasım 2026) — `onboardingHintOrder`da YOK ve
+/// `pickOnboardingHint` onu tur eşiklerine bakmadan en başta karara bağlar:
+/// bir DURUMA bağlı (torba boş + sırası gelenin rafında joker). Ayrıntı ve
+/// gerekçe: web `OnboardingHintId` üstündeki not.
+enum OnboardingHintId { menu, anlam, zoom, hamleler, torba, mesaj, joker }
 
 /// Gösterim sırası — web `ONBOARDING_HINT_ORDER` ile BİREBİR.
 const List<OnboardingHintId> onboardingHintOrder = [
@@ -127,6 +131,21 @@ String onboardingHintYon(int r) => r < onboardingHintAltRows ? 'alt' : 'ust';
 /// Balonun ekranda kalma süresi — web `ONBOARDING_HINT_MS`.
 const Duration onboardingHintDuration = Duration(milliseconds: 4000);
 
+/// `joker` balonunun süresi — web `ONBOARDING_HINT_JOKER_MS` (iki cümle 4 sn'de
+/// okunmaz).
+const Duration onboardingHintJokerDuration = Duration(milliseconds: 7000);
+
+/// Bir balonun ekranda kalma süresi — web `onboardingHintMs`.
+Duration onboardingHintMs(OnboardingHintId id) =>
+    id == OnboardingHintId.joker
+        ? onboardingHintJokerDuration
+        : onboardingHintDuration;
+
+/// Son-raf joker durumu: torba BOŞ ve rafta en az bir joker — web
+/// `hasJokerEndgame`. Çağıran ayrıca SIRASININ kendisinde olduğunu eler.
+bool hasJokerEndgame(int bagCount, Iterable<String> rackLetters) =>
+    bagCount == 0 && rackLetters.any((l) => l == '?');
+
 /// Metinler — web `ONBOARDING_HINT_TEXTS`. Zoom'un metni `kZoomHintText`te
 /// (`board_zoom.dart`, tahta balonu).
 const Map<OnboardingHintId, String> onboardingHintTexts = {
@@ -135,6 +154,8 @@ const Map<OnboardingHintId, String> onboardingHintTexts = {
   OnboardingHintId.hamleler: 'Buradan tüm hamleleri görebilirsin.',
   OnboardingHintId.torba: 'Dışarıda kalan taşlar burada.',
   OnboardingHintId.mesaj: 'Buradan oyunculara mesaj gönderebilirsin.',
+  OnboardingHintId.joker:
+      'Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar.',
 };
 
 /// Bir hamlenin ve ekranın durumu — web `OnboardingHintInput`.
@@ -152,12 +173,17 @@ class OnboardingHintInput {
   /// Bu ekranda çizilebilen balonlar — listede olmayan ATLANIR.
   final Set<OnboardingHintId> available;
 
+  /// Sıra bu oyuncuda MI ve son-raf joker durumu var mı (`hasJokerEndgame`) —
+  /// `joker` balonunun tek koşulu.
+  final bool jokerEndgame;
+
   const OnboardingHintInput({
     required this.movesSinceOpen,
     required this.playerCount,
     required this.lastShownAt,
     required this.wordPlaced,
     required this.available,
+    required this.jokerEndgame,
   });
 }
 
@@ -167,6 +193,12 @@ OnboardingHintId? pickOnboardingHint(
   OnboardingHintInput input,
   Map<OnboardingHintId, int> shown,
 ) {
+  // Bağlamsal balon SIRANIN DIŞINDA (web `pickOnboardingHint` ile aynı).
+  if (input.jokerEndgame &&
+      input.available.contains(OnboardingHintId.joker) &&
+      (shown[OnboardingHintId.joker] ?? 0) < onboardingHintMaxShows) {
+    return OnboardingHintId.joker;
+  }
   final n = input.playerCount < 1 ? 1 : input.playerCount;
   final acilistanTur = input.movesSinceOpen ~/ n;
   final last = input.lastShownAt;

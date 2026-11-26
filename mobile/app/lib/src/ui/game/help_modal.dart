@@ -622,6 +622,11 @@ class _DetailedRules extends StatelessWidget {
               'harf kutusunda taş kalan oyuncuların puanından o taşların '
               'toplam değeri düşülür. Ancak bu puanlar bitiren oyuncuya '
               'eklenmez.'),
+          _P('Elinde kalan joker en değerli harf gibi sayılır: oyun '
+              'bittiğinde harf kutusunda joker kalmışsa puanından 10 puan '
+              '(J harfinin değeri) düşülür. Jokeri sona saklamak bonus '
+              'getirebilir, ama oyunu rakip senden önce bitirirse bedelini '
+              'ödersin.'),
           _P('Tüm oyuncular arka arkaya 2 tur boyunca pas geçerse de oyun '
               'sona erer. Bu durumda da tüm oyuncuların puanından elinde '
               'kalan taşların değeri düşer. En yüksek puana sahip oyuncu '

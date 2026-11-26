@@ -37,7 +37,7 @@ import { WORD_LIST } from '../src/data/words';
 import { preloadWordSet } from '../src/data/wordSetLoader';
 import { TILE_DATA, letterPoints } from '../src/data/tiles';
 import { trLower } from '../src/utils/turkish';
-import { SIZE } from '../src/game/constants';
+import { JOKER_END_PENALTY, SIZE, jokerFinishBonus } from '../src/game/constants';
 import { gameReducer } from '../src/game/gameReducer';
 import type { GameState } from '../src/game/types';
 import { calcScore, calcWordRawScores } from '../src/utils/validator';
@@ -53,6 +53,10 @@ import {
   ONBOARDING_HINT_GAP_ROUNDS,
   ONBOARDING_HINT_ANLAM_MIN_ROUNDS,
   ONBOARDING_HINT_ALT_ROWS,
+  ONBOARDING_HINT_JOKER_MS,
+  ONBOARDING_HINT_MS,
+  hasJokerEndgame,
+  onboardingHintMs,
   onboardingHintYon,
   pickFirstWinCelebration,
   FIRST_WIN_TEXTS,
@@ -340,11 +344,11 @@ for (const vaka of kapiVakalari) {
 // sonrakiler 4'er tur arayla; çizilemeyen ATLANIR; anlam kelime oturmadan ve
 // 6. turdan önce BEKLER; her biri bir kez.
 const SIFIR: Record<OnboardingHintId, number> = {
-  menu: 0, anlam: 0, zoom: 0, hamleler: 0, torba: 0, mesaj: 0,
+  menu: 0, anlam: 0, zoom: 0, hamleler: 0, torba: 0, mesaj: 0, joker: 0,
 };
 const TAVAN = ONBOARDING_HINT_MAX_SHOWS;
 const HEPSI: Record<OnboardingHintId, boolean> = {
-  menu: true, anlam: true, zoom: true, hamleler: true, torba: true, mesaj: true,
+  menu: true, anlam: true, zoom: true, hamleler: true, torba: true, mesaj: true, joker: true,
 };
 const YEREL = { ...HEPSI, mesaj: false };
 const MISAFIR = { ...YEREL, menu: false };
@@ -359,7 +363,10 @@ const girdi = (
   available: Record<OnboardingHintId, boolean>,
   wordPlaced = true,
   playerCount = 2,
-): OnboardingHintInput => ({ movesSinceOpen, playerCount, lastShownAt, wordPlaced, available });
+  jokerEndgame = false,
+): OnboardingHintInput => ({
+  movesSinceOpen, playerCount, lastShownAt, wordPlaced, available, jokerEndgame,
+});
 const ILK = ONBOARDING_HINT_FIRST_ROUNDS * 2;
 const ARA = ONBOARDING_HINT_GAP_ROUNDS * 2;
 const ANLAM = ONBOARDING_HINT_ANLAM_MIN_ROUNDS * 2;
@@ -432,10 +439,80 @@ const ipucuVakalari: {
   {
     ad: 'hepsi gösterildi → bir daha yok',
     girdi: girdi(100, null, HEPSI),
-    sayac: bitti('menu', 'anlam', 'zoom', 'hamleler', 'torba', 'mesaj'),
+    sayac: bitti('menu', 'anlam', 'zoom', 'hamleler', 'torba', 'mesaj', 'joker'),
     beklenen: null,
   },
+  // ── `joker`: SIRANIN DIŞINDA, durum tetikler (25 Kasım 2026) ──────────
+  {
+    ad: 'joker: tur eşiğinden ÖNCE bile çıkar (sıraya bağlı değil)',
+    girdi: girdi(1, null, YEREL, false, 2, true),
+    sayac: SIFIR,
+    beklenen: 'joker',
+  },
+  {
+    ad: 'joker: sıradaki menü/anlam balonlarının ÖNÜNE geçer',
+    girdi: girdi(ILK, null, YEREL, true, 2, true),
+    sayac: SIFIR,
+    beklenen: 'joker',
+  },
+  {
+    ad: 'joker: aralık dolmadan da çıkar (son balondan hemen sonra)',
+    girdi: girdi(ILK + 1, ILK, YEREL, true, 2, true),
+    sayac: bitti('menu'),
+    beklenen: 'joker',
+  },
+  {
+    ad: 'joker: bir kez gösterildi → bir daha ASLA (sıra da onsuz sürer)',
+    girdi: girdi(ILK + ARA, ILK, YEREL, true, 2, true),
+    sayac: bitti('menu', 'joker'),
+    beklenen: 'anlam',
+  },
+  {
+    ad: 'joker durumu YOK → joker balonu çıkmaz',
+    girdi: girdi(ILK, null, YEREL, true, 2, false),
+    sayac: SIFIR,
+    beklenen: 'menu',
+  },
+  {
+    ad: 'joker bu ekranda çizilemiyorsa → atlanır, normal akış',
+    girdi: girdi(ILK, null, { ...YEREL, joker: false }, true, 2, true),
+    sayac: SIFIR,
+    beklenen: 'menu',
+  },
 ];
+
+// ── `joker` balonunun metni, süresi ve durum tanımı ─────────────────────
+// Metindeki sayılar KURALDAN türemiyor (parite testi düz metni regex'le
+// okuyor, şablon dize olamaz) → kural değişince metin SESSİZCE bayatlar. Bu
+// kapı tam onu yakalar: bonus tablosu ya da ceza sabiti oynarsa burada düşer.
+console.log('\nSon-raf joker balonu — metin ↔ kural');
+{
+  const metin = ONBOARDING_HINT_TEXTS.joker;
+  const bonus = `+${jokerFinishBonus(1)}/${jokerFinishBonus(2)}`;
+  const ceza = `-${JOKER_END_PENALTY} puan`;
+  if (!metin.includes(bonus)) bildir(`joker balonu "${bonus}" bonusunu söylemiyor: "${metin}"`);
+  else ok(`metin bonusu söylüyor (${bonus})`);
+  if (!metin.includes(ceza)) bildir(`joker balonu "${ceza}" cezasını söylemiyor: "${metin}"`);
+  else ok(`metin cezayı söylüyor (${ceza})`);
+  if (onboardingHintMs('joker') !== ONBOARDING_HINT_JOKER_MS || ONBOARDING_HINT_JOKER_MS <= ONBOARDING_HINT_MS) {
+    bildir('joker balonu genel 4 sn\'den UZUN olmalı (iki cümle)');
+  } else ok(`joker balonu ${ONBOARDING_HINT_JOKER_MS} ms, genel ${ONBOARDING_HINT_MS} ms`);
+  if (onboardingHintMs('torba') !== ONBOARDING_HINT_MS) bildir('öteki balonların süresi DEĞİŞMEMELİ');
+  else ok('öteki balonlar genel süreyi koruyor');
+  const J = { letter: '?' };
+  const A = { letter: 'A' };
+  for (const [ad, torba, raf, beklenen] of [
+    ['torba boş + rafta joker', 0, [A, J], true],
+    ['torba boş + iki joker', 0, [J, J], true],
+    ['torba DOLU + rafta joker (son raf değil)', 1, [A, J], false],
+    ['torba boş + jokersiz raf', 0, [A, A], false],
+    ['torba boş + raf boş', 0, [], false],
+  ] as const) {
+    const sonuc = hasJokerEndgame(torba, raf);
+    if (sonuc !== beklenen) bildir(`son-raf joker "${ad}": beklenen ${beklenen}, gerçek ${sonuc}`);
+    else ok(`${ad} → ${sonuc}`);
+  }
+}
 
 // Balonun yönü (1 Ekim 2026): ilk satırlarda üstte yer yok → altına.
 console.log('\nBağlamsal ipucu balonunun yönü');
@@ -539,9 +616,13 @@ if (!FIRST_WIN_TEXTS.misafir.includes(FIRST_WIN_GUEST_CTA)) {
 
 // Metinler TEK cümle olmalı (tanıtımın "tek cümle bütçesi" kuralı) ve
 // terim `sınır` DEĞİL `bölge` (bkz. kök CLAUDE.md → "Terminoloji").
+// İSTİSNA `joker` (25 Kasım 2026): metni kullanıcı verdi ve iki fikir taşıyor
+// (bonus + ceza) → TAM İKİ cümle; süresi bu yüzden 7 sn (`ONBOARDING_HINT_JOKER_MS`).
+const CUMLE_SAYISI: Partial<Record<string, number>> = { joker: 2 };
 for (const [id, metin] of Object.entries(ONBOARDING_HINT_TEXTS)) {
-  if ((metin.match(/[.!?]/g) ?? []).length !== 1 || !metin.trim().endsWith('.')) {
-    bildir(`ipucu metni "${id}" tek cümle değil: ${metin}`);
+  const beklenenCumle = CUMLE_SAYISI[id] ?? 1;
+  if ((metin.match(/[.!?]/g) ?? []).length !== beklenenCumle || !metin.trim().endsWith('.')) {
+    bildir(`ipucu metni "${id}" ${beklenenCumle} cümle olmalı: ${metin}`);
   }
   if (/sınır/i.test(metin)) {
     bildir(`ipucu metni "${id}" "sınır" diyor — verginin/alanın adı "bölge": ${metin}`);

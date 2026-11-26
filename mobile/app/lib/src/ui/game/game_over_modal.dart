@@ -277,10 +277,7 @@ class _PlayerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = entry.player;
     final col = playerColors[p.colorIndex % playerColors.length];
-    var remaining = 0;
-    for (final t in p.rack) {
-      remaining += t.pts;
-    }
+    final remaining = rackEndTotal(p.rack);
     // k-lig katkısı — oyun kartlarıyla AYNI fonksiyondan, yani kart ile Skor
     // Kartı/k-lig listesi sessizce ayrışamaz. Buradaki "-2" TESLİM cezasıdır;
     // soldaki "Kalan" sütunundaki eksi ise raf taşı düşümü — iki farklı şey,
