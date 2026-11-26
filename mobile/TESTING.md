@@ -1661,3 +1661,14 @@ taşındı (kök `CLAUDE.md` → "Doküman Boyutu Bütçesi"; bu dosya uyarı
 bandındaydı). İçerik AYNEN duruyor, bölüm numaraları korundu — kesme
 noktası içeriğin türü: burası her sürüm baştan koşulan ÖZELLİK listesi,
 orası belirli bir Parça'nın gerilemediğini doğrulayan TARİHLİ turlar.
+
+## 36. Uygulama içi puan isteği (20 Kasım 2026, ROADMAP #42 — `[Sonraki sürüm]` taslak PR, Parça 258)
+
+⚠ OS penceresi yalnızca GERÇEK cihazda ve mağaza kurulumunda görülür; yan yüklenmiş `.apk`da Play pencereyi vermez, TestFlight'ta pencere çıkar ama yorum gönderilemez.
+
+- [ ] Yeni kurulumda ilk iki oyunda (kazanılsa bile) pencere ÇIKMAZ.
+- [ ] 3. biten oyunu KAZANINCA (kutlama penceresi yoksa) oyun sonu penceresi kapandıktan sonra OS puan penceresi çıkar (iOS: çıkmayabilir, kota OS'ta).
+- [ ] Kaybedilen/teslim edilen oyunda çıkmaz.
+- [ ] Çıktıktan sonraki oyunlarda 120 gün boyunca tekrar çıkmaz.
+- [ ] Canlı oyun kazancında da aynı kural (iki ekran).
+

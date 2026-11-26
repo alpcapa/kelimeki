@@ -25,6 +25,19 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 258 — Uygulama içi puan isteği (20 Kasım 2026, ROADMAP #42, taslak PR — 1.1.7 treni)
+
+**Ne:** oyun sonunda işletim sisteminin kendi puan penceresi (`in_app_review`: iOS `SKStoreReviewController`, Android Play In-App Review). Web'de karşılığı YOK (yalnızca port). Gerekçe: App Store'da hiç yorum yok; kendi uygulamana yorum yazmak yasak (Review Guidelines 5.6), tek temiz yol OS penceresi.
+
+**Kural (`util/review_prompt.dart`, saf fonksiyon):** oyuncu o oyunu KAZANDI + bu cihazda en az 3 oyun bitti (yerel + Canlı) + o oyunda ilk-galibiyet kutlaması gösterilmedi + toplamda en fazla 3 istek + iki istek arası ≥120 gün. Sayaçlar `FlagsStore`ta (`review_games_finished`, `review_ask_count`, `review_last_asked_ms`). Kural seçimi (3 oyun / 120 gün / tavan 3) AJANIN önerisi; ROADMAP #42 yalnızca "3.–5. oyun ya da galibiyet" diyordu. Değişmesi bir ürün kararı.
+
+**Çağrı yeri:** iki oyun ekranı (`game_screen.dart` ve `online_game_screen.dart`) `showGameOverModal` kapandıktan SONRA `_puanIstegi`yi çağırır (iki ekran deseni paylaşıyor — biri değişirse öteki de). `maybeAskStoreReview` (`data/store_review.dart`) sayacı artırır, işareti OS çağrısından ÖNCE koyar, her hatayı yutar.
+
+**Bilinçli yok:** "memnun musun?" ön elemesi (Apple/Google yönergelerine aykırı); pencerenin gösterilip gösterilmediği bilinmez (OS bildirmez); web.
+
+**Doğrulama sınırı:** `test/review_prompt_test.dart` kuralı ve sayaç akışını sahte `StoreReview` ile sınar. OS penceresi ancak GERÇEK cihazda/mağaza kurulumunda görülür: TestFlight'ta pencere çıkar ama yorum gönderilemez; Play'de yalnızca Play'den kurulu pakette (`mobile/TESTING.md` §36).
+
+
 ## Parça 257 — Beyin Ligi isimlerinin yanına rütbe mührü (20 Kasım 2026, kullanıcı isteği — web ikizi `BeyinLigiList.tsx`, taslak PR — 1.1.7 treni)
 
 Kullanıcı: *"Beyin ligindeki isimlerin yanına da rütbe rozeti koyalım puan ligi gibi."* 2 Ekim'deki "Beyin Ligi'nde mühür YOK" kararı (`docs/decisions/league-system.md`) değişti. `beyin_ligi_list.dart`: `RankScores` (friends_modal ile aynı desen) satırların id'leri için `ensure` çağırıyor; `BeyinLigiRowTile` yeni `tier` alanıyla ismin yanına `RankSeal(size: 18)` çiziyor. Puan Ligi'nin aynısı: "senin sıran" satırında mühür YOK, puan bilinmiyorken (null) mühür HİÇ çizilmez. Migration/sunucu değişikliği YOK (`leaderboard` view'ından toplu okuma zaten vardı). `beyin_ligi_test.dart` "mühür YOK" iddiasını "satır sayısı kadar mühür + kademe puandan türer"e çevirdi. Doğrulama: `beyin_ligi_test`, `leaderboard_layout_test`, `text_wrap_test` yerelde geçti. **Sınır:** cihazda görünüm (uzun isim + 1,3 yazı ölçeği + dar ekran) ölçülmedi → `mobile/docs/testing-klig.md` §13.x.
