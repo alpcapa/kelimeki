@@ -259,6 +259,11 @@ Web'in eşi: kök `TESTING.md` §10.5. Sunucu (view + RPC) zaten canlıda.
       bir an Çaylak GÖRÜNMEMELİ); uzun isim "…" ile kısalır, mühür kesilmez.
       "SENİN SIRAN" satırında mühür YOK. Aynı hesapla webde de aç: sıralar ve OHP'ler BİREBİR
       aynı olmalı. Altta YZ/eşitlik notu.
+      — ✅ **Rütbe mührü iPhone TestFlight'ta DOĞRULANDI (kullanıcı bildirdi,
+      "Beyin Ligi mühür ok", 26 Kas 2026, 1.1.7 (1020)).** ⚠ Yalnızca "mühür
+      tamam" bildirildi: uzun isim + 1,3 yazı ölçeği + dar ekran ayrıntısı ve
+      web ile sıra/OHP karşılaştırması AYRICA bildirilmedi, bu yüzden o
+      ayrıntılar açık sayılır.
 - [ ] **10. sıradaki hesap — "senin sıran" sabit satırı (16 Ekim 2026,
       Parça 245).** Listede senden önce 8-9 kişi olsun (iPad'de ilk ekran 8
       satır): satırın YÜKLÜ ama görünmüyorken altta "SENİN SIRAN" satırı
