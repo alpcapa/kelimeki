@@ -1676,10 +1676,10 @@ orası belirli bir Parça'nın gerilemediğini doğrulayan TARİHLİ turlar.
 
 ⚠ Canlı oyun maddeleri SQL migration'ı UYGULANDIKTAN sonra anlamlı (kesim günü).
 
-- [ ] Yerel oyun: rafında joker varken rakip (YZ) oyunu bitirince bitiş ekranında senin "Kalan" sütunun `-10` (+ varsa diğer taşların puanı), Toplam buna göre.
+- [ ] *(26 Kas 2026: iPhone turunda GÖRÜLMEDİ — kullanıcı oyunu kendisi bitirdi, bu yüzden senin rafındaki jokerin −10'u sınanmadı; rakibin bitirdiği bir oyun gerek.)* Yerel oyun: rafında joker varken rakip (YZ) oyunu bitirince bitiş ekranında senin "Kalan" sütunun `-10` (+ varsa diğer taşların puanı), Toplam buna göre.
 - [ ] İki joker kalırsa `-20`. Skor 10'un altındaysa Toplam 0'a iner, eksiye düşmez.
 - [ ] Oyunu SEN bitirirsen rakibin rafındaki joker rakibe `-10` yazar, sana EKLENMEZ.
 - [ ] Yardım → "Oyunun Sonu": "Elinde kalan joker en değerli harf gibi sayılır…" paragrafı var.
 - [ ] Canlı oyun (migration sonrası): bitiş ekranındaki "Kalan" satırı ile Toplam tutuyor.
-- [ ] **Son-raf joker balonu (25 Kasım 2026, Parça 261):** torba BOŞALDIKTAN sonra sıra sana geçtiğinde rafında joker varsa rafın ÜSTÜNDE mavi balon çıkar: "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar." ~7 sn (diğer balonlardan UZUN) kalır, taş koymaya başlayınca erken kapanır, aynı cihazda bir daha ÇIKMAZ. Rafa dokunma/sürükleme balonun varlığında da çalışmalı. Rakibin sırasında, torba doluyken ya da jokersiz rafta ÇIKMAMALI. Hem yerel/YZ hem Canlı oyunda dene. — 🟡 **KISMİ (kullanıcı bildirdi, 26 Kas 2026; platform ve sürüm belirtilmedi): balon ÇIKTI.** Metin, ~7 sn süre ve taş koyunca kapanma ayrıntıları ölçülmedi; madde AÇIK.
+- [ ] **Son-raf joker balonu (25 Kasım 2026, Parça 261):** torba BOŞALDIKTAN sonra sıra sana geçtiğinde rafında joker varsa rafın ÜSTÜNDE mavi balon çıkar: "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar." ~7 sn (diğer balonlardan UZUN) kalır, taş koymaya başlayınca erken kapanır, aynı cihazda bir daha ÇIKMAZ. Rafa dokunma/sürükleme balonun varlığında da çalışmalı. Rakibin sırasında, torba doluyken ya da jokersiz rafta ÇIKMAMALI. Hem yerel/YZ hem Canlı oyunda dene. — ✅ **iPhone TestFlight'ta DOĞRULANDI (kullanıcı bildirdi, 26 Kas 2026; balon yalnızca 1.1.7'de var): balon çıktı, metin DOĞRU, ~7 sn kaldı.** Yalnızca "taş koymaya başlayınca kapanır" ayrıntısı bildirilmedi.
 
