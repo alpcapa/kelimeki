@@ -19,7 +19,7 @@ pluginManagement {
 
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    id("com.android.application") version "9.1.1" apply false
+    id("com.android.application") version "9.3.1" apply false
     id("org.jetbrains.kotlin.android") version "2.3.20" apply false
     // Firebase (ROADMAP madde 13): `google-services.json`u okuyup derleme
     // zamanında kaynak değerlerine çeviren eklenti. Bu OLMADAN
