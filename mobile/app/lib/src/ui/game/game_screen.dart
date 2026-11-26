@@ -576,10 +576,16 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         son.action == null &&
         son.words.isNotEmpty &&
         s.lastMoveCells.isNotEmpty;
-    unawaited(_ipucuKarar(s, hamleler.length, kelime));
+    // Son-raf joker balonu (25 Kasım 2026, web `App.tsx` ikizi): sıra İNSANDA,
+    // torba boş, rafında joker.
+    final sira = s.players[s.current];
+    final jokerSonu = !sira.isAI &&
+        hasJokerEndgame(s.bag.length, sira.rack.map((t) => t.letter));
+    unawaited(_ipucuKarar(s, hamleler.length, kelime, jokerSonu));
   }
 
-  Future<void> _ipucuKarar(GameState s, int moves, bool kelime) async {
+  Future<void> _ipucuKarar(
+      GameState s, int moves, bool kelime, bool jokerSonu) async {
     final storageFuture = widget.storage;
     if (storageFuture == null) return;
     final storage = await storageFuture;
@@ -598,8 +604,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           OnboardingHintId.zoom,
         OnboardingHintId.hamleler,
         OnboardingHintId.torba,
+        OnboardingHintId.joker,
         // Yerel/YZ oyununda mesajlaşma yok.
       },
+      jokerEndgame: jokerSonu,
       flags: storage.flags,
     );
     if (secilen == null || !mounted) return;
@@ -624,7 +632,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         _uiHint = secilen;
       }
     });
-    _hintTimer = Timer(onboardingHintDuration, () {
+    _hintTimer = Timer(onboardingHintMs(secilen), () {
       if (mounted) {
         setState(() {
           _hintCoach = null;
@@ -1588,7 +1596,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                                   CrossAxisAlignment.stretch,
                                               children: [
                                                 Expanded(
-                                                  child: KeyedSubtree(
+                                                  child: HintAnchor(
+                                                    show: _uiHint ==
+                                                        OnboardingHintId.joker,
+                                                    text: onboardingHintTexts[
+                                                        OnboardingHintId
+                                                            .joker]!,
+                                                    yon: HintBubbleYon.ust,
+                                                    hiza: HintBubbleHiza.orta,
+                                                    child: KeyedSubtree(
                                                     key:
                                                         _rackKey, // rafa-bırak alanı
                                                     child: RackWidget(
@@ -1653,6 +1669,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                                       onTilePointerCancel:
                                                           _cancelTileDrag,
                                                     ),
+                                                  ),
                                                   ),
                                                 ),
                                                 if (!state.swapMode) ...[

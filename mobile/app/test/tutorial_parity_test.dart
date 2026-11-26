@@ -336,6 +336,11 @@ void main() {
         int.parse(
             pick(onboardingTs, RegExp(r'ONBOARDING_HINT_MS = (\d+)'), 'süre')),
         onboardingHintDuration.inMilliseconds);
+    // `joker` balonunun (25 Kasım 2026) süresi — iki cümle, genel 4 sn değil.
+    expect(
+        int.parse(pick(onboardingTs,
+            RegExp(r'ONBOARDING_HINT_JOKER_MS = (\d+)'), 'joker süresi')),
+        onboardingHintJokerDuration.inMilliseconds);
     // Sıra akışının üç eşiği (1 Ekim 2026): ilk balon, aralık, anlamın
     // en erken turu — üçü de TUR cinsinden.
     for (final (ad, deger) in [

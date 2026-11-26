@@ -25,6 +25,14 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 261 — Son-raf joker balonu: port ikizi (25 Kasım 2026, kullanıcı isteği, taslak PR — 1.1.7 treni, #983'ün ÜSTÜNE istifli)
+
+**Ne:** Web'in yeni bağlamsal eğitim balonunun (`joker`: torba boş + sırası gelenin rafında joker → rafa çapalı "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar.") port ikizi. `util/onboarding.dart`: `OnboardingHintId.joker` (SIRAYA girmez — `onboardingHintOrder` aynı), `hasJokerEndgame`, `onboardingHintMs`/`onboardingHintJokerDuration` (7 sn), `OnboardingHintInput.jokerEndgame` (zorunlu alan), `pickOnboardingHint` en başta tur eşiklerine bakmadan karar verir. `OnboardingHintScheduler.onMoves(jokerEndgame:)`; `game_screen.dart` (sıra İNSANDA) + `online_game_screen.dart` (`s.current == _mySlot`) hesaplayıp geçiriyor; raf `HintAnchor` ile sarıldı, `_rackKey` DIŞINDA (rafa-bırak alanı değişmedi).
+
+**Kanıt:** `tutorial_script_test` web `verify-tutorial-script` vakalarının birebir eşini (altı joker vakası + `hasJokerEndgame` tablosu + metindeki 25/50/10'un `jokerFinishBonus`/`jokerEndPenalty`e bağlanması) koşuyor; `tutorial_parity_test` metni ve `ONBOARDING_HINT_JOKER_MS`i web kaynağından okuyor. `flutter test` 1315/1315, `dart analyze` hata/uyarı yok.
+
+**Doğrulama sınırı:** balonun RAFA doğru çizilip çizilmediği, 7 sn kalıp kalmadığı ve sürükleme alanını bozmadığı yalnızca cihazda görülür → `mobile/TESTING.md` §37. Bağımlılık: metin −10 diyor; #983 (Parça 260) olmadan yayınlanırsa yanlış kural söyler — bu yüzden birleşik dalda #983'ten SONRA.
+
 ## Parça 260 — Oyun sonunda rafta kalan joker −10 (24 Kasım 2026, kullanıcı kararı, taslak PR — 1.1.7 treni)
 
 **Ne:** Dart motoru web ile aynı kuralı alıyor: `kelimeki_core` `jokerEndPenalty = 10` + `rackEndValue`/`rackEndTotal` (`constants.dart`), `_endGame` ve `game_over_modal.dart`ın "Kalan" sütunu artık bundan geçiyor; yardım metnine "Oyunun Sonu" paragrafı eklendi (web `HelpModal.tsx` ile birebir aynı cümleler). Web ikizi/gerekçe: `docs/decisions/game-rules.md` → "Rafta kalan joker −10".
