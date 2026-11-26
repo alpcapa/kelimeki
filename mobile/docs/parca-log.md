@@ -25,6 +25,10 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 257 — Beyin Ligi isimlerinin yanına rütbe mührü (20 Kasım 2026, kullanıcı isteği — web ikizi `BeyinLigiList.tsx`, taslak PR — 1.1.7 treni)
+
+Kullanıcı: *"Beyin ligindeki isimlerin yanına da rütbe rozeti koyalım puan ligi gibi."* 2 Ekim'deki "Beyin Ligi'nde mühür YOK" kararı (`docs/decisions/league-system.md`) değişti. `beyin_ligi_list.dart`: `RankScores` (friends_modal ile aynı desen) satırların id'leri için `ensure` çağırıyor; `BeyinLigiRowTile` yeni `tier` alanıyla ismin yanına `RankSeal(size: 18)` çiziyor. Puan Ligi'nin aynısı: "senin sıran" satırında mühür YOK, puan bilinmiyorken (null) mühür HİÇ çizilmez. Migration/sunucu değişikliği YOK (`leaderboard` view'ından toplu okuma zaten vardı). `beyin_ligi_test.dart` "mühür YOK" iddiasını "satır sayısı kadar mühür + kademe puandan türer"e çevirdi. Doğrulama: `beyin_ligi_test`, `leaderboard_layout_test`, `text_wrap_test` yerelde geçti. **Sınır:** cihazda görünüm (uzun isim + 1,3 yazı ölçeği + dar ekran) ölçülmedi → `mobile/docs/testing-klig.md` §13.x.
+
 ## Parça 256 — Hamle Avı mobil portu + gizlilik/yardım ikizi (3 Kasım 2026, ROADMAP #48, taslak PR — 9 Kasım treni)
 
 **Ne:** Web yarısı (PR #923, `f48712a`) yayında; bu parça port ikizi. `ui/hamle_avi/hamle_avi_screen.dart` (web `HamleAvi.tsx`: faz makinesi loading→intro→play→found/missed→review/exhausted, 3 dk geri sayım, seri/rekor, "daha düşük geçerli hamle → pozisyon başa döner, süre SÜRER", süre bitince doğru hamle tahtada, anlam penceresi), `util/hamle_avi.dart` (saf mantık + `findAIMoves` ile Dart çözücüsü), `storage/hamle_avi_store.dart`, `data/hamle_avi_api.dart`, Setup'ta `_HamleAviButonu` (en üstte, her görünümde, "YENİ" balonu HEP görünür), `assets/hamle_avi/bank.json`. **Aynı PR'da:** Gizlilik metni (§2 rekor maddesi, §5 silme listesi, §6 "sekiz → DOKUZ durum" + (9), "Son güncelleme: 3 Kasım 2026" — web `LegalContent.tsx` + `legal_modals.dart` + `legal_text_test`) ve "Detaylı Kurallar › Hamle Avı" bölümü (web `HelpModal.tsx` + `help_modal.dart`, parite alt sınırı 11 → 12).

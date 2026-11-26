@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
 import 'package:kelimeki/src/data/stats_api.dart';
+import 'package:kelimeki/src/ui/rank/league_rank.dart';
 import 'package:kelimeki/src/ui/rank/rank_seal.dart';
 import 'package:kelimeki/src/ui/score/beyin_ligi_list.dart';
 import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
@@ -63,8 +64,12 @@ class _Gateway implements StatsGateway {
       null;
 
   @override
-  Future<List<Map<String, Object?>>> rankScores(List<String> userIds) async =>
-      const [];
+  Future<List<Map<String, Object?>>> rankScores(List<String> userIds) async => [
+        // u-a 300 puan (Usta), diğerleri 60 puan (Meraklı) — mühür kademesi
+        // puandan türediği için ikisi AYRI kademe çizer.
+        for (final id in userIds)
+          {'user_id': id, 'total_score': id == 'u-a' ? 300 : 60},
+      ];
 
   @override
   Future<Map<String, Object?>?> profileAgeGender(String userId) async => null;
@@ -192,7 +197,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Beyin Ligi: OHP listesi, puan ve mühür YOK, alt not var',
+  testWidgets(
+      'Beyin Ligi: OHP listesi, puan kolonu YOK, isimlerin yanında rütbe mührü, alt not var',
       (tester) async {
     final gw = _Gateway(
       beyinRows: _beyinRows,
@@ -209,12 +215,17 @@ void main() {
     expect(find.text('OHP'), findsWidgets);
     expect(find.text('OYUN'), findsOneWidget);
     expect(find.text(kBeyinLigiNote), findsOneWidget);
-    // Puan Ligi gizlendi; Beyin Ligi'nde mühür çizilmez.
+    // Puan Ligi gizlendi; puan kolonu yok.
     expect(find.text('Puancı'), findsNothing);
-    expect(
-        find.descendant(
-            of: find.byType(BeyinLigiList), matching: find.byType(RankSeal)),
-        findsNothing);
+    // 20 Kasım 2026: her listelenen oyuncunun isminin yanında mühür VAR
+    // (Puan Ligi gibi). Puan `RankScores` ile geliyor; kademe puandan türer.
+    final seals = tester
+        .widgetList<RankSeal>(find.descendant(
+            of: find.byType(BeyinLigiList), matching: find.byType(RankSeal)))
+        .toList();
+    expect(seals.length, _beyinRows.length);
+    expect(seals.first.tier, tierFor(300)); // Mert (u-a)
+    expect(seals.last.tier, tierFor(60));
     expect(gw.beyinRequests.first.limit, 10);
     expect(tester.takeException(), isNull);
   });
