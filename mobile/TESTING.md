@@ -1672,3 +1672,13 @@ orası belirli bir Parça'nın gerilemediğini doğrulayan TARİHLİ turlar.
 - [ ] Çıktıktan sonraki oyunlarda 120 gün boyunca tekrar çıkmaz.
 - [ ] Canlı oyun kazancında da aynı kural (iki ekran).
 
+## 37. Oyun sonunda rafta kalan joker −10 (24 Kasım 2026 — `[Sonraki sürüm]` taslak PR, Parça 260)
+
+⚠ Canlı oyun maddeleri SQL migration'ı UYGULANDIKTAN sonra anlamlı (kesim günü).
+
+- [ ] Yerel oyun: rafında joker varken rakip (YZ) oyunu bitirince bitiş ekranında senin "Kalan" sütunun `-10` (+ varsa diğer taşların puanı), Toplam buna göre.
+- [ ] İki joker kalırsa `-20`. Skor 10'un altındaysa Toplam 0'a iner, eksiye düşmez.
+- [ ] Oyunu SEN bitirirsen rakibin rafındaki joker rakibe `-10` yazar, sana EKLENMEZ.
+- [ ] Yardım → "Oyunun Sonu": "Elinde kalan joker en değerli harf gibi sayılır…" paragrafı var.
+- [ ] Canlı oyun (migration sonrası): bitiş ekranındaki "Kalan" satırı ile Toplam tutuyor.
+

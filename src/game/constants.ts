@@ -86,6 +86,26 @@ export function jokerFinishBonus(jokerCount: number): number {
 }
 
 /**
+ * Oyun sonunda RAFTA KALAN jokerin puandan düşülen değeri: en değerli harf
+ * (J = 10) kadar. Eskiden joker 0 puan olduğundan rafta bekletmek bedavaydı;
+ * artık oyunu başkası bitirirse risk var (kullanıcı kararı, 24 Kasım 2026).
+ * ⚠ J'nin puanı SABİT kabul edilir (kullanıcı: "hiçbir zaman değişmeyecek") —
+ * sabit bilerek `TILE_DATA`dan türetilmiyor, SQL (`submit_move`/
+ * `check_turn_timeout`) ve Dart (`rackEndValue`) aynı 10'u taşıyor.
+ */
+export const JOKER_END_PENALTY = 10;
+
+/** Bir rafın taşının OYUN SONUNDA puandan düşülen değeri (joker = {@link JOKER_END_PENALTY}). */
+export function rackEndValue(t: { letter: string; pts: number; wild?: boolean }): number {
+  return t.wild || t.letter === '?' ? JOKER_END_PENALTY : t.pts;
+}
+
+/** Bir rafın oyun sonu düşümü — `endGame`, bitiş ekranı ve "Kalan Taşlar" bunu paylaşır. */
+export function rackEndTotal(rack: ReadonlyArray<{ letter: string; pts: number; wild?: boolean }>): number {
+  return rack.reduce((s, t) => s + rackEndValue(t), 0);
+}
+
+/**
  * Taş değiştirmenin ÜST SINIRI: torbada kalan taş sayısı.
  *
  * 14 Eylül 2026, kullanıcı raporu (Asnmzr): torbada 4 taş kalmışken 7 taş

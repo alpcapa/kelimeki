@@ -227,6 +227,8 @@ nereden okunacağı ve kartın "12" tavanı orada.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
+**1.1.7'ye binecek (24 Kasım 2026, taslak PR) — Oyun sonunda rafta kalan joker −10 (kullanıcı kararı):** web + port + SQL, tek PR (golden'lar `mobile/` altında değiştiği için ayrılamaz). ⚠ **SQL migration (`20261124120000_joker_end_penalty.sql`) canlıya UYGULANMADI** — kesim gününde web merge ile BİRLİKTE uygulanır, sonra `list_migrations` ile dosya adı eşlenir. Karar/gerekçe: `docs/decisions/game-rules.md` → "Rafta kalan joker −10". Cihaz kontrolü: `mobile/TESTING.md` §37.
+
 **1.1.7 KESİM GÜNÜ — MERGE SIRASI (20 Kasım 2026, kullanıcı isteği; taslak PR'lar #955 #968 #970 #973 #976 #977 #978 #979 #980 #983):** **⚠ GÜNCELLEME 24 Kasım 2026 (kullanıcı): yurtdışından Çarşamba gece döner, KESİM PERŞEMBE 26 KASIM'da başlar** (30 Kasım değil). #983 (rafta kalan joker −10, web+port+SQL) listeye girdi; ön-birleşik #982 onu İÇERMİYOR → Perşembe dalı yeniden kurulur (madde 8).
 1. **Tek tek merge ETME — 1.1.6'daki gibi BİRLEŞİK PR aç** (#952 deseni: `claude/…` dalında hepsini birleştir, tek PR, tek merge). Gerekçe: `main`'e her mobil merge `mobile-build.yml`i koşturur → `mobile-latest` ezilir + TestFlight'a build gider; dokuz ayrı merge dokuz ayrı yayın demek.
 2. **Birleştirme sırası:** önce Android'i onaran üçlü — **#979** (Flutter 3.50.0 sabitle) → **#977** (Gradle 9.3.1 + AGP 9.1.1) → **#980** (Gradle 9.5.0 + AGP 9.3.1; #977'nin üzerine kurulu) — sonra özellik/düzeltme PR'ları (#968 #970 #973 #976 #978 ve eski #955), EN SONA sürüm yükseltmesi.

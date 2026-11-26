@@ -47,7 +47,8 @@ const sql = readdirSync(migDir)
     f.includes('submit_move_shadow_phase') ||
     f.includes('move_shadow_coverage') ||
     f.includes('shadow_check_coverage_counter') ||
-    f.includes('submit_move_swap_bag_limit'),
+    f.includes('submit_move_swap_bag_limit') ||
+    f.includes('joker_end_penalty'),
   )
   .sort()
   .map((f) => readFileSync(path.join(migDir, f), 'utf8'))
@@ -137,6 +138,21 @@ check('sözlük hata biçimi ("geçerli bir kelime değil." / "geçerli kelimele
     'sınır torbadan değil başka bir şeyden okunuyor olabilir');
   check('TS tarafında maxSwapCount tanımlı',
     /export function maxSwapCount\(/.test(constants));
+}
+
+
+// ── 2c. Oyun sonu joker cezası: constants.ts ↔ SQL (24 Kasım 2026) ──────────
+// Rafta kalan joker oyun sonunda JOKER_END_PENALTY kadar düşer. Raf düşümü
+// canlıda İKİ fonksiyonda (submit_move, check_turn_timeout) — migration ikisini
+// de yamıyor mu ve gömülü sayı TS sabitiyle aynı mı.
+{
+  const ceza = Number(/export const JOKER_END_PENALTY = (\d+);/.exec(constants)?.[1]);
+  check('JOKER_END_PENALTY constants.ts’te tanımlı', Number.isFinite(ceza), String(ceza));
+  const mig = readFileSync(path.join(migDir, readdirSync(migDir).find((f) => f.includes('joker_end_penalty'))), 'utf8');
+  check(`SQL joker cezası ${ceza} ve iki fonksiyonu da yamıyor`,
+    mig.includes(`= '?' or coalesce(`) && mig.includes(`then ${ceza} else`) &&
+    mig.includes("'submit_move', 'check_turn_timeout'"),
+    'migration’daki sayı ya da fonksiyon listesi TS ile ayrışmış');
 }
 
 // ── 3. Ayna envanteri eksiksiz mi ───────────────────────────────────────────

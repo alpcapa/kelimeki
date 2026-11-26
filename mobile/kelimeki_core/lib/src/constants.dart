@@ -1,6 +1,7 @@
 // Kelimeki core — tahta sabitleri (src/game/constants.ts portu).
 // Oyuncu RENKLERİNİN kendisi (PLAYER_COLORS hex değerleri) bilinçli olarak
 // core'da DEĞİL — UI katmanına ait; motor yalnızca `colorIndex` üretir.
+import 'model/tile.dart';
 import 'model/types.dart';
 
 /// Tahta 13x13. (TS: SIZE)
@@ -64,6 +65,19 @@ int jokerFinishBonus(int jokerCount) {
   if (jokerCount == 1) return 25;
   return 0;
 }
+
+/// Oyun sonunda RAFTA KALAN jokerin puandan düşülen değeri: en değerli harf
+/// (J = 10) kadar (24 Kasım 2026, kullanıcı kararı; J'nin puanı sabit).
+/// TS ikizi: `JOKER_END_PENALTY`, src/game/constants.ts.
+const int jokerEndPenalty = 10;
+
+/// Bir raf taşının OYUN SONUNDA düşülen değeri (TS: `rackEndValue`).
+/// Rafta joker `wild` bayrağı olmadan yalnızca `letter == '?'` taşıyabilir.
+int rackEndValue(Tile t) => (t.wild || t.letter == '?') ? jokerEndPenalty : t.pts;
+
+/// Bir rafın oyun sonu düşümü (TS: `rackEndTotal`).
+int rackEndTotal(Iterable<Tile> rack) =>
+    rack.fold(0, (s, t) => s + rackEndValue(t));
 
 /// Taş değiştirmenin ÜST SINIRI: torbada kalan taş sayısı.
 /// (TS ikizi: `maxSwapCount`, src/game/constants.ts)

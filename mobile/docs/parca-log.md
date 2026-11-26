@@ -25,6 +25,15 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 260 — Oyun sonunda rafta kalan joker −10 (24 Kasım 2026, kullanıcı kararı, taslak PR — 1.1.7 treni)
+
+**Ne:** Dart motoru web ile aynı kuralı alıyor: `kelimeki_core` `jokerEndPenalty = 10` + `rackEndValue`/`rackEndTotal` (`constants.dart`), `_endGame` ve `game_over_modal.dart`ın "Kalan" sütunu artık bundan geçiyor; yardım metnine "Oyunun Sonu" paragrafı eklendi (web `HelpModal.tsx` ile birebir aynı cümleler). Web ikizi/gerekçe: `docs/decisions/game-rules.md` → "Rafta kalan joker −10".
+
+**Kanıt:** yeni golden `reducer_crafted_joker_end.json` (`run_all.dart`a kayıtlı) — web motorunun ürettiği değerleri Dart'ın birebir tutturması paritenin kanıtı (6926 kontrol, 0 hata). `reducer_human2.json` bir satır değişti.
+
+**Doğrulama sınırı:** SQL tarafı (`submit_move`/`check_turn_timeout`) canlıda DEĞİL, kesim gününde uygulanır; eski mobil sürümlerde bitiş ekranı joker kalan oyunlarda "Kalan" satırı 0 gösterir (skor sunucudan, −10'lu).
+
+
 ## Parça 259 — Beyin Ligi isimlerinin yanına rütbe mührü (20 Kasım 2026, kullanıcı isteği — web ikizi `BeyinLigiList.tsx`, taslak PR — 1.1.7 treni)
 
 Kullanıcı: *"Beyin ligindeki isimlerin yanına da rütbe rozeti koyalım puan ligi gibi."* 2 Ekim'deki "Beyin Ligi'nde mühür YOK" kararı (`docs/decisions/league-system.md`) değişti. `beyin_ligi_list.dart`: `RankScores` (friends_modal ile aynı desen) satırların id'leri için `ensure` çağırıyor; `BeyinLigiRowTile` yeni `tier` alanıyla ismin yanına `RankSeal(size: 18)` çiziyor. Puan Ligi'nin aynısı: "senin sıran" satırında mühür YOK, puan bilinmiyorken (null) mühür HİÇ çizilmez. Migration/sunucu değişikliği YOK (`leaderboard` view'ından toplu okuma zaten vardı). `beyin_ligi_test.dart` "mühür YOK" iddiasını "satır sayısı kadar mühür + kademe puandan türer"e çevirdi. Doğrulama: `beyin_ligi_test`, `leaderboard_layout_test`, `text_wrap_test` yerelde geçti. **Sınır:** cihazda görünüm (uzun isim + 1,3 yazı ölçeği + dar ekran) ölçülmedi → `mobile/docs/testing-klig.md` §13.x.
