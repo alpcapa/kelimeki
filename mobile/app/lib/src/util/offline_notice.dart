@@ -93,6 +93,11 @@ bool isNetworkError(Object? e) {
       s.contains('network is unreachable') ||
       s.contains('connection closed') ||
       s.contains('connection refused') ||
+      // TLS el sıkışması sırasında bağlantı koptu (19 Kasım 2026, ios 1.1.6:
+      // `online_games_repo.load` → "HandshakeException: Connection terminated
+      // during handshake", 1 cihaz/1 kez, günlük hata özetinde göründü).
+      // Taşıma katmanı kesintisi: sunucu ya da uygulama kusuru DEĞİL.
+      s.contains('handshakeexception') ||
       s.contains('timeoutexception');
 }
 

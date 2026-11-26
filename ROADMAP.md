@@ -257,6 +257,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **1.1.7'ye binecek (18 Kasım, taslak PR) — "Kime karşı" sekmesi `ARKADAŞINLA` → `ARKADAŞ` (kullanıcı isteği; web ikizi `Setup.tsx`, aynı gün). Yalnızca etiket; `setup_screen.dart` + beş test dosyası. Cihaz kontrolü gerekmez.
 
+**1.1.7'ye binecek (19 Kasım, taslak PR) — `HandshakeException` artık ağ hatası sayılıyor** (`isNetworkError`): günlük hata özetinde `online_games_repo.load` → `HandshakeException: Connection terminated during handshake` (ios 1.1.6, 1 cihaz/1 kez) çıktı; TLS el sıkışmasında bağlantı kopması, uygulama kusuru değil, telemetriye düşmemeli. Cihaz kontrolü gerekmez.
+
 **1.1.6'ya binecek (3 Kasım, taslak PR, kesim 9 Kasım) — Hamle Avı (ROADMAP #48):** mobil port ikizi + Gizlilik metni (web+port) + Detaylı Kurallar bölümü. Ayrıntı: `mobile/docs/parca-log.md` → Parça 256. Cihaz kontrolü: `mobile/TESTING.md` §35. Sürüm numarası (`appVersion` + `pubspec`) kesim gününde 1.1.6'ya yükseltilir.
 
 **1.1.5'e binecek (28 Ekim, taslak PR #898, kesim 2 Kasım):** `AuthRetryableFetchException(522)` artık sessizce yeniden deneniyor — durum kodu `statusCode` alanından da okunuyor (Parça 251; 25-27 Eki'de 8 kayıt, sunucuda iz yok). Cihaz kontrolü gerekmez; `client_errors`ta `online_games_repo.load` 522 satırlarının azalması izlenir.
