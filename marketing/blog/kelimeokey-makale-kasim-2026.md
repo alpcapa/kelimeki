@@ -81,3 +81,12 @@ Yukarıdaki sürümden farkları: "Temmuz 2026" + ana sayfa bağlantısı ilk c�
   `marketing/store/` kareleri.
 - [ ] Yayınlanınca: bağlantıyı kütüğe yaz + 1-2 gün sonra `web_sessions`'ta
   `utm_source = 'kelimeokey'` oturumlarına bak.
+
+## Trafik okuması (27 Kas 2026) — KAPANDI
+`web_sessions`, `utm_source = 'kelimeokey'`: **3 oturum / 2 cihaz**, hepsi 19 Kas
+14:06–14:34 UTC (yayın günü), sonrasında 8 gün boyunca 0. Ortalama/medyan 6 sn,
+≤3 sn çıkış 0; mağaza, oyun başlatma, tanıtım, üyelik, "başla" tıklaması 0.
+Başka etiket varyantı (`kelimeokeyi`, `blog`) yok. ⚠ `/nasil-oynanir/?ref=kelimeokey`
+bağlantısı bu sayıya GİRMEZ (statik sayfa, JS yok) — Vercel Web Analytics'e bakılmadı.
+**Karar (kullanıcı):** yazı **backlink** için yapılmıştı, trafik beklentisi
+yoktu; düşük trafik önemsiz. Okuma kapatıldı, takip yok.
