@@ -25,6 +25,18 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 263 — Hamle Avı çözülen bulmaca sayacı: port ikizi (27 Kasım 2026, ROADMAP #51 ön adımı, taslak PR — 1.1.8 treni)
+
+**Ne:** Hesaba bağlı `solved_ids` kümesinin istemci yarısı. `hamle_avi_store.dart`: `HamleAviLocal.solved` (eski kayıtta anahtar yok → boş), `save(solved:)`, `mergeWithServer(best, seen, solved)` küme birleşimi. `hamle_avi_api.dart`: `HamleAviServer.solved` (`solved_ids`), `report(best, seen, solved)` → `p_solved_ids`. `hamle_avi_screen.dart` `_finish`: bulunan bulmaca KİMLİĞİYLE kümeye eklenir (`hamleAviMergeSeen`), rapor üç alanla gider. Web ikizi: `HamleAvi.tsx` `finish` + `hamleAviStore.ts` + `hamleAviApi.ts`. `legal_modals.dart` Gizlilik §2/§5 + "Son güncelleme" 27 Kasım 2026 (web `LegalContent.tsx` ile aynı PR — `legal_text_test` web tarihini okuyor).
+
+**Neden SAYI değil KÜME:** `hamle_avi_report` çevrimdışı kuyruktan tekrar çağrılabilir; "+1" tekrarda şişerdi. Sunucu çözülen ⊆ görülen zorlar (kimlik uzayı sınırı).
+
+**Sunucu CANLIDA:** migration `20261127094405_hamle_avi_solved` (27 Kas, `proacl` ölçüldü: anon yok; eski 2 argümanlı imza çalışıyor, geri alınan işlemde sınandı) — istemci yayınlanana kadar sayaç sunucuda boş kalır, zararsız.
+
+**Kanıt:** yeni `hamle_avi_store_test.dart` (eski kayıt, alan korunumu, küme birleşimi tekrarda aynı, bozuk `solved`); `hamle_avi_screen_test` (bulununca `solved == [id]`, bulunamayınca boş); `legal_text_test` yeni cümleler.
+
+**Doğrulama sınırı:** gerçek hesapla sunucuya yazılıp yazılmadığı yalnızca cihazda → `mobile/TESTING.md` §39. **Bilinçli eksik:** liste/sıralama/sekme YOK (tetik 40-50 rekor sahibi, ROADMAP #51).
+
 ## Parça 261 — Son-raf joker balonu: port ikizi (25 Kasım 2026, kullanıcı isteği, taslak PR — 1.1.7 treni, #983'ün ÜSTÜNE istifli)
 
 **Ne:** Web'in yeni bağlamsal eğitim balonunun (`joker`: torba boş + sırası gelenin rafında joker → rafa çapalı "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar.") port ikizi. `util/onboarding.dart`: `OnboardingHintId.joker` (SIRAYA girmez — `onboardingHintOrder` aynı), `hasJokerEndgame`, `onboardingHintMs`/`onboardingHintJokerDuration` (7 sn), `OnboardingHintInput.jokerEndgame` (zorunlu alan), `pickOnboardingHint` en başta tur eşiklerine bakmadan karar verir. `OnboardingHintScheduler.onMoves(jokerEndgame:)`; `game_screen.dart` (sıra İNSANDA) + `online_game_screen.dart` (`s.current == _mySlot`) hesaplayıp geçiriyor; raf `HintAnchor` ile sarıldı, `_rackKey` DIŞINDA (rafa-bırak alanı değişmedi).

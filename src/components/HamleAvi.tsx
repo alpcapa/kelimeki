@@ -29,6 +29,7 @@ import {
   HAMLE_AVI_SECONDS,
   HAMLE_AVI_WARN_SECONDS,
   isCorrect,
+  mergeSeen,
   netGain,
   onFound,
   onMissed,
@@ -148,7 +149,7 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
       setStreak((s) => ({ ...s, best: merged.best }));
       setWordsReady(true);
       // Cihaz sunucudan ilerideyse (çevrimdışı oynanmışsa) arka planda gönder.
-      if (userId) void reportHamleAvi(merged.best, merged.seen);
+      if (userId) void reportHamleAvi(merged.best, merged.seen, merged.solved);
       loadNext(false);
     })();
     return () => {
@@ -233,8 +234,15 @@ export function HamleAvi({ playerName, userId, onExit }: HamleAviProps) {
           solutionRef.current ??= findBestNetMove(init);
         }, 50);
       }
-      const local = saveHamleAvi({ best: Math.max(loadHamleAvi().best, next.best) });
-      if (userId) void reportHamleAvi(local.best, local.seen);
+      // Çözülen kümesine bu bulmaca KİMLİĞİYLE eklenir (ROADMAP #51 ön adımı): aynı bulmaca iki kez
+      // "bulundu" sayılsa bile küme tek tutar → sunucu kuyruğunda tekrar sayacı şişirmez.
+      const prev = loadHamleAvi();
+      const solvedId = found ? posRef.current?.id : undefined;
+      const local = saveHamleAvi({
+        best: Math.max(prev.best, next.best),
+        ...(solvedId !== undefined ? { solved: mergeSeen(prev.solved, [solvedId]) } : {}),
+      });
+      if (userId) void reportHamleAvi(local.best, local.seen, local.solved);
     },
     [userId, logResult],
   );

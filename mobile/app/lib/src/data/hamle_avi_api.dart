@@ -21,12 +21,16 @@ const bool kHamleAviServerEnabled = true;
 class HamleAviServer {
   final int best;
   final List<int> seen;
-  const HamleAviServer(this.best, this.seen);
+
+  /// Çözülen bulmaca kimlikleri (migration 20261127094405). Eski sunucu
+  /// satırında yok → boş.
+  final List<int> solved;
+  const HamleAviServer(this.best, this.seen, [this.solved = const []]);
 }
 
 abstract class HamleAviGateway {
   Future<HamleAviServer?> fetch();
-  Future<HamleAviServer?> report(int best, List<int> seen);
+  Future<HamleAviServer?> report(int best, List<int> seen, List<int> solved);
   Future<void> logEvent({
     required String? anonId,
     required int puzzleId,
@@ -48,6 +52,10 @@ class SupabaseHamleAviGateway implements HamleAviGateway {
       [
         for (final e in (r['seen_ids'] as List? ?? const [])) (e as num).toInt()
       ],
+      [
+        for (final e in (r['solved_ids'] as List? ?? const []))
+          (e as num).toInt()
+      ],
     );
   }
 
@@ -62,12 +70,14 @@ class SupabaseHamleAviGateway implements HamleAviGateway {
   }
 
   @override
-  Future<HamleAviServer?> report(int best, List<int> seen) async {
+  Future<HamleAviServer?> report(
+      int best, List<int> seen, List<int> solved) async {
     if (!kHamleAviServerEnabled) return null;
     try {
       return _row(await client.rpc('hamle_avi_report', params: {
         'p_best_streak': best,
         'p_seen_ids': seen,
+        'p_solved_ids': solved,
       }));
     } catch (_) {
       return null;

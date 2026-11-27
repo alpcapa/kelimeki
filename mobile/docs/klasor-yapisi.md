@@ -274,7 +274,7 @@ mobile/
       util/hamle_avi.dart    # saf mantık + Dart çözücüsü (web hamleAvi.ts +
                              # hamleAviSolve.ts ikizi); banka `assets/hamle_avi/
                              # bank.json` web dosyasının BAYT-EŞİT kopyası
-      storage/hamle_avi_store.dart # cihaz deposu (rekor/görülenler/tanıtım tercihi)
+      storage/hamle_avi_store.dart # cihaz deposu (rekor/görülenler/ÇÖZÜLENLER/tanıtım tercihi)
       data/hamle_avi_api.dart # RPC (hamle_avi_get/report) + hamle_avi_events
                              # ölçümü; `kHamleAviServerEnabled` web bayrağıyla AYNI
       ui/tutorial/           # ilk OYUNDA açılan "oynayarak öğren" tanıtımı

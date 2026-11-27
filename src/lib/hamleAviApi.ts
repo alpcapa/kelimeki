@@ -23,15 +23,18 @@ export const HAMLE_AVI_SERVER_ENABLED = true;
 export interface HamleAviServer {
   best: number;
   seen: number[];
+  /** Çözülen bulmaca kimlikleri (migration 20261127094405). Eski sunucu/önbellek satırında yok → []. */
+  solved: number[];
 }
 
 interface Row {
   best_streak: number;
   seen_ids: number[];
+  solved_ids?: number[];
 }
 
 const toServer = (r: Row | undefined): HamleAviServer | null =>
-  r ? { best: r.best_streak ?? 0, seen: r.seen_ids ?? [] } : null;
+  r ? { best: r.best_streak ?? 0, seen: r.seen_ids ?? [], solved: r.solved_ids ?? [] } : null;
 
 export async function fetchHamleAvi(): Promise<HamleAviServer | null> {
   if (!HAMLE_AVI_SERVER_ENABLED || !supabase) return null;
@@ -44,12 +47,17 @@ export async function fetchHamleAvi(): Promise<HamleAviServer | null> {
   }
 }
 
-export async function reportHamleAvi(best: number, seen: number[]): Promise<HamleAviServer | null> {
+export async function reportHamleAvi(
+  best: number,
+  seen: number[],
+  solved: number[],
+): Promise<HamleAviServer | null> {
   if (!HAMLE_AVI_SERVER_ENABLED || !supabase) return null;
   try {
     const { data, error } = await supabase.rpc('hamle_avi_report', {
       p_best_streak: best,
       p_seen_ids: seen,
+      p_solved_ids: solved,
     });
     if (error) return null;
     return toServer((data as Row[] | null)?.[0]);

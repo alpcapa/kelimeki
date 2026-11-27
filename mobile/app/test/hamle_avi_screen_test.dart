@@ -24,12 +24,13 @@ late List<HamleAviPosition> bank;
 
 class _FakeGateway implements HamleAviGateway {
   final events = <Map<String, Object?>>[];
-  final reports = <(int, List<int>)>[];
+  final reports = <(int, List<int>, List<int>)>[];
   @override
   Future<HamleAviServer?> fetch() async => null;
   @override
-  Future<HamleAviServer?> report(int best, List<int> seen) async {
-    reports.add((best, seen));
+  Future<HamleAviServer?> report(
+      int best, List<int> seen, List<int> solved) async {
+    reports.add((best, seen, solved));
     return null;
   }
 
@@ -161,8 +162,10 @@ void main() {
     expect(find.text('Tebrikler! 🎯'), findsOneWidget);
     expect(find.textContaining('En iyi hamleyi buldun'), findsOneWidget);
     expect(h.store.load().best, 1);
+    // ROADMAP #51 ön adımı: bulunan bulmaca ÇÖZÜLEN kümesine girer (kimlikle).
     await tester
         .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    expect(h.store.load().solved, [pos.id]);
     expect(h.gw.events.single['result'], 'found');
     expect(h.gw.events.single['before'], 0);
   });
@@ -179,6 +182,8 @@ void main() {
     expect(find.textContaining('${pos.k}'), findsWidgets);
     expect(find.textContaining(pos.w), findsWidgets);
     expect(h.store.load().best, 3, reason: 'rekor korunur');
+    expect(h.store.load().solved, isEmpty,
+        reason: 'bulunamayan bulmaca çözülen sayılmaz');
 
     // Çözücü senkron koşar (~0,1-0,5 sn gerçek zaman).
     await tester.tap(find.text('KAPAT'));
