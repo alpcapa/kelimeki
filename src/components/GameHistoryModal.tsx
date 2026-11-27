@@ -101,19 +101,24 @@ function formatDate(iso: string): string {
  * saklanmamıştır. Bilinen iki satırı döner; kalan oyuncu sayısını ve kendi
  * satırının indeksini ayrıca verir.
  *
- * `isMyRow` false iken (ör. admin panelinden ya da k-lig'den BAŞKA bir
- * üyenin eski bir kaydını görüntülerken) "Sen" etiketi izleyenin kendisi
- * değil, o eski kaydın gerçek sahibi olan hedef üye için kullanılır —
- * önceden bu ayrım yapılmadığından, başkasının geçmişinde her zaman
- * literal "Sen" yazısı görünüyordu (bkz. kod incelemesi).
+ * `isMyRow` = satır, bakılan kişinin (kart sahibi) KENDİ oyunu. `isSelfView`
+ * = bakılan kişi izleyenin kendisi. Başkasının kartında (admin paneli ya da
+ * k-lig) satır hedefin oyunuysa etiket "Sen" DEĞİL hedefin adıdır — önceden
+ * başkasının geçmişinde her zaman literal "Sen" yazısı görünüyordu (bkz.
+ * kod incelemesi). Satır hedefin oyunu değilse (Favoriler'de başkasının
+ * oyunu) kimin skoru olduğu bilinmez → nötr "Oyuncu".
  */
 function fallbackPlayers(
   entry: GameHistoryEntry,
   isMyRow: boolean,
+  isSelfView: boolean,
   targetName: string | null,
 ): { known: GamePlayerSnapshot[]; unknownCount: number; meIndex: number } {
   const me: GamePlayerSnapshot = {
-    name: isMyRow ? 'Sen' : targetName || 'Oyuncu',
+    // "Sen" yalnızca KENDİ geçmişime bakarken. Başkasının kartında satır
+    // hedefin kendi oyunuysa onun adı; hedefin OLMAYAN bir oyunsa (başkasının
+    // oyunu, Favoriler'den) kimin skoru olduğu bilinmez → nötr 'Oyuncu'.
+    name: isMyRow ? (isSelfView ? 'Sen' : targetName || 'Oyuncu') : 'Oyuncu',
     score: entry.player_score,
     is_ai: false,
   };
@@ -286,8 +291,16 @@ export function GameHistoryModal({
   // sağlıyoruz; diğer oyuncuların isimleri hâlâ o anki hallerini gösterir.
   // Admin başka bir oyuncunun geçmişine bakıyorsa (userId verilmiş) bu
   // geçersiz olur — admin'in kendi ismini o oyuncunun satırına koymamak için.
-  const myCurrentName = userId
-    ? null
+  // ⚠ "Sahip" = kartı AÇILAN kişi: `userId` verilmişse (başkasının kartı) o,
+  // yoksa oturumdaki kullanıcı. Satır vurgusu / hamle kutuları / takma ad
+  // ikamesi hep bu karardan beslenir (ROADMAP #49, 27 Kas 2026). Kendi
+  // kartım olduğunda `userId` ya boş ya da kendi kimliğim.
+  const isSelfView = !userId || userId === user?.id;
+  const ownerId = userId ?? user?.id;
+  // Başkasının kartında takma ad ikamesi HEDEFİN adıyla yapılır (izleyenin
+  // kendi adı o kişinin satırına ASLA konmaz).
+  const myCurrentName = !isSelfView
+    ? targetName || null
     : profile?.display_name ||
       profile?.first_name ||
       (user?.email && !profileLoading ? user.email.split('@')[0] : null) ||
@@ -764,8 +777,12 @@ export function GameHistoryModal({
             // sahibine ait olduğundan "meIndex" hesaplamak ve myCurrentName ile
             // ikame etmek yanlış oyuncuyu "ben" gibi gösterirdi (bkz. list_liked_games
             // notu, src/lib/api.ts). Yalnızca satır GERÇEKTEN bana aitse hesapla.
-            const isMyRow = !!user && entry.user_id === user.id;
-            const fallback = hasSnapshot ? null : fallbackPlayers(entry, isMyRow, targetName ?? null);
+            // (ROADMAP #49 seçenek (a), 27 Kas 2026) "Benim satırım" artık KART
+            // SAHİBİNİN satırı: başkasının kartında hedefin KENDİ oyunları
+            // vurgulanır; Favoriler'deki başkasının oyununda koltuk bulunamaz
+            // (snapshot'ta kullanıcı kimliği yok) → −1 kalır, bilinçli.
+            const isMyRow = !!ownerId && entry.user_id === ownerId;
+            const fallback = hasSnapshot ? null : fallbackPlayers(entry, isMyRow, isSelfView, targetName ?? null);
             const players = hasSnapshot ? entry.players! : fallback!.known;
             const unknownCount = fallback?.unknownCount ?? 0;
             const meIndex = isMyRow ? (hasSnapshot ? findMeIndex(entry, players, myCurrentName) : fallback!.meIndex) : -1;
@@ -1111,7 +1128,7 @@ export function GameHistoryModal({
         // liste ile aynı `isMyRow` kuralı). `players` final SIRALAMASI,
         // `moveHistory` ise KOLTUK numarası taşıyor → sıradan koltuğa çevir.
         const snap = entry?.players ?? [];
-        const mine = !!entry && !!user && entry.user_id === user.id && snap.length > 0;
+        const mine = !!entry && !!ownerId && entry.user_id === ownerId && snap.length > 0;
         const rankIdx = mine ? findMeIndex(entry!, snap, myCurrentName) : -1;
         const myIndex = rankIdx >= 0 ? seatIndexFor(snap[rankIdx], rankIdx, true) : -1;
         return <MoveHistoryModal state={state} myIndex={myIndex} onClose={close} />;

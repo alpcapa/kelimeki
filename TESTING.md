@@ -1803,3 +1803,15 @@ Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağ�
 - [ ] ÇIKMAMALI: rakibin sırasında, torba doluyken, rafta joker yokken.
 - [ ] Canlı oyun (iki oturum): aynı koşullarda kendi rafının üstünde çıkar; rakibin ekranında (rafında joker yoksa) çıkmaz. Balonun mesaj şeridini kapatması sorun değil (4-7 sn).
 - [ ] Balon diğer eğitim balonlarıyla AYNI anda iki tane görünmez (yeni balon eskisinin yerine geçer).
+
+## 11. Başkasının skor kartında oyun geçmişi o kişinin gözünden (27 Kasım 2026, ROADMAP #49 seçenek (a))
+
+> Mobil port ikizi: `mobile/TESTING.md` §38. Otomatik kapsam YOK (iki hesap + gerçek oyun gerekir).
+
+- [ ] Hesap A ile bir oyun bitir (4 kişilik, rakipler arkadaş/YZ olabilir). Hesap B ile giriş → Skor Kartı/k-lig'den A'nın kartını aç → "Tüm Oyunlar": A'nın oyununda A'nın satırı KALIN + altın puanla görünür ("Sen" yazmaz, A'nın GÜNCEL takma adı yazar).
+- [ ] O oyunun tahta altındaki "Hamleler" penceresi: A'nın koltuğunun kutuları (vergi dahil) çıkar, yalnızca TOPLAM kutusu değil.
+- [ ] Eski kayıt (players alanı yok): A'nın satırı "Sen" değil A'nın adı; rakip "En iyi rakip".
+- [ ] A, takma adını değiştirmişse eski oyunlarında A'nın satırı yeni adla görünür; başkasının satırları eski adlarıyla kalır.
+- [ ] Favoriler sekmesi: A'nın beğendiği, A'nın OYNAMADIĞI bir oyunda hiçbir satır vurgulanmaz ve hamle penceresi yalnızca toplamı gösterir (BİLİNÇLİ — seçenek (a)); A'nın kendi oyunu olan favoride vurgu çıkar.
+- [ ] Sohbet ve "Tekrar Oynat" B'nin A'nın kartında göremeyeceği yerde KALIR (gizli).
+- [ ] Kendi kartımda (Hesap A kendi geçmişine bakar) hiçbir şey değişmedi: "Sen"/güncel takma ad, 4 kutu.
