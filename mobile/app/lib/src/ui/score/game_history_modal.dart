@@ -396,10 +396,7 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
     // Vergi kutularının koltuğu (web'le aynı): yalnızca satır GERÇEKTEN
     // görüntüleyene aitse (listedeki `isMyRow` kuralı). `players` final
     // SIRALAMASI, `moveHistory` KOLTUK numarası → sıradan koltuğa çevir.
-    final uid = widget.games.gateway.currentUserId;
-    final mine = widget.isMe &&
-        (uid == null || entry.userId == uid) &&
-        entry.players.isNotEmpty;
+    final mine = _isOwnerRow(entry) && entry.players.isNotEmpty;
     final rankIdx =
         mine ? _findMeIndex(entry, entry.players, widget.currentName) : -1;
     await showMoveHistoryModal(
@@ -410,6 +407,20 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
           ? _seatIndexFor(entry.players[rankIdx], rankIdx, true)
           : -1,
     );
+  }
+
+  /// Satır KART SAHİBİNİN (listesi açılan kişinin) kendi oyunu mu — web
+  /// `isMyRow` (ROADMAP #49, 27 Kas 2026: başkasının kartında da hedefin
+  /// KENDİ oyunları vurgulanır; Favoriler'deki başkasının oyununda koltuk
+  /// bulunamaz → false, bilinçli — `GamePlayerSnapshot`ta kullanıcı kimliği
+  /// yok). Kendi kartımda sahip oturumdaki kullanıcıdır (`currentUserId`
+  /// bilinmiyorsa eski gevşek davranış), başkasında `widget.userId`.
+  bool _isOwnerRow(GameHistoryEntry e) {
+    if (widget.isMe) {
+      final uid = widget.games.gateway.currentUserId;
+      return uid == null || e.userId == uid;
+    }
+    return e.userId == widget.userId;
   }
 
   Future<void> _showMovesNote(String text) => showDialog<void>(
@@ -703,9 +714,8 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
                       // player_score o satırın gerçek sahibine ait
                       // olduğundan "ben" hesaplamak yanlış oyuncuyu
                       // vurgulardı (web'in aynı koruması).
-                      isMyRow: widget.isMe &&
-                          (widget.games.gateway.currentUserId == null ||
-                              e.userId == widget.games.gateway.currentUserId),
+                      isMyRow: _isOwnerRow(e),
+                      selfView: widget.isMe,
                       expanded: _expandedId == e.id,
                       snapshotLoading: _snapshotLoadingId == e.id,
                       snapshotFetched: _snapshots.containsKey(e.id),
@@ -870,9 +880,12 @@ class _LikersModal extends StatelessWidget {
 /// Web `fallbackPlayers`: `players` sütunu eklenmeden önceki kayıtlarda
 /// yalnızca kendi puanın ve en iyi rakibin puanı bilinir.
 ({List<GamePlayerSnapshot> known, int unknownCount, int meIndex})
-    _fallbackPlayers(GameHistoryEntry e, bool isMe, String? targetName) {
+    _fallbackPlayers(
+        GameHistoryEntry e, bool isMyRow, bool selfView, String? targetName) {
   final me = GamePlayerSnapshot(
-    name: isMe ? 'Sen' : (targetName ?? 'Oyuncu'),
+    // Web `fallbackPlayers`: "Sen" yalnızca KENDİ geçmişimde; başkasının
+    // kartında satır hedefin oyunuysa onun adı, değilse nötr "Oyuncu".
+    name: isMyRow ? (selfView ? 'Sen' : (targetName ?? 'Oyuncu')) : 'Oyuncu',
     score: e.playerScore,
     isAi: false,
     surrendered: false,
@@ -959,6 +972,8 @@ class _EntryCard extends StatelessWidget {
   /// Bu satır GERÇEKTEN görüntüleyene mi ait (web `isMyRow`) — "Sen"
   /// yedeği, kendi satırının vurgusu ve güncel-ad ikamesi buna bağlı.
   final bool isMyRow;
+  /// Listeyi açan kişi KENDİ geçmişine mi bakıyor ('Sen' etiketi için).
+  final bool selfView;
   final bool expanded;
   final bool snapshotLoading;
   final bool snapshotFetched;
@@ -991,6 +1006,7 @@ class _EntryCard extends StatelessWidget {
     required this.entry,
     required this.currentName,
     required this.isMyRow,
+    required this.selfView,
     required this.expanded,
     required this.snapshotLoading,
     required this.snapshotFetched,
@@ -1017,7 +1033,7 @@ class _EntryCard extends StatelessWidget {
       // başkasının skoruna kendi güncel adım yapıştırılırdı.
       meIndex = isMyRow ? _findMeIndex(entry, players, currentName) : -1;
     } else {
-      final fb = _fallbackPlayers(entry, isMyRow, currentName);
+      final fb = _fallbackPlayers(entry, isMyRow, selfView, currentName);
       players = fb.known;
       unknownCount = fb.unknownCount;
       meIndex = isMyRow ? fb.meIndex : -1;

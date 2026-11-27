@@ -25,6 +25,16 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 262 — Başkasının skor kartında oyun geçmişi o kişinin gözünden (27 Kasım 2026, ROADMAP #49 seçenek (a), taslak PR — 1.1.8 treni)
+
+**Ne:** Web'in `GameHistoryModal` düzeltmesinin (aynı gün, `main`'de) port ikizi. `game_history_modal.dart`: yeni `_isOwnerRow(e)` — kendi kartımda `currentUserId` (bilinmiyorsa eski gevşek davranış), başkasının kartında `widget.userId`. Satır vurgusu, "Hamleler" kutuları ve güncel ad ikamesi artık bundan beslenir; önceden `widget.isMe &&` yüzünden başkasının kartında hep −1'di (hamle penceresi yalnızca TOPLAM kutusu). `_fallbackPlayers` web'le aynı: "Sen" yalnızca kendi geçmişimde, başkasının kartında satır hedefin oyunuysa onun adı, değilse nötr "Oyuncu" (eskiden hedefin adı başkasının skoruna yapışıyordu). `_EntryCard`a `selfView` alanı.
+
+**Bilinçli sınır (kullanıcı kararı, 27 Kas):** Favoriler'de sahibi başkası olan oyunda koltuk bulunamaz (`GamePlayerSnapshot`ta kullanıcı kimliği yok) → −1 KALIR. İsimle eşleme ve `players`a `user_id` yazan sunucu değişikliği YAPILMAYACAK.
+
+**Kanıt:** `game_history_test.dart` → "başkasının kartı (ROADMAP #49 a)": hedefin oyununda güncel ad, Favoriler'deki başkasının oyununda dondurulmuş ad; tam `flutter test` 1332/1332.
+
+**Doğrulama sınırı:** gerçek iki hesapla cihazda → `mobile/TESTING.md` §38.
+
 ## Parça 261 — Son-raf joker balonu: port ikizi (25 Kasım 2026, kullanıcı isteği, taslak PR — 1.1.7 treni, #983'ün ÜSTÜNE istifli)
 
 **Ne:** Web'in yeni bağlamsal eğitim balonunun (`joker`: torba boş + sırası gelenin rafında joker → rafa çapalı "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar.") port ikizi. `util/onboarding.dart`: `OnboardingHintId.joker` (SIRAYA girmez — `onboardingHintOrder` aynı), `hasJokerEndgame`, `onboardingHintMs`/`onboardingHintJokerDuration` (7 sn), `OnboardingHintInput.jokerEndgame` (zorunlu alan), `pickOnboardingHint` en başta tur eşiklerine bakmadan karar verir. `OnboardingHintScheduler.onMoves(jokerEndgame:)`; `game_screen.dart` (sıra İNSANDA) + `online_game_screen.dart` (`s.current == _mySlot`) hesaplayıp geçiriyor; raf `HintAnchor` ile sarıldı, `_rackKey` DIŞINDA (rafa-bırak alanı değişmedi).
