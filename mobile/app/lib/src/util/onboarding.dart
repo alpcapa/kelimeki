@@ -232,18 +232,31 @@ OnboardingHintId? pickOnboardingHint(
 // ⚠ İki dal AYNI şeyi ölçmüyor ve bu bilinçli: 2 kişilikte "kazandı" ile
 // "puan aldı" aynı şeye denk düşüyor, 4 kişilikte ayrışıyor (2. sıra puan
 // alır ama kazanmamıştır).
-enum FirstWinCelebrationId { uye, misafir }
+//
+// ⚠ 27 Kasım 2026: ÜÇÜNCÜ kimlik `misafirOyun` — oyunu bitiren ama puan
+// ALMAYAN misafir de bir kez kayıt çağrısı görür (web ikizinin başlık
+// notunda gerekçe). AYNI cihaz bayrağı: cihaza ömür boyu en fazla BİR çağrı.
+enum FirstWinCelebrationId { uye, misafir, misafirOyun }
 
 /// ⚠ Metinler web ile BİREBİR (`tutorial_parity_test.dart` karşılaştırıyor).
 const Map<FirstWinCelebrationId, String> firstWinTexts = {
   FirstWinCelebrationId.uye: 'Tebrikler, ilk oyununu kazandın!',
   FirstWinCelebrationId.misafir:
       'Tebrikler, ilk puanını kazandın. Bu puanı kaybetmemek için hemen giriş yap.',
+  FirstWinCelebrationId.misafirOyun:
+      'Oyun bitti. Sonraki oyunlarının puanı k-lig sıralamasına girsin, geçmişin saklansın: hemen giriş yap.',
 };
 
 /// Misafir metninin BUTONA dönüşen parçası — çizim cümleyi bundan bölüyor,
 /// metni ikinci kez YAZMIYOR. Web `FIRST_WIN_GUEST_CTA`.
 const String firstWinGuestCta = 'hemen giriş yap';
+
+/// CTA parçasını taşıyan (butona bölünen) misafir kimlikleri. Web
+/// `FIRST_WIN_GUEST_IDS`.
+const Set<FirstWinCelebrationId> firstWinGuestIds = {
+  FirstWinCelebrationId.misafir,
+  FirstWinCelebrationId.misafirOyun,
+};
 
 class FirstWinCelebrationInput {
   /// Hesapla mı oynanıyor.
@@ -279,6 +292,8 @@ FirstWinCelebrationId? pickFirstWinCelebration(FirstWinCelebrationInput input) {
     if (!input.won) return null;
     return input.totalWins == 1 ? FirstWinCelebrationId.uye : null;
   }
-  if (!input.earnedPoints || input.guestCelebrated) return null;
-  return FirstWinCelebrationId.misafir;
+  if (input.guestCelebrated) return null;
+  return input.earnedPoints
+      ? FirstWinCelebrationId.misafir
+      : FirstWinCelebrationId.misafirOyun;
 }

@@ -390,11 +390,48 @@ void main() {
         pick(onboardingTs, RegExp(r"FIRST_WIN_GUEST_CTA = '([^']+)'"),
             'misafir CTA parçası'),
         firstWinGuestCta);
+    for (final id in firstWinGuestIds) {
+      expect(firstWinTexts[id]!.contains(firstWinGuestCta), isTrue,
+          reason: '${id.name}: CTA parçası cümlede geçmezse buton hiç çıkmaz');
+    }
+    // Web `FIRST_WIN_GUEST_IDS` ile aynı küme.
+    final webIds = pick(
+            onboardingTs,
+            RegExp(r"FIRST_WIN_GUEST_IDS[^=]*=\s*\[([^\]]*)\]"),
+            'misafir kimlikleri')
+        .split(',')
+        .map((e) => e.trim().replaceAll("'", ''))
+        .toSet();
+    expect(firstWinGuestIds.map((e) => e.name).toSet(), webIds);
+  });
+
+  // 27 Kasım 2026: kaybeden misafir de BİR kez kayıt çağrısı görür (web
+  // `verify-tutorial-script` kutlama tablosunun ikizi).
+  test('oyun sonu kutlaması kararı: kaybeden misafir bir kez, girişli asla', () {
+    FirstWinCelebrationId? karar(
+            {required bool signedIn,
+            required bool won,
+            required bool earned,
+            int? wins,
+            required bool celebrated}) =>
+        pickFirstWinCelebration(FirstWinCelebrationInput(
+            signedIn: signedIn,
+            won: won,
+            earnedPoints: earned,
+            totalWins: wins,
+            guestCelebrated: celebrated));
+    expect(karar(signedIn: false, won: true, earned: true, celebrated: false),
+        FirstWinCelebrationId.misafir);
+    expect(karar(signedIn: false, won: false, earned: false, celebrated: false),
+        FirstWinCelebrationId.misafirOyun);
+    expect(karar(signedIn: false, won: false, earned: false, celebrated: true),
+        isNull);
+    expect(karar(signedIn: false, won: true, earned: true, celebrated: true),
+        isNull);
     expect(
-        firstWinTexts[FirstWinCelebrationId.misafir]!
-            .contains(firstWinGuestCta),
-        isTrue,
-        reason: 'CTA parçası cümlede geçmezse buton hiç çıkmaz');
+        karar(
+            signedIn: true, won: false, earned: false, wins: 0, celebrated: false),
+        isNull);
   });
 
   test('kapı tarihi: TUTORIAL_LAUNCH_AT port için yeniden tarihlenmedi', () {

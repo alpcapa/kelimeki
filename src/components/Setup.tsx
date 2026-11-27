@@ -91,9 +91,9 @@ function remainingTime(
 // (aynı `else` dalına düşse de) `!user` koşuluyla gizli kalır.
 const MEMBERSHIP_PERKS = [
   "Arkadaşlarınla çoklu canlı oyun oynama",
-  "Skor takibi ve k-lig sıralaması",
+  "Puanların k-lig sıralamasına girsin, skorların saklansın",
   "Aynı anda birden fazla Yapay Zeka oyunu oynama",
-  "Cihazlar arası kesintisiz devam etme",
+  "Bir cihazda başla, öbüründen kaldığın yerden devam et",
   "Oyun geçmişini saklama, beğenme ve paylaşma",
   "Arkadaş ekleyip listende tutma",
 ];

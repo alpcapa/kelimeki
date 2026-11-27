@@ -495,7 +495,18 @@ export function pickOnboardingHint(
 // sıra), misafirde "puan aldı" (k-lig puanı > 0). 2 kişilik oyunda ikisi
 // aynı şeye denk düşüyor (2. sıra 0 puan alır), 4 kişilikte ayrışıyor —
 // orada 2. sıra puan alır ama kazanmamıştır. Metinler de öyle diyor.
-export type FirstWinCelebrationId = 'uye' | 'misafir';
+//
+// ⚠ 27 Kasım 2026 — ÜÇÜNCÜ kimlik `misafirOyun` (ROADMAP "Reklam kesik; yeni
+// üye oyun bitirmiyor", 3. adım, kullanıcı kararı: *"3. adımı ölçümsüz
+// doğrudan yapalım"*): oyunu bitiren ama PUAN ALMAYAN (kaybeden) misafir de
+// kayıt çağrısı görür. Gerekçe: 8 Kas sonrası oyun bitiren 5 cihazın hepsi
+// misafirdi ve hiçbiri kaydolmadı; çağrı yalnız puan alana çıktığı için
+// kaybeden misafir hiçbir şey görmüyordu. AYNI cihaz bayrağı: bir cihaza
+// ÖMÜR BOYU en fazla BİR kayıt çağrısı çıkar (`misafir` ya da `misafirOyun`,
+// hangisi önce) — kaybeden misafiri her oyun sonunda kovalamak bu işin
+// yarısı kadar bile iyi değil. Kimliğin adı camelCase: Dart enum adıyla
+// birebir (`tutorial_parity_test` metni `${id.name}: '…'` ile arıyor).
+export type FirstWinCelebrationId = 'uye' | 'misafir' | 'misafirOyun';
 
 /**
  * Kutlama metinleri. ⚠ Port ikizi `util/onboarding.dart` ile BİREBİR aynı
@@ -504,6 +515,9 @@ export type FirstWinCelebrationId = 'uye' | 'misafir';
 export const FIRST_WIN_TEXTS: Record<FirstWinCelebrationId, string> = {
   uye: 'Tebrikler, ilk oyununu kazandın!',
   misafir: 'Tebrikler, ilk puanını kazandın. Bu puanı kaybetmemek için hemen giriş yap.',
+  // Apostrof YOK (parite testi `[^']*` ile okuyor). Yalnız ÜYEYE açık olanı
+  // söylüyor: puan k-lig'e yazılır, geçmiş saklanır (MEMBERSHIP_PERKS ile aynı iddia).
+  misafirOyun: 'Oyun bitti. Sonraki oyunlarının puanı k-lig sıralamasına girsin, geçmişin saklansın: hemen giriş yap.',
 };
 
 /**
@@ -517,6 +531,9 @@ export const FIRST_WIN_TEXTS: Record<FirstWinCelebrationId, string> = {
  * çıkmaz ve kimse fark etmez).
  */
 export const FIRST_WIN_GUEST_CTA = 'hemen giriş yap';
+
+/** CTA parçasını taşıyan (butona bölünen) misafir kimlikleri. */
+export const FIRST_WIN_GUEST_IDS: readonly FirstWinCelebrationId[] = ['misafir', 'misafirOyun'];
 
 export interface FirstWinCelebrationInput {
   /** Hesapla mı oynanıyor. */
@@ -557,9 +574,10 @@ export function pickFirstWinCelebration(
     if (!input.won) return null;
     return input.totalWins === 1 ? 'uye' : null;
   }
-  // Misafirde ölçüt PUAN; "ilk" cihaz bayrağından.
-  if (!input.earnedPoints || input.guestCelebrated) return null;
-  return 'misafir';
+  // Misafirde ölçüt PUAN; "ilk" cihaz bayrağından. Puan almayan misafir de
+  // (kaybetti) AYNI bayrakla bir kez `misafirOyun` görür (27 Kas 2026).
+  if (input.guestCelebrated) return null;
+  return input.earnedPoints ? 'misafir' : 'misafirOyun';
 }
 
 const FIRST_POINTS_KEY = 'kelimeki:first-points-celebrated';
