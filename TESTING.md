@@ -1808,6 +1808,8 @@ Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağ�
 
 > Mobil port ikizi: `mobile/TESTING.md` §38. Otomatik kapsam YOK (iki hesap + gerçek oyun gerekir).
 
+✅ **Web CANLIDA DOĞRULANDI (27 Kas 2026, kullanıcı: *"Test ettim, doğru çıktı"*; `kelimeki.com` sha `a884f57`).** Madde madde hangilerinin koşulduğu bildirilmedi; bildirilirse buraya işlenir. Port yarısı (§38) henüz yayında değil.
+
 - [ ] Hesap A ile bir oyun bitir (4 kişilik, rakipler arkadaş/YZ olabilir). Hesap B ile giriş → Skor Kartı/k-lig'den A'nın kartını aç → "Tüm Oyunlar": A'nın oyununda A'nın satırı KALIN + altın puanla görünür ("Sen" yazmaz, A'nın GÜNCEL takma adı yazar).
 - [ ] O oyunun tahta altındaki "Hamleler" penceresi: A'nın koltuğunun kutuları (vergi dahil) çıkar, yalnızca TOPLAM kutusu değil.
 - [ ] Eski kayıt (players alanı yok): A'nın satırı "Sen" değil A'nın adı; rakip "En iyi rakip".
