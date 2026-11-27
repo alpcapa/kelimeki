@@ -305,7 +305,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 9 Kasım 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 27 Kasım 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -333,12 +333,14 @@ class PrivacyModal extends StatelessWidget {
                 'uyarısı gibi işlemsel e-posta bildirimlerini alma tercihi',
             'Oyun istatistikleri (oynanan oyunlar, kazanma/kaybetme, puan '
                 'geçmişi)',
-            'Hamle Avı bulmacalarında ulaştığınız en yüksek seri (rekor) ve '
-                'daha önce karşınıza çıkan bulmacaların numaraları — aynı '
-                'bulmacayı size tekrar göstermemek ve rekorunuzu cihazlarınız '
-                "arasında taşımak için. Bu bilgi yalnızca size görünür; k-lig'e "
-                'ya da lider tablosuna yansımaz. Üye değilseniz yalnızca '
-                'cihazınızda tutulur, sunucuya gönderilmez',
+            'Hamle Avı bulmacalarında ulaştığınız en yüksek seri (rekor), daha '
+                'önce karşınıza çıkan bulmacaların numaraları ve bunlardan doğru '
+                'hamlesini bulduklarınızın numaraları (çözdüğünüz bulmaca sayısı) '
+                '— aynı bulmacayı size tekrar göstermemek ve rekorunuzu ile '
+                'çözdüğünüz bulmaca sayınızı cihazlarınız arasında taşımak için. '
+                "Bu bilgi yalnızca size görünür; k-lig'e ya da lider tablosuna "
+                'yansımaz. Üye değilseniz yalnızca cihazınızda tutulur, '
+                'sunucuya gönderilmez',
             'Arkadaşlık bağlantıları (kiminle arkadaş olduğunuz, '
                 'gönderdiğiniz/aldığınız arkadaşlık istekleri, davet '
                 'linkinizin kullanım verisi)',
@@ -444,8 +446,8 @@ class PrivacyModal extends StatelessWidget {
               'kendiniz silebilirsiniz; bu işlem onayladığınız anda '
               'uygulanır, geri alınamaz ve hesabınıza bağlı tüm kişisel '
               'verilerinizi (profiliniz, oyun kayıtlarınız ve '
-              'istatistikleriniz, k-lig puanınız, Hamle Avı rekorunuz ve görülen '
-              'bulmaca listeniz, arkadaşlık bağlarınız, '
+              'istatistikleriniz, k-lig puanınız, Hamle Avı rekorunuz ile görülen '
+              've çözdüğünüz bulmaca listeniz, arkadaşlık bağlarınız, '
               'gönderdiğiniz oyun içi mesajlar, davetleriniz, '
               'geri bildirimleriniz ve profil fotoğrafınız) kapsar. Tek '
               'istisna, birlikte oynadığınız diğer oyuncuların bitmiş oyun '

@@ -1683,3 +1683,11 @@ orası belirli bir Parça'nın gerilemediğini doğrulayan TARİHLİ turlar.
 - [ ] Canlı oyun (migration sonrası): bitiş ekranındaki "Kalan" satırı ile Toplam tutuyor.
 - [ ] **Son-raf joker balonu (25 Kasım 2026, Parça 261):** torba BOŞALDIKTAN sonra sıra sana geçtiğinde rafında joker varsa rafın ÜSTÜNDE mavi balon çıkar: "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar." ~7 sn (diğer balonlardan UZUN) kalır, taş koymaya başlayınca erken kapanır, aynı cihazda bir daha ÇIKMAZ. Rafa dokunma/sürükleme balonun varlığında da çalışmalı. Rakibin sırasında, torba doluyken ya da jokersiz rafta ÇIKMAMALI. Hem yerel/YZ hem Canlı oyunda dene. — ✅ **iPhone TestFlight'ta DOĞRULANDI (kullanıcı bildirdi, 26 Kas 2026; balon yalnızca 1.1.7'de var): balon çıktı, metin DOĞRU, ~7 sn kaldı.** Yalnızca "taş koymaya başlayınca kapanır" ayrıntısı bildirilmedi.
 
+## 39. Hamle Avı çözülen bulmaca sayacı (27 Kasım 2026, ROADMAP #51 ön adımı — `[Sonraki sürüm]` taslak PR, Parça 263)
+
+> Web ikizi: kök `TESTING.md` §12. Sunucu migration'ı CANLI (`20261127094405`).
+
+- [ ] Giriş yapmış hesapla Hamle Avı'nda 2 bulmacayı çöz, 1'i süre doldurarak kaçır. Supabase'de `select cardinality(solved_ids), cardinality(seen_ids) from hamle_avi_stats where user_id = …` → `2` ve `3` (çözülen yalnızca BULUNANLAR).
+- [ ] Aynı hesapla uçak modunda bir bulmaca çöz, bağlantıyı aç ve ekrandan çık-gir: çözülen sayısı 3'e çıkar, ÇİFT sayılmaz (kuyruk tekrarı şişirmemeli).
+- [ ] Misafirken çözülenler cihazda kalır; sonra girişte (aynı cihaz) sunucuya birleşir.
+- [ ] Gizlilik Politikası §2: "…doğru hamlesini bulduklarınızın numaraları (çözdüğünüz bulmaca sayısı)" cümlesi ve "Son güncelleme: 27 Kasım 2026" var.

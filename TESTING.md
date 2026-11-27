@@ -1817,3 +1817,13 @@ Otomatik kapsam: `npm run verify-hamle-avi` (mantık + banka tazeliği). Aşağ�
 - [ ] Favoriler sekmesi: A'nın beğendiği, A'nın OYNAMADIĞI bir oyunda hiçbir satır vurgulanmaz ve hamle penceresi yalnızca toplamı gösterir (BİLİNÇLİ — seçenek (a)); A'nın kendi oyunu olan favoride vurgu çıkar.
 - [ ] Sohbet ve "Tekrar Oynat" B'nin A'nın kartında göremeyeceği yerde KALIR (gizli).
 - [ ] Kendi kartımda (Hesap A kendi geçmişine bakar) hiçbir şey değişmedi: "Sen"/güncel takma ad, 4 kutu.
+
+## 12. Hamle Avı çözülen bulmaca sayacı (27 Kasım 2026, ROADMAP #51 ön adımı — 1.1.8 taslak PR)
+
+> Mobil port ikizi: `mobile/TESTING.md` §39. Sunucu migration'ı CANLI (`20261127094405`).
+
+- [ ] Girişli hesapla Hamle Avı: 2 bulmacayı çöz, 1'ini kaçır → `select cardinality(solved_ids), cardinality(seen_ids) from hamle_avi_stats where user_id = …` = `2` / `3`.
+- [ ] Aynı bulmaca ikinci kez "bulundu" sayılmaz (sayfayı yenile, devtools → Network `hamle_avi_report` gövdesinde `p_solved_ids` tekrarsız).
+- [ ] Misafir çöz → giriş yap: cihazdaki çözülenler sunucuya birleşir.
+- [ ] `/gizlilik/` sayfası ve uygulama içi Gizlilik penceresi §2: "çözdüğünüz bulmaca sayısı" cümlesi, tarih 27 Kasım 2026.
+- [ ] Eski önbellekli sayfa (1.1.7-öncesi JS) Hamle Avı'nı hâlâ açabilir, rekor kaydı çalışır (eski 2 argümanlı RPC imzası).

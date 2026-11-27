@@ -10,11 +10,17 @@ const KEY = 'kelimeki:hamle-avi:v1';
 export interface HamleAviLocal {
   best: number;
   seen: number[];
+  /**
+   * ÇÖZÜLEN (doğru hamlesi bulunan) bulmaca kimlikleri — `seen`in alt kümesi (ROADMAP #51 ön adımı, 1.1.8).
+   * Sayı DEĞİL kimlik KÜMESİ: sunucu raporu çevrimdışı kuyruktan tekrar gelebildiğinden "+1" şişerdi,
+   * küme birleşimi tekrarda aynı sonucu verir. Misafirin TEK kaynağı da burası (hesaba geçince birleşir).
+   */
+  solved: number[];
   /** Tanıtım penceresinde "Bir daha gösterme" işaretlendi. */
   introHidden: boolean;
 }
 
-const EMPTY: HamleAviLocal = { best: 0, seen: [], introHidden: false };
+const EMPTY: HamleAviLocal = { best: 0, seen: [], solved: [], introHidden: false };
 
 export function loadHamleAvi(): HamleAviLocal {
   try {
@@ -24,6 +30,7 @@ export function loadHamleAvi(): HamleAviLocal {
     return {
       best: Number.isFinite(j.best) ? Math.max(0, Number(j.best)) : 0,
       seen: Array.isArray(j.seen) ? j.seen.filter((n) => Number.isInteger(n)) : [],
+      solved: Array.isArray(j.solved) ? j.solved.filter((n) => Number.isInteger(n)) : [],
       introHidden: !!j.introHidden,
     };
   } catch {
@@ -41,11 +48,12 @@ export function saveHamleAvi(patch: Partial<HamleAviLocal>): HamleAviLocal {
   return next;
 }
 
-/** Sunucu değerleriyle cihazı birleştirir (rekor: büyüğü, görülenler: birleşim). */
-export function mergeWithServer(server: { best: number; seen: number[] }): HamleAviLocal {
+/** Sunucu değerleriyle cihazı birleştirir (rekor: büyüğü, görülenler ve çözülenler: birleşim). */
+export function mergeWithServer(server: { best: number; seen: number[]; solved: number[] }): HamleAviLocal {
   const l = loadHamleAvi();
   return saveHamleAvi({
     best: Math.max(l.best, server.best),
     seen: mergeSeen(l.seen, server.seen),
+    solved: mergeSeen(l.solved, server.solved),
   });
 }

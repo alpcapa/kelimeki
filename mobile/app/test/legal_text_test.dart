@@ -118,7 +118,10 @@ void main() {
       // Gizlilik §2 + §5: Hamle Avı rekoru / görülen bulmacalar
       'Hamle Avı bulmacalarında ulaştığınız en yüksek seri (rekor)',
       'Üye değilseniz yalnızca cihazınızda tutulur, sunucuya gönderilmez',
-      'Hamle Avı rekorunuz ve görülen bulmaca listeniz',
+      // 27 Kasım 2026, ROADMAP #51 ön adımı: ÇÖZÜLEN bulmaca kümesi (sayaç).
+      've bunlardan doğru hamlesini bulduklarınızın numaraları '
+          '(çözdüğünüz bulmaca sayısı)',
+      'Hamle Avı rekorunuz ile görülen ve çözdüğünüz bulmaca listeniz',
       '(8) Siteyi (web) girişsiz (misafir) ziyaret ederken',
       'reklamdan gelenlerin kaçının mağazaya gittiğini kişileri tanımadan '
           'sayabiliyoruz',

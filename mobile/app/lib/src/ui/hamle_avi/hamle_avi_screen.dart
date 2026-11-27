@@ -240,7 +240,8 @@ class _HamleAviScreenState extends State<HamleAviScreen>
       _bank = results[1]! as List<HamleAviPosition>;
       final server = results[2] as HamleAviServer?;
       final merged = server != null
-          ? await widget.store.mergeWithServer(server.best, server.seen)
+          ? await widget.store
+              .mergeWithServer(server.best, server.seen, server.solved)
           : widget.store.load();
       if (!_alive) return;
       _seen = {...merged.seen};
@@ -252,7 +253,8 @@ class _HamleAviScreenState extends State<HamleAviScreen>
       old.dispose();
       setState(() => _streak = HamleAviStreak(_streak.streak, merged.best));
       if (_userId != null) {
-        unawaited(widget.gateway?.report(merged.best, merged.seen));
+        unawaited(
+            widget.gateway?.report(merged.best, merged.seen, merged.solved));
       }
       _loadNext(false);
     } catch (_) {
@@ -408,10 +410,20 @@ class _HamleAviScreenState extends State<HamleAviScreen>
     final best = next.best > widget.store.load().best
         ? next.best
         : widget.store.load().best;
+    // Çözülen kümesine bu bulmaca KİMLİĞİYLE eklenir (ROADMAP #51 ön adımı):
+    // aynı bulmaca iki kez "bulundu" sayılsa da küme tek tutar → sunucu
+    // kuyruğunda tekrar sayacı şişirmez. Web `finish` ile aynı.
+    final solvedId = found ? _pos?.id : null;
     unawaited(() async {
-      final local = await widget.store.save(best: best);
+      final prev = widget.store.load();
+      final local = await widget.store.save(
+        best: best,
+        solved: solvedId != null
+            ? hamleAviMergeSeen(prev.solved, [solvedId])
+            : null,
+      );
       if (_userId != null) {
-        await widget.gateway?.report(local.best, local.seen);
+        await widget.gateway?.report(local.best, local.seen, local.solved);
       }
     }());
     _setPhase(found ? HamleAviPhase.found : HamleAviPhase.missed);
