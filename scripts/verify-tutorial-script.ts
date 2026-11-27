@@ -61,6 +61,7 @@ import {
   pickFirstWinCelebration,
   FIRST_WIN_TEXTS,
   FIRST_WIN_GUEST_CTA,
+  FIRST_WIN_GUEST_IDS,
   ONBOARDING_HINT_TEXTS,
   TUTORIAL_LAUNCH_AT,
   pickOnboardingHint,
@@ -542,7 +543,7 @@ for (const vaka of ipucuVakalari) {
 const kutlamaVakalari: {
   ad: string;
   girdi: Parameters<typeof pickFirstWinCelebration>[0];
-  beklenen: 'uye' | 'misafir' | null;
+  beklenen: 'uye' | 'misafir' | 'misafirOyun' | null;
 }[] = [
   {
     ad: 'girişli — ilk galibiyet',
@@ -575,8 +576,19 @@ const kutlamaVakalari: {
     beklenen: null,
   },
   {
-    ad: 'misafir — puan almadı',
+    // 27 Kas 2026: kaybeden misafir artık kayıt çağrısı görür (bir kez).
+    ad: 'misafir — puan almadı, cihazda ilk çağrı',
     girdi: { signedIn: false, won: false, earnedPoints: false, totalWins: null, guestCelebrated: false },
+    beklenen: 'misafirOyun',
+  },
+  {
+    ad: 'misafir — puan almadı ama cihazda çağrı zaten gösterildi: SUS',
+    girdi: { signedIn: false, won: false, earnedPoints: false, totalWins: null, guestCelebrated: true },
+    beklenen: null,
+  },
+  {
+    ad: 'girişli — kaybetti: misafir çağrısı ASLA çıkmaz',
+    girdi: { signedIn: true, won: false, earnedPoints: false, totalWins: 0, guestCelebrated: false },
     beklenen: null,
   },
   {
@@ -605,13 +617,15 @@ for (const vaka of kutlamaVakalari) {
 
 // ⚠ Buton metni cümlenin İÇİNDEN bölünüyor (`GameOver.tsx`): parça cümlede
 // geçmezse buton hiç çıkmaz ve hiçbir test bunu görmez.
-if (!FIRST_WIN_TEXTS.misafir.includes(FIRST_WIN_GUEST_CTA)) {
-  bildir(
-    `FIRST_WIN_GUEST_CTA ("${FIRST_WIN_GUEST_CTA}") misafir metninde GEÇMİYOR — ` +
-      'buton çıkmaz',
-  );
-} else {
-  ok(`misafir metni "${FIRST_WIN_GUEST_CTA}" parçasını içeriyor (buton bölmesi)`);
+for (const id of FIRST_WIN_GUEST_IDS) {
+  if (!FIRST_WIN_TEXTS[id].includes(FIRST_WIN_GUEST_CTA)) {
+    bildir(
+      `FIRST_WIN_GUEST_CTA ("${FIRST_WIN_GUEST_CTA}") ${id} metninde GEÇMİYOR — ` +
+        'buton çıkmaz',
+    );
+  } else {
+    ok(`${id} metni "${FIRST_WIN_GUEST_CTA}" parçasını içeriyor (buton bölmesi)`);
+  }
 }
 
 // Metinler TEK cümle olmalı (tanıtımın "tek cümle bütçesi" kuralı) ve

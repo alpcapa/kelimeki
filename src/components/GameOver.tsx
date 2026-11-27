@@ -8,7 +8,7 @@ import { rankPlayers } from '../utils/ranking';
 import { leaguePoints, formatLeaguePoints } from '../utils/leaguePoints';
 import { PlayerBadge } from './PlayerBadge';
 import { AiLevelBadge } from './AiLevelBadge';
-import { FIRST_WIN_TEXTS, FIRST_WIN_GUEST_CTA, type FirstWinCelebrationId } from '../utils/onboarding';
+import { FIRST_WIN_TEXTS, FIRST_WIN_GUEST_CTA, FIRST_WIN_GUEST_IDS, type FirstWinCelebrationId } from '../utils/onboarding';
 
 interface GameOverProps {
   show: boolean;
@@ -73,11 +73,11 @@ export function GameOver({ show, players, turnCount, aiLevel, onOpenHistory, onO
             data-kutlama="ilk"
             className="w-full rounded-2xl bg-accent/10 px-3 py-2 text-center font-sans text-[13px] leading-relaxed text-text"
           >
-            {celebration === 'misafir' && onSignIn ? (
+            {FIRST_WIN_GUEST_IDS.includes(celebration) && onSignIn ? (
               (() => {
-                // Cümle TEK kaynaktan (`FIRST_WIN_TEXTS.misafir`) bölünüyor:
+                // Cümle TEK kaynaktan (`FIRST_WIN_TEXTS[celebration]`) bölünüyor:
                 // CTA parçası butona, öncesi/sonrası düz metne.
-                const [once, ...kalan] = FIRST_WIN_TEXTS.misafir.split(FIRST_WIN_GUEST_CTA);
+                const [once, ...kalan] = FIRST_WIN_TEXTS[celebration].split(FIRST_WIN_GUEST_CTA);
                 return (
                   <>
                     {once}

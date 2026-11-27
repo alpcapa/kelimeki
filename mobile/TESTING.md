@@ -1683,3 +1683,14 @@ orası belirli bir Parça'nın gerilemediğini doğrulayan TARİHLİ turlar.
 - [ ] Canlı oyun (migration sonrası): bitiş ekranındaki "Kalan" satırı ile Toplam tutuyor.
 - [ ] **Son-raf joker balonu (25 Kasım 2026, Parça 261):** torba BOŞALDIKTAN sonra sıra sana geçtiğinde rafında joker varsa rafın ÜSTÜNDE mavi balon çıkar: "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar." ~7 sn (diğer balonlardan UZUN) kalır, taş koymaya başlayınca erken kapanır, aynı cihazda bir daha ÇIKMAZ. Rafa dokunma/sürükleme balonun varlığında da çalışmalı. Rakibin sırasında, torba doluyken ya da jokersiz rafta ÇIKMAMALI. Hem yerel/YZ hem Canlı oyunda dene. — ✅ **iPhone TestFlight'ta DOĞRULANDI (kullanıcı bildirdi, 26 Kas 2026; balon yalnızca 1.1.7'de var): balon çıktı, metin DOĞRU, ~7 sn kaldı.** Yalnızca "taş koymaya başlayınca kapanır" ayrıntısı bildirilmedi.
 
+## 38. Kaybeden misafire kayıt çağrısı + üyelik kutusu maddeleri (27 Kasım 2026 — `[Sonraki sürüm]` taslak PR)
+
+⚠ Bayrak CİHAZDA tutulur: her denemede uygulamayı silip yeniden kur (ya da veriyi temizle) — yoksa çağrı bir daha çıkmaz.
+
+- [ ] Misafir, yeni kurulum, YZ'ye KAYBET: oyun sonu penceresinde "Oyun bitti. Sonraki oyunlarının puanı k-lig sıralamasına girsin, geçmişin saklansın: hemen giriş yap." çıkar; **"hemen giriş yap"** vurgulu ve dokununca giriş penceresi açılır.
+- [ ] Aynı cihazda İKİNCİ oyun (kaybet ya da kazan): çağrı BİR DAHA ÇIKMAZ.
+- [ ] Misafir, yeni kurulum, İLK oyunu KAZAN: eski "Tebrikler, ilk puanını kazandın…" metni çıkar (DEĞİŞMEDİ).
+- [ ] Girişli kullanıcı kaybedince bu çağrı ASLA çıkmaz.
+- [ ] Setup → misafir → "Neden Ücretsiz Üye Olmalıyım?": 2. madde "Puanların k-lig sıralamasına girsin, skorların saklansın", 4. madde "Bir cihazda başla, öbüründen kaldığın yerden devam et". Web ile aynı metin.
+- [ ] Büyük yazı ölçeğinde (1.3) çağrı satırı kesilmiyor/taşmıyor (kutlama kutusu saran bir cümle).
+

@@ -378,7 +378,7 @@ class _KutlamaMetni extends StatelessWidget {
   Widget build(BuildContext context) {
     const stil = TextStyle(fontSize: 13, color: kText, height: 1.5);
     final metin = firstWinTexts[celebration]!;
-    if (celebration != FirstWinCelebrationId.misafir || onSignIn == null) {
+    if (!firstWinGuestIds.contains(celebration) || onSignIn == null) {
       return Text(metin, textAlign: TextAlign.center, style: stil);
     }
     // ⚠ Bölme metnin İÇİNDEN: `firstWinGuestCta` cümlede geçmezse buton hiç

@@ -23,9 +23,9 @@ const _green = kGreen;
 // web MEMBERSHIP_PERKS (Setup.tsx) ile birebir aynı sıra/metin.
 const List<String> _kMembershipPerks = [
   'Arkadaşlarınla çoklu canlı oyun oynama',
-  'Skor takibi ve k-lig sıralaması',
+  'Puanların k-lig sıralamasına girsin, skorların saklansın',
   'Aynı anda birden fazla Yapay Zeka oyunu oynama',
-  'Cihazlar arası kesintisiz devam etme',
+  'Bir cihazda başla, öbüründen kaldığın yerden devam et',
   'Oyun geçmişini saklama, beğenme ve paylaşma',
   'Arkadaş ekleyip listende tutma',
 ];

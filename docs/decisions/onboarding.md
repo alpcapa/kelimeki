@@ -755,6 +755,38 @@ rank 1 olsa da kutlama çıkmaz, bir sonraki gerçek galibiyette çıkar.
 kaynağı farklı. Yerel ekran iki dalı da kurabilir, Canlı ekran yalnız üye
 dalını (oyun zaten hesap gerektiriyor).
 
+**27 Kasım 2026 — ÜÇÜNCÜ kimlik `misafirOyun` (kayıp misafire kayıt çağrısı).**
+ROADMAP "Reklam kesik; yeni üye oyun bitirmiyor" 3. adımı, kullanıcı kararı
+*"3. adımı ölçümsüz doğrudan yapalım"*. Gerekçe (16 Kas ölçümü, 8 Kas sonrası
+37 yeni cihaz): oyun BİTİREN 5 cihazın hepsi misafirdi ve hiçbiri kaydolmadı;
+kaydolan 7 cihazın hiçbiri oyun bitirmemişti. Çağrı yalnızca PUAN alan misafire
+çıktığı için (`pickFirstWinCelebration`) kaybeden/puansız misafir oyun sonunda
+hiçbir şey görmüyordu.
+
+| Kim | Ölçüt | Metin |
+|---|---|---|
+| Misafir, puan aldı | `earnedPoints` + bayrak yok | *Tebrikler, ilk puanını kazandın. …* (`misafir`, DEĞİŞMEDİ) |
+| **Misafir, puan almadı** | `!earnedPoints` + bayrak yok | *Oyun bitti. Sonraki oyunlarının puanı k-lig sıralamasına girsin, geçmişin saklansın: hemen giriş yap.* (`misafirOyun`) |
+
+**AYNI cihaz bayrağı** (`kelimeki:first-points-celebrated` ↔ `FlagsStore`):
+bir cihaza ÖMÜR BOYU en fazla BİR kayıt çağrısı çıkar, hangisi önce gelirse.
+Bilinçli takas: önce kaybeden misafir sonra kazanırsa "ilk puanını kazandın"
+görmez — ama kaybeden misafiri her oyun sonunda kovalamak daha kötü, ve ikinci
+bir bayrak/depolama ayrı bir port işi olurdu. Girişli dal DEĞİŞMEDİ (kaybeden
+girişliye hiçbir şey çıkmaz). Metin yalnız üyeye AÇIK olanı söylüyor
+(`MEMBERSHIP_PERKS` ile aynı iddia; bitmiş misafir oyunu hesaba TAŞINMADIĞI için
+"oyunların kaybolmasın" DENMEDİ). Apostrof YOK: parite testi metni `[^']*` ile
+okuyor. Kimlik adı camelCase çünkü Dart enum adıyla (`id.name`) aranıyor.
+CTA butonu iki misafir kimliği için de çıkıyor (`FIRST_WIN_GUEST_IDS`).
+Aynı turda `MembershipPerksBox` maddeleri somutlaştı: *"Skor takibi ve k-lig
+sıralaması"* → *"Puanların k-lig sıralamasına girsin, skorların saklansın"*,
+*"Cihazlar arası kesintisiz devam etme"* → *"Bir cihazda başla, öbüründen
+kaldığın yerden devam et"* (web `Setup.tsx` ↔ `membership_perks_box.dart`).
+**ÖLÇÜM YOK** (kullanıcı kararı): etkisi okunacaksa kayıt/oyun-bitiren oranı
+`funnel_events`'ten; yüzey alanı eklenmedi. **Yayın:** web+port TEK taslak PR —
+`verify-tutorial-script` ve `tutorial_parity_test` aynı kimlik kümesini okuduğu
+için web yarısı tek başına `main`'e girerse `parite` işi düşer.
+
 **Metin TEK kaynak.** İlk sürümde misafir cümlesi JSX'te butonun iki yanına
 İKİNCİ KEZ yazılmıştı — bu depodaki en sık bayatlama biçimi. Düzeltildi:
 `FIRST_WIN_GUEST_CTA` ayrı bir sabit ve çizim cümleyi ondan BÖLÜYOR; parça

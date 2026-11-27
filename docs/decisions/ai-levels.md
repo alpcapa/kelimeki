@@ -304,6 +304,13 @@ hedefe (~%30) inmek simülasyonda ≈24 puanlık düşüş ister → sim ~%10 ci
 `AI_LEVEL_TOP_N.kolay` 4 → 8, `AI_LEVEL_SEARCH.kolay.maxWordLen` 7 → 5, üç
 kopyada. 2 Kasım treninde (taslak PR #886); `play-ai-turn` merge gününde deploy.
 **Sonraki okuma:** yayından ~3 hafta sonra, kişi içi farkla; hedef YZ ~%30.
+**27 Kasım 2026 okuması (kullanıcı: *"şimdilik bu şekilde kalsın"*):** 2 kişilik yerel
+Kolay, teslim yok, `created_at >= 2 Kas`: **12 oyun / 5 kişi → insan %42** (5/12,
+GA ~%19-68), ortalama puan 167,1 (insan) ↔ 205,5 (YZ), fark medyanı −12,5 (ortalama
+−38,4 tek −261'lik oyunla çarpık; onsuz ≈ −18). Panelin %54'ü tüm zamanların
+(116 oyun; 2 Kas öncesi 104 oyun %56). Karar yok, kadran sabit; **sonraki okuma
+2 Kas sonrası 40 oyunda** (ayda ~12 oyun geliyor, yavaş). ⚠ `games`'te sürüm
+kolonu yok; 2 Kas merge günü, mobil güncelleme geç alınmışsa eski ayar karışmış olabilir.
 **2 Kasım 2026, TestFlight 982 turu (kullanıcı):** Kolay YZ en fazla 5 harflik
 kelime kuruyor, 6+ görülmedi — ayar sahada doğru çalışıyor. **Hedef netleşti
 (kullanıcı): admin "YZ dengesi" kartında Kolay için İNSAN birinciliği ~%65**

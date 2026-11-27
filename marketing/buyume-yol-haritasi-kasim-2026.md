@@ -100,6 +100,12 @@ CPI/retention için aranacak: Appodeal "Mobile Casual Benchmarks Report 2025", L
   tek cihaz 397 oyun (toplamın ~%60'ı; test cihazı olabilir, çıkarılırsa dönüş en fazla 8/21), 13 Kas'ın 73 oyunu tek cihaz.
   Platform: Android 13 cihaz (7 dönen), iOS 6 (1), web 3 (1). **Karar henüz verilmedi** (eşik önceden yazılmamıştı; sonuçtan sonra
   eşik uydurulmadı) — kullanıcıya sunuldu.
+- **İKİNCİ OKUMA (27 Kas 2026, ajan, aynı sorgu, `source='prod'`, 3-26 Kas):** 28 cihaz (17 Kas'ta 22). **Başka güne dönen
+  11/28 (%39)** · ertesi gün **3/28 (%11)** · D+2 **7/28 (%25)** · 3+ gün oynayan **7**. **17 Kas'tan beri yalnızca 6 YENİ cihaz**
+  (3 Android: hepsi tek oyun; 3 iOS: 2'si 2+ gün) — yeni giriş neredeyse durmuş. Platform: Android 16 cihaz (7 dönen), iOS 9 (3), web 3 (1).
+  ⚠ Tek cihaz 828 oyun (toplam 1.446'nın %57'si, 17 Kas'ta 397'ydi; hâlâ aktif, test cihazı olabilir) — çıkarılırsa dönüş en fazla
+  10/27. Örnek küçük: yön gösterir, kesin oran değil. **Okuma:** ertesi güne dönüş düşük, 2+ gün sonrasına yığılma sürüyor; hem
+  dönüş hem giriş reklam kancası için zayıf. **Karar (reklam kancası mı, önce elde tutma mı) hâlâ kullanıcıda, VERİLMEDİ** (eşik yine uydurulmadı).
 
 ## 4. Önerilen yol haritası
 

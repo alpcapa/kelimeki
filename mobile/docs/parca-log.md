@@ -25,6 +25,13 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 262 — Kaybeden misafire kayıt çağrısı + üyelik kutusu maddeleri (27 Kasım 2026, kullanıcı kararı, taslak PR — 1.1.8 treni)
+
+- **Neden:** 16 Kas ölçümü — oyun bitiren 5 yeni cihazın hepsi misafir, hiçbiri kaydolmadı; çağrı yalnız PUAN alan misafire çıkıyordu. Kullanıcı: *"3. adımı ölçümsüz doğrudan yapalım"* (ROADMAP "Reklam kesik…").
+- **Ne:** `FirstWinCelebrationId.misafirOyun` (`util/onboarding.dart`, web ikizi `onboarding.ts`) — puan almayan misafir cihaza ömür boyu BİR kez çağrı görür (AYNI `guestFirstPointsCelebrated` bayrağı, yeni depolama yok). `firstWinGuestIds` kümesi iki kimlik için CTA butonunu açar (`game_over_modal.dart`). `membership_perks_box.dart` iki madde web ile birlikte yeniden yazıldı.
+- **Kanıt:** `tutorial_parity_test` (metin/CTA/kimlik kümesi web'den okunur + karar tablosu), `setup_screen_test`, `flutter analyze` (yeni uyarı yok); web `verify-tutorial-script` + `tsc` yeşil. Cihaz: `TESTING.md` §38.
+- **Dikkat:** web yarısı tek başına `main`'e GİRMEZ — parite testi web kaynağını okuyor. Karar notu: `docs/decisions/onboarding.md`.
+
 ## Parça 261 — Son-raf joker balonu: port ikizi (25 Kasım 2026, kullanıcı isteği, taslak PR — 1.1.7 treni, #983'ün ÜSTÜNE istifli)
 
 **Ne:** Web'in yeni bağlamsal eğitim balonunun (`joker`: torba boş + sırası gelenin rafında joker → rafa çapalı "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar.") port ikizi. `util/onboarding.dart`: `OnboardingHintId.joker` (SIRAYA girmez — `onboardingHintOrder` aynı), `hasJokerEndgame`, `onboardingHintMs`/`onboardingHintJokerDuration` (7 sn), `OnboardingHintInput.jokerEndgame` (zorunlu alan), `pickOnboardingHint` en başta tur eşiklerine bakmadan karar verir. `OnboardingHintScheduler.onMoves(jokerEndgame:)`; `game_screen.dart` (sıra İNSANDA) + `online_game_screen.dart` (`s.current == _mySlot`) hesaplayıp geçiriyor; raf `HintAnchor` ile sarıldı, `_rackKey` DIŞINDA (rafa-bırak alanı değişmedi).
