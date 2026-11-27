@@ -137,7 +137,10 @@ void main() {
   });
 
   Future<void> pumpHistory(WidgetTester tester, GamesRepo repo,
-      {String? currentName = 'Ironman', bool isMe = true, Key? key}) async {
+      {String? currentName = 'Ironman',
+      bool isMe = true,
+      String userId = 'u-me',
+      Key? key}) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
@@ -146,7 +149,7 @@ void main() {
         child: Scaffold(
           body: GameHistoryModal(
             games: repo,
-            userId: 'u-me',
+            userId: userId,
             playerCount: null,
             currentName: currentName,
             isMe: isMe,
@@ -444,6 +447,36 @@ void main() {
         currentName: 'Esiner', isMe: false);
     expect(find.text('Sen'), findsNothing);
     expect(find.text('Esiner'), findsOneWidget);
+  });
+
+  testWidgets(
+      'başkasının kartı (ROADMAP #49 a): hedefin KENDİ oyununda güncel ad ikame '
+      'edilir; hedefin olmayan oyunda (Favoriler) dondurulmuş ad kalır',
+      (tester) async {
+    final gw = FakeGamesGateway(userId: 'u-me')
+      ..history = [
+        gameRow(id: 'g1', userId: 'u-other', rank: 1, players: [
+          snap('EskiNick', 238, colorIndex: 0),
+          snap('Yapay Zeka 2', 179, ai: true, colorIndex: 1),
+        ]),
+        gameRow(id: 'g2', userId: 'u-third', rank: 1, players: [
+          snap('Baska', 300, colorIndex: 0),
+          snap('Yapay Zeka 3', 100, ai: true, colorIndex: 1),
+        ]),
+      ];
+    gw.likedByMe = {'g1', 'g2'};
+    await pumpHistory(tester, await newRepoForWidget(tester, gw),
+        currentName: 'Esiner', isMe: false, userId: 'u-other');
+    expect(find.text('Esiner'), findsOneWidget);
+    expect(find.text('EskiNick'), findsNothing);
+    // Favoriler: hedefin beğendiği, SAHİBİ BAŞKASI olan oyun (g2) → ad olduğu
+    // gibi kalır (koltuk bulunamaz, bilinçli); hedefin kendi oyunu (g1) yine
+    // güncel adla.
+    await tester.tap(find.byKey(kFavoritesTabHeartKey));
+    await tester.pumpAndSettle();
+    expect(find.text('Baska'), findsOneWidget);
+    expect(find.text('Esiner'), findsOneWidget);
+    expect(find.text('EskiNick'), findsNothing);
   });
 
   testWidgets('karta dokunmak tahtayı lazy açar, tekrar dokunmak kapatır',

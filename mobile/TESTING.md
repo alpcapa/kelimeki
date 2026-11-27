@@ -1683,3 +1683,11 @@ orası belirli bir Parça'nın gerilemediğini doğrulayan TARİHLİ turlar.
 - [ ] Canlı oyun (migration sonrası): bitiş ekranındaki "Kalan" satırı ile Toplam tutuyor.
 - [ ] **Son-raf joker balonu (25 Kasım 2026, Parça 261):** torba BOŞALDIKTAN sonra sıra sana geçtiğinde rafında joker varsa rafın ÜSTÜNDE mavi balon çıkar: "Tek veya çift jokerle bit, +25/50 puan bonus kazan. Ama dikkat, elinde kalırsa -10 puan yazar." ~7 sn (diğer balonlardan UZUN) kalır, taş koymaya başlayınca erken kapanır, aynı cihazda bir daha ÇIKMAZ. Rafa dokunma/sürükleme balonun varlığında da çalışmalı. Rakibin sırasında, torba doluyken ya da jokersiz rafta ÇIKMAMALI. Hem yerel/YZ hem Canlı oyunda dene. — ✅ **iPhone TestFlight'ta DOĞRULANDI (kullanıcı bildirdi, 26 Kas 2026; balon yalnızca 1.1.7'de var): balon çıktı, metin DOĞRU, ~7 sn kaldı.** Yalnızca "taş koymaya başlayınca kapanır" ayrıntısı bildirilmedi.
 
+## 38. Başkasının skor kartında oyun geçmişi o kişinin gözünden (27 Kasım 2026, ROADMAP #49 (a) — `[Sonraki sürüm]` taslak PR, Parça 262)
+
+> Web ikizi: kök `TESTING.md` §11.
+
+- [ ] Hesap A ile bir oyun bitir. Hesap B ile A'nın skor kartını aç → "TÜM OYUNLAR": A'nın oyununda A'nın satırı kalın + altın puan, A'nın GÜNCEL adıyla ("Sen" yazmaz).
+- [ ] O oyunda "Hamleler": A'nın kutuları (vergi dahil) çıkar, yalnızca TOPLAM değil.
+- [ ] Favoriler: A'nın beğendiği ama OYNAMADIĞI oyunda vurgu YOK, Hamleler yalnızca toplam (bilinçli); A'nın kendi oyunu olan favoride vurgu var.
+- [ ] Kendi kartımda değişen bir şey yok ("Sen", 4 kutu); sohbet/"Tekrar Oyna" başkasının kartında hâlâ gizli.
